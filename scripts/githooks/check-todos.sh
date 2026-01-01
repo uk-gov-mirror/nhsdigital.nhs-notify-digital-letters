@@ -40,7 +40,6 @@ EXCLUDED_DIRS=(
   ".venv/"
   "docs/"
   "node_modules/"
-  ".devcontainer/"
 )
 
 
