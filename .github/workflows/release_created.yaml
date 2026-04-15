@@ -9,8 +9,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy-main:
-    name: Deploy changes to main in nonprod AWS Account
+  deploy-to-non-prod-environments:
+    name: Deploy changes to main and nft in nonprod AWS Account
     runs-on: ubuntu-latest
 
     permissions:
@@ -21,6 +21,7 @@ jobs:
       max-parallel: 1
       matrix:
         component: [dl]
+        target_environment: [main, nft]
 
     steps:
       - name: Checkout repository
@@ -33,19 +34,19 @@ jobs:
           bash .github/scripts/dispatch_internal_repo_workflow.sh \
             --releaseVersion "${{ github.event.release.tag_name }}" \
             --targetWorkflow "dispatch-deploy-static-notify-digital-letters-env.yaml" \
-            --targetEnvironment "main" \
+            --targetEnvironment "${{ matrix.target_environment }}" \
             --targetAccountGroup "nhs-notify-digital-letters-nonprod" \
             --targetComponent "${{ matrix.component }}" \
             --terraformAction "apply"
 
   acceptance-stage:
     name: "Acceptance stage"
-    needs: [deploy-main]
+    needs: [deploy-to-non-prod-environments]
     uses: ./.github/workflows/stage-4-acceptance.yaml
     secrets:
       APP_PEM_FILE: ${{ secrets.APP_PEM_FILE }}
       APP_CLIENT_ID: ${{ secrets.APP_CLIENT_ID }}
     with:
-      target_environment: "main"
+      target_environment: "${{ matrix.target_environment }}"
       target_account_group: nhs-notify-digital-letters-nonprod
       target_release_version: ${{ github.event.release.tag_name }}
