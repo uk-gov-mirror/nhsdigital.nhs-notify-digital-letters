@@ -87,6 +87,7 @@ service_sorted
 setCachedSchema
 Someobject
 src
+[Ss]ubcommand
 stderr
 Syft
 temp_dir

@@ -1,13 +1,32 @@
 {
+  "dependencies": {
+    "@aws-sdk/client-eventbridge": "^3.914.0",
+    "@nhsdigital/nhs-notify-event-schemas-status-published": "1.0.1",
+    "@nhsdigital/nhs-notify-event-schemas-supplier-api": "1.0.17",
+    "csv-parse": "^6.1.0",
+    "digital-letters-events": "^0.0.1",
+    "yargs": "^17.7.2"
+  },
   "devDependencies": {
-    "@types/node": "^24.0.10",
+    "@jest/diff-sequences": "^30.0.1",
+    "@types/csv-parse": "^1.1.12",
+    "@types/node": "^24.5.2",
+    "@types/yargs": "^17.0.33",
+    "exit-x": "^0.2.2",
+    "jest-mock-extended": "^4.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },
   "name": "nhs-notify-digital-letters-scripts",
   "private": true,
   "scripts": {
-    "bump-terraform-modules": "ts-node terraform/bump-shared-modules.ts"
+    "bump-terraform-modules": "ts-node terraform/bump-shared-modules.ts",
+    "lint": "eslint nft-event-generator/",
+    "lint:fix": "eslint nft-event-generator/ --fix",
+    "start": "tsx nft-event-generator/src/cli.ts",
+    "start:nft": "npm start -- --environment nft --numberOfEvents 2 --interval 2000",
+    "test:unit": "jest",
+    "typecheck": "tsc --noEmit"
   },
   "version": "0.0.1"
 }

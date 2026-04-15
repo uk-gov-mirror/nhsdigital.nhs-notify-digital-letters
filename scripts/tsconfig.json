@@ -1,7 +1,16 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
-    "isolatedModules": true
+    "baseUrl": "./nft-event-generator/src",
+    "isolatedModules": true,
+    "paths": {
+      "jest": [
+        "../../../node_modules/jest"
+      ]
+    },
+    "typeRoots": [
+      "../node_modules/@types",
+      "./node_modules/@types"
+    ]
   },
   "exclude": [
     "node_modules"
