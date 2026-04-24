@@ -42,6 +42,7 @@ module "move_scanned_files" {
     "UNSCANNED_FILE_S3_BUCKET_NAME"  = local.unscanned_files_bucket
     "SAFE_FILE_S3_BUCKET_NAME"       = module.s3bucket_file_safe.bucket
     "QUARANTINE_FILE_S3_BUCKET_NAME" = module.s3bucket_file_quarantine.bucket
+    "DL_METRICS_NAMESPACE"           = local.metrics_namespace_name
   }
 }
 

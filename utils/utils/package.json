@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@aws-sdk/client-athena": "^3.984.0",
+    "@aws-sdk/client-cloudwatch": "^3.984.0",
     "@aws-sdk/client-dynamodb": "^3.984.0",
     "@aws-sdk/client-eventbridge": "^3.984.0",
     "@aws-sdk/client-lambda": "^3.984.0",

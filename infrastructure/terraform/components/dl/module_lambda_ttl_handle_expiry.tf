@@ -38,6 +38,7 @@ module "ttl_handle_expiry" {
     "EVENT_PUBLISHER_EVENT_BUS_ARN" = aws_cloudwatch_event_bus.main.arn
     "EVENT_PUBLISHER_DLQ_URL"       = module.sqs_event_publisher_errors.sqs_queue_url
     "DLQ_URL"                       = module.sqs_ttl_handle_expiry_errors.sqs_queue_url
+    "DL_METRICS_NAMESPACE"          = local.metrics_namespace_name
   }
 }
 

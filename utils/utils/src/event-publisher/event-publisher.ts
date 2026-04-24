@@ -5,6 +5,7 @@ import {
 import { SQSClient, SendMessageBatchCommand } from '@aws-sdk/client-sqs';
 import { randomUUID } from 'node:crypto';
 import { Logger } from '../logger';
+import { MetricHandler } from '../cloudwatch/metric-handler';
 
 type DlqReason = 'INVALID_EVENT' | 'EVENTBRIDGE_FAILURE';
 
@@ -16,6 +17,7 @@ export interface EventPublisherDependencies {
   logger: Logger;
   sqsClient: SQSClient;
   eventBridgeClient: EventBridgeClient;
+  metricHandler: MetricHandler;
 }
 
 type PublishableEvent = { id: string; source: string; type: string };
@@ -30,6 +32,8 @@ export class EventPublisher {
   private readonly config: EventPublisherDependencies;
 
   private readonly logger: Logger;
+
+  private readonly metricHandler: MetricHandler;
 
   constructor(config: EventPublisherDependencies) {
     if (!config.eventBusArn) {
@@ -47,11 +51,16 @@ export class EventPublisher {
     if (!config.eventBridgeClient) {
       throw new Error('eventBridgeClient has not been provided');
     }
+    if (!config.metricHandler) {
+      throw new Error('metricHandler has not been provided');
+    }
 
     this.config = config;
     this.logger = config.logger;
     this.eventBridge = config.eventBridgeClient;
     this.sqs = config.sqsClient;
+    this.metricHandler = config.metricHandler;
+
   }
 
   private async sendToEventBridge<T extends PublishableEvent>(
@@ -82,14 +91,25 @@ export class EventPublisher {
           new PutEventsCommand({ Entries: entries }),
         );
 
+        const successfulCount = batch.length - (response.FailedEntryCount || 0);
+        const failedEntryCount = response.FailedEntryCount || 0;
         this.logger.info({
           description: 'EventBridge batch sent',
           batchSize: batch.length,
-          failedEntryCount: response.FailedEntryCount || 0,
-          successfulCount: batch.length - (response.FailedEntryCount || 0),
+          failedEntryCount: failedEntryCount,
+          successfulCount: successfulCount,
         });
 
-        if (response.FailedEntryCount && response.Entries) {
+        if (successfulCount > 0) {
+          this.metricHandler.addMetrics([`${entries[0].DetailType}_batchSuccess`, 'Count', successfulCount]);
+        }
+
+        if (failedEntryCount > 0) {
+          this.metricHandler.addMetrics([`${entries[0].DetailType}_batchFailure`, 'Count', failedEntryCount]);
+        }
+
+
+        if (failedEntryCount && response.Entries) {
           for (const [idx, entry] of response.Entries.entries()) {
             if (entry.ErrorCode) {
               this.logger.warn({

@@ -8,9 +8,14 @@ import { randomInt, randomUUID } from 'node:crypto';
 import { mockClient } from 'aws-sdk-client-mock';
 import { Logger } from 'logger';
 import { EventPublisher, EventPublisherDependencies } from 'event-publisher';
+import { MetricHandler } from 'cloudwatch/metric-handler';
 
 const eventBridgeMock = mockClient(EventBridgeClient);
 const sqsMock = mockClient(SQSClient);
+const metricHandlerMock: MetricHandler = {
+  addMetrics: jest.fn(),
+  getChildMetricHandler: jest.fn(),
+} as unknown as MetricHandler;
 
 const mockLogger: Logger = {
   info: jest.fn(),
@@ -27,6 +32,7 @@ const testConfig: EventPublisherDependencies = {
   logger: mockLogger,
   sqsClient: sqsMock as unknown as SQSClient,
   eventBridgeClient: eventBridgeMock as unknown as EventBridgeClient,
+  metricHandler: metricHandlerMock,
 };
 
 const event: TestEvent = {
@@ -57,6 +63,7 @@ describe('Event Publishing', () => {
     expect(result).toEqual([]);
     expect(eventBridgeMock.calls()).toHaveLength(0);
     expect(sqsMock.calls()).toHaveLength(0);
+    expect(metricHandlerMock.addMetrics).not.toHaveBeenCalled();
   });
 
   test('should send valid events to EventBridge', async () => {
@@ -71,6 +78,7 @@ describe('Event Publishing', () => {
     expect(result).toEqual([]);
     expect(eventBridgeMock.calls()).toHaveLength(1);
     expect(sqsMock.calls()).toHaveLength(0);
+    expect(metricHandlerMock.addMetrics).toHaveBeenCalledWith(['uk.nhs.notify.digital.letters.sent.v1_batchSuccess', 'Count', 2]);
 
     const eventBridgeCall = eventBridgeMock.calls()[0];
     expect(eventBridgeCall.args[0].input).toEqual({
@@ -152,6 +160,8 @@ describe('Event Publishing', () => {
     const sqsInput = sqsCall.args[0].input as any;
     expect(sqsInput.Entries).toHaveLength(1);
     expect(sqsInput.Entries[0].MessageBody).toBe(JSON.stringify(event));
+    expect(metricHandlerMock.addMetrics).toHaveBeenNthCalledWith(1,['uk.nhs.notify.digital.letters.sent.v1_batchSuccess', 'Count', 1]);
+    expect(metricHandlerMock.addMetrics).toHaveBeenNthCalledWith(2,['uk.nhs.notify.digital.letters.sent.v1_batchFailure', 'Count', 1]);
   });
 
   test('should handle EventBridge send error and send all events to DLQ', async () => {
@@ -453,6 +463,8 @@ describe('Event Publishing', () => {
         ),
       ),
     );
+
+    expect(metricHandlerMock.addMetrics).toHaveBeenCalled();
   });
 });
 

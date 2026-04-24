@@ -39,6 +39,7 @@ module "print_sender" {
     "EVENT_PUBLISHER_DLQ_URL"       = module.sqs_event_publisher_errors.sqs_queue_url
     "ENVIRONMENT"                   = var.environment
     "ACCOUNT_TYPE"                  = var.aws_account_type
+    "DL_METRICS_NAMESPACE"          = local.metrics_namespace_name
   }
 }
 

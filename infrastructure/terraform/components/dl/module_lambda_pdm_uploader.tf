@@ -39,6 +39,7 @@ module "pdm_uploader" {
     "APIM_ACCESS_TOKEN_SSM_PARAMETER_NAME" = local.pdm_access_token_ssm_parameter_name
     "EVENT_PUBLISHER_EVENT_BUS_ARN"        = aws_cloudwatch_event_bus.main.arn
     "EVENT_PUBLISHER_DLQ_URL"              = module.sqs_event_publisher_errors.sqs_queue_url
+    "DL_METRICS_NAMESPACE"                 = local.metrics_namespace_name
   }
 }
 

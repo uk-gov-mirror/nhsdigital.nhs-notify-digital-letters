@@ -41,6 +41,7 @@ module "core_notifier" {
     "EVENT_PUBLISHER_DLQ_URL"              = module.sqs_event_publisher_errors.sqs_queue_url
     "ENVIRONMENT"                          = var.environment
     "NHS_APP_BASE_URL"                     = var.nhs_app_base_url
+    "DL_METRICS_NAMESPACE"                 = local.metrics_namespace_name
   }
 }
 

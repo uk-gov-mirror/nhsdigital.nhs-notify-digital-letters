@@ -36,10 +36,11 @@ module "ttl_poll" {
   log_subscription_role_arn = local.acct.log_subscription_role_arn
 
   lambda_env_vars = {
-    "TTL_TABLE_NAME"      = aws_dynamodb_table.ttl.name
-    "CONCURRENCY"         = 60
-    "MAX_PROCESS_SECONDS" = 300
-    "TTL_SHARD_COUNT"     = local.ttl_shard_count
+    "TTL_TABLE_NAME"       = aws_dynamodb_table.ttl.name
+    "CONCURRENCY"          = 60
+    "MAX_PROCESS_SECONDS"  = 300
+    "TTL_SHARD_COUNT"      = local.ttl_shard_count
+    "DL_METRICS_NAMESPACE" = local.metrics_namespace_name
   }
 }
 

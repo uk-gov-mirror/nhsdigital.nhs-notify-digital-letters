@@ -45,6 +45,7 @@ module "report_sender" {
     SSM_MESH_PREFIX                = local.ssm_mesh_prefix
     SSM_SENDERS_PREFIX             = local.ssm_senders_prefix
     USE_MESH_MOCK                  = var.enable_mock_mesh ? "true" : "false"
+    DL_METRICS_NAMESPACE           = local.metrics_namespace_name
   }
 
 }

@@ -6,6 +6,7 @@ export interface Config {
   unscannedFilesPathPrefix: string;
   eventPublisherEventBusArn: string;
   eventPublisherDlqUrl: string;
+  dlMetricsNamespace: string;
 }
 
 export function loadConfig(): Config {
@@ -14,6 +15,7 @@ export function loadConfig(): Config {
   const unscannedFilesPathPrefix = process.env.UNSCANNED_FILES_PATH_PREFIX;
   const eventPublisherEventBusArn = process.env.EVENT_PUBLISHER_EVENT_BUS_ARN;
   const eventPublisherDlqUrl = process.env.EVENT_PUBLISHER_DLQ_URL;
+  const dlMetricsNamespace = process.env.DL_METRICS_NAMESPACE;
 
   if (!documentReferenceBucket) {
     throw new Error('DOCUMENT_REFERENCE_BUCKET is not set');
@@ -34,12 +36,16 @@ export function loadConfig(): Config {
   if (!eventPublisherDlqUrl) {
     throw new Error('EVENT_PUBLISHER_DLQ_URL is not set');
   }
+  if (!dlMetricsNamespace) {
+    throw new Error('DL_METRICS_NAMESPACE is not set');
+  }
 
   logger.info({
     description: 'Configuration loaded',
     documentReferenceBucket,
     unscannedFilesBucket,
     unscannedFilesPathPrefix,
+    dlMetricsNamespace,
   });
 
   return {
@@ -48,5 +54,6 @@ export function loadConfig(): Config {
     unscannedFilesPathPrefix,
     eventPublisherEventBusArn,
     eventPublisherDlqUrl,
+    dlMetricsNamespace,
   };
 }

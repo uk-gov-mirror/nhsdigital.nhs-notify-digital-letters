@@ -7,6 +7,7 @@ export type NotifySendMessageConfig = {
   apimBaseUrl: string;
   nhsAppBaseUrl: string;
   environment: string;
+  dlMetricsNamespace: string;
 };
 
 export function loadConfig(): NotifySendMessageConfig {
@@ -23,5 +24,6 @@ export function loadConfig(): NotifySendMessageConfig {
     apimBaseUrl: defaultConfigReader.getValue('APIM_BASE_URL'),
     nhsAppBaseUrl: defaultConfigReader.getValue('NHS_APP_BASE_URL'),
     environment: defaultConfigReader.getValue('ENVIRONMENT'),
+    dlMetricsNamespace: defaultConfigReader.getValue('DL_METRICS_NAMESPACE'),
   };
 }

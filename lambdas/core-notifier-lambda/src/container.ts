@@ -14,6 +14,7 @@ import { SenderManagement } from 'sender-management';
 import { CoreRequestMapper } from 'domain/core-request-mapper';
 import { MessageRequestSubmittedMapper } from 'domain/message-request-submitted-mapper';
 import { MessageRequestRejectedMapper } from 'domain/message-request-rejected-mapper';
+import { MetricHandler } from '../../../utils/utils/src/cloudwatch/metric-handler';
 
 export async function createContainer(): Promise<SqsHandlerDependencies> {
   const parameterStore = new ParameterStoreCache();
@@ -41,7 +42,11 @@ export async function createContainer(): Promise<SqsHandlerDependencies> {
     logger,
   });
 
-  const { eventPublisherDlqUrl, eventPublisherEventBusArn } = config;
+  const { eventPublisherDlqUrl, eventPublisherEventBusArn, dlMetricsNamespace } = config;
+  const metricHandler = new MetricHandler(dlMetricsNamespace, [{
+      Name: 'Environment',
+      Value: 'environment',
+    }]);
 
   const eventPublisher = new EventPublisher({
     eventBusArn: eventPublisherEventBusArn,
@@ -49,6 +54,7 @@ export async function createContainer(): Promise<SqsHandlerDependencies> {
     logger,
     sqsClient,
     eventBridgeClient,
+    metricHandler,
   });
 
   const coreRequestMapper = new CoreRequestMapper(config.nhsAppBaseUrl);

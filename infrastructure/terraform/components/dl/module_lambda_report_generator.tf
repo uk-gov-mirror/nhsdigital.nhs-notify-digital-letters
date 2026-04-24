@@ -42,6 +42,7 @@ module "report_generator" {
     "REPORTING_BUCKET"              = module.s3bucket_reporting.bucket
     "REPORT_NAME"                   = "completed_communications"
     "WAIT_FOR_IN_SECONDS"           = var.athena_query_polling_time_seconds
+    "DL_METRICS_NAMESPACE"          = local.metrics_namespace_name
   }
 }
 

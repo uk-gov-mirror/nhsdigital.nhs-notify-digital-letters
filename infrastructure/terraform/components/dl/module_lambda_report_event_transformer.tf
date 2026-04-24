@@ -29,4 +29,7 @@ module "report_event_transformer" {
 
   log_destination_arn       = local.log_destination_arn
   log_subscription_role_arn = local.acct.log_subscription_role_arn
+  lambda_env_vars = {
+    "DL_METRICS_NAMESPACE" = local.metrics_namespace_name
+  }
 }
