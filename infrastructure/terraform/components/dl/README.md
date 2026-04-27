@@ -84,7 +84,6 @@ No requirements.
 | <a name="module_report_generator"></a> [report\_generator](#module\_report\_generator) | https://github.com/NHSDigital/nhs-notify-shared-modules/releases/download/3.0.6/terraform-lambda.zip | n/a |
 | <a name="module_report_scheduler"></a> [report\_scheduler](#module\_report\_scheduler) | https://github.com/NHSDigital/nhs-notify-shared-modules/releases/download/3.0.6/terraform-lambda.zip | n/a |
 | <a name="module_report_sender"></a> [report\_sender](#module\_report\_sender) | https://github.com/NHSDigital/nhs-notify-shared-modules/releases/download/3.0.6/terraform-lambda.zip | n/a |
-| <a name="module_s3bucket_cf_logs"></a> [s3bucket\_cf\_logs](#module\_s3bucket\_cf\_logs) | https://github.com/NHSDigital/nhs-notify-shared-modules/releases/download/3.0.6/terraform-s3bucket.zip | n/a |
 | <a name="module_s3bucket_file_quarantine"></a> [s3bucket\_file\_quarantine](#module\_s3bucket\_file\_quarantine) | https://github.com/NHSDigital/nhs-notify-shared-modules/releases/download/3.0.6/terraform-s3bucket.zip | n/a |
 | <a name="module_s3bucket_file_safe"></a> [s3bucket\_file\_safe](#module\_s3bucket\_file\_safe) | https://github.com/NHSDigital/nhs-notify-shared-modules/releases/download/3.0.6/terraform-s3bucket.zip | n/a |
 | <a name="module_s3bucket_letters"></a> [s3bucket\_letters](#module\_s3bucket\_letters) | https://github.com/NHSDigital/nhs-notify-shared-modules/releases/download/3.0.6/terraform-s3bucket.zip | n/a |
