@@ -6,6 +6,7 @@ import {
   DestinationClient,
   PublishableEvent,
 } from 'destinations/destination-client';
+import { sleep } from 'utils';
 
 /* eslint-disable no-console */
 
@@ -32,13 +33,6 @@ function batchEvents(events: PublishableEvent[]): PublishableEvent[][] {
   return batches;
 }
 
-// Wait for X milliseconds
-function wait(interval: number) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, interval);
-  });
-}
-
 export async function sendEventsToEventBus(
   environment: string,
   events: PublishableEvent[],
@@ -59,7 +53,7 @@ export async function sendEventsToEventBus(
     currentBatch += 1;
 
     const entries = batch.map((event) => {
-      const cloudEvent = event as unknown as CloudEventEnvelope;
+      const cloudEvent = event as CloudEventEnvelope;
       return {
         EventBusName: eventBusName,
         Source: cloudEvent.source,
@@ -91,7 +85,7 @@ export async function sendEventsToEventBus(
 
     // Wait before sending the next batch, but skip waiting after the last batch
     if (batch !== batches.at(-1)) {
-      await wait(interval);
+      await sleep(interval / 1000);
     }
   }
 

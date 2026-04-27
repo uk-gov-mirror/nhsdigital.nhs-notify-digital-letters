@@ -1,9 +1,14 @@
 /**
  * Minimum shape required by all destination clients.
- * Each publishable event must carry an `id` so the sending implementation
- * can use it as a unique identifier within a batch.
+ * Each publishable event must carry the defined properties, where the `id`
+ * is used as a unique identifier within a batch.
  */
-export type PublishableEvent = { id: string };
+export type PublishableEvent = {
+  id: string;
+  source: string;
+  type: string;
+  time: string;
+};
 
 /**
  * Common interface for all event destinations (SQS, EventBridge, etc.).

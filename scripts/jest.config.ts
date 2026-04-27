@@ -1,31 +1,14 @@
-import type { Config } from 'jest';
+import { baseJestConfig } from '../jest.config.base';
 
-const config: Config = {
-  preset: 'ts-jest',
-  testEnvironment: 'node',
+const config = {
+  ...baseJestConfig,
   roots: ['<rootDir>/nft-event-generator'],
-  testMatch: ['**/__tests__/**/*.test.ts', '**/?(*.)+(spec|test).ts'],
-  transform: {
-    '^.+\\.ts$': [
-      'ts-jest',
-      {
-        tsconfig: {
-          esModuleInterop: true,
-          allowSyntheticDefaultImports: true,
-          allowImportingTsExtensions: true,
-          module: 'commonjs',
-          target: 'ES2020',
-          moduleResolution: 'node',
-          noEmit: true,
-          typeRoots: ['../node_modules/@types'],
-        },
-        diagnostics: {
-          ignoreCodes: [1343], // Ignore TS1343: import.meta errors
-        },
-      },
-    ],
-  },
   modulePaths: ['<rootDir>/nft-event-generator/src'],
+  moduleNameMapper: {
+    // Map local subpath aliases that would otherwise resolve to the 'utils'
+    // workspace package before the local nft-event-generator source is checked.
+    '^utils/(.+)$': '<rootDir>/nft-event-generator/src/utils/$1',
+  },
   collectCoverageFrom: [
     'nft-event-generator/src/**/*.{ts,js}',
     '!nft-event-generator/src/**/*.d.ts',
@@ -35,21 +18,14 @@ const config: Config = {
     '!nft-event-generator/src/cli.ts',
   ],
   coverageDirectory: 'nft-event-generator/coverage',
-  coveragePathIgnorePatterns: ['/node_modules/', '/__tests__/'],
   coverageThreshold: {
     global: {
-      branches: 60,
-      functions: 60,
-      lines: 60,
-      statements: 60,
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
     },
   },
-  moduleFileExtensions: ['ts', 'js', 'json'],
-  moduleNameMapper: {
-    '^(.*)\\.ts$': '$1',
-  },
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
-  testTimeout: 10_000,
 };
 
 export default config;

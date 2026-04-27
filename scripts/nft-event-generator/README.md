@@ -99,20 +99,6 @@ npm start -- paper-letter-opt-out-event --environment pr293 --csvFile ./opt-outs
 
 ---
 
-## Running via Make
-
-To run this script from anywhere in the repository:
-
-```shell
-make perf-test
-```
-
-The make command runs the following script (configured in `package.json`):
-
-```shell
-"start:nft": "npm start -- supplier-api-letter-event --environment nft --numberOfEvents 2 --interval 2000"
-```
-
 ## Help
 
 To see all available options for a subcommand:

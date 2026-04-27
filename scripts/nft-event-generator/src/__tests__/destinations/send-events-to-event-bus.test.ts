@@ -1,11 +1,15 @@
 import {
+  EventBridgeClient,
   PutEventsCommand,
   PutEventsResultEntry,
 } from '@aws-sdk/client-eventbridge';
 import { PublishableEvent } from 'destinations/destination-client';
 import { mock } from 'jest-mock-extended';
-import { sendEventsToEventBus } from 'destinations/send-events-to-event-bus';
-/* eslint-disable no-console */
+import {
+  EventBusDestinationClient,
+  sendEventsToEventBus,
+} from 'destinations/send-events-to-event-bus';
+
 const environment = 'dev';
 
 const sampleEvent = {
@@ -15,33 +19,39 @@ const sampleEvent = {
   time: '2023-06-20T12:00:00.000Z',
 };
 
-const mockEventBridgeClient = { send: jest.fn() };
+// Factory no longer references any outer variable
 jest.mock('@aws-sdk/client-eventbridge', () => {
   const originalModule = jest.requireActual('@aws-sdk/client-eventbridge');
-
   return {
     __esModule: true,
     ...originalModule,
-    EventBridgeClient: jest.fn(() => mockEventBridgeClient),
+    EventBridgeClient: jest.fn(),
   };
 });
+
+const mockSend = jest.fn();
 
 const successEntry = mock<PutEventsResultEntry>({ ErrorCode: undefined });
 const successfulSendResponse = { Entries: [successEntry] };
 
 describe('sendEventsToEventBus', () => {
   beforeEach(() => {
-    mockEventBridgeClient.send.mockReset();
+    mockSend.mockReset();
+    // Wire up the mock implementation here, after all declarations are initialised
+    jest
+      .mocked(EventBridgeClient)
+      .mockImplementation(
+        () => ({ send: mockSend }) as unknown as EventBridgeClient,
+      );
   });
 
   it('should send the expected request to EventBridge', async () => {
-    mockEventBridgeClient.send.mockResolvedValue(successfulSendResponse);
+    mockSend.mockResolvedValue(successfulSendResponse);
 
     await sendEventsToEventBus(environment, [sampleEvent], 5);
 
-    expect(mockEventBridgeClient.send).toHaveBeenCalled();
-    const putEventsCommand: PutEventsCommand =
-      mockEventBridgeClient.send.mock.calls[0][0];
+    expect(mockSend).toHaveBeenCalled();
+    const putEventsCommand: PutEventsCommand = mockSend.mock.calls[0][0];
 
     expect(putEventsCommand.input.Entries).toHaveLength(1);
     const entry = putEventsCommand.input.Entries![0];
@@ -56,19 +66,17 @@ describe('sendEventsToEventBus', () => {
       { length: 52 },
       () => sampleEvent,
     );
-    mockEventBridgeClient.send.mockResolvedValue(successfulSendResponse);
+    mockSend.mockResolvedValue(successfulSendResponse);
 
     await sendEventsToEventBus(environment, events, 5);
 
     // Batch size is 10, so 52 events = 6 batches.
-    expect(mockEventBridgeClient.send).toHaveBeenCalledTimes(6);
+    expect(mockSend).toHaveBeenCalledTimes(6);
   });
 
   it('should continue sending batches if an error is raised', async () => {
-    mockEventBridgeClient.send.mockRejectedValueOnce(
-      new Error('Something went wrong!'),
-    );
-    mockEventBridgeClient.send.mockResolvedValue(successfulSendResponse);
+    mockSend.mockRejectedValueOnce(new Error('Something went wrong!'));
+    mockSend.mockResolvedValue(successfulSendResponse);
 
     const events: PublishableEvent[] = Array.from(
       { length: 30 },
@@ -78,19 +86,44 @@ describe('sendEventsToEventBus', () => {
     await sendEventsToEventBus(environment, events, 5);
 
     // Batch size is 10, so 30 events = 3 batches.
-    expect(mockEventBridgeClient.send).toHaveBeenCalledTimes(3);
+    expect(mockSend).toHaveBeenCalledTimes(3);
   });
 
   it('should warn when some events fail to publish', async () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
     const failedEntry = mock<PutEventsResultEntry>({
       ErrorCode: 'InternalFailure',
     });
-    mockEventBridgeClient.send.mockResolvedValue({
+    mockSend.mockResolvedValue({
       Entries: [failedEntry],
     });
 
     await sendEventsToEventBus(environment, [sampleEvent], 5);
 
-    expect(console.warn).toHaveBeenCalled();
+    expect(warnSpy).toHaveBeenCalled();
+    warnSpy.mockRestore();
+  });
+});
+
+describe('EventBusDestinationClient', () => {
+  beforeEach(() => {
+    mockSend.mockReset();
+    jest
+      .mocked(EventBridgeClient)
+      .mockImplementation(
+        () => ({ send: mockSend }) as unknown as EventBridgeClient,
+      );
+  });
+
+  it('should delegate sendEvents to sendEventsToEventBus', async () => {
+    mockSend.mockResolvedValue(successfulSendResponse);
+
+    const client = new EventBusDestinationClient(environment);
+    await client.sendEvents([sampleEvent], 5);
+
+    expect(mockSend).toHaveBeenCalledTimes(1);
+    const putEventsCommand: PutEventsCommand = mockSend.mock.calls[0][0];
+    const entry = putEventsCommand.input.Entries![0];
+    expect(entry.EventBusName).toBe(`nhs-${environment}-dl`);
   });
 });

@@ -1,10 +1,24 @@
 {
   "compilerOptions": {
-    "baseUrl": "./nft-event-generator/src",
+    "baseUrl": ".",
     "isolatedModules": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
     "paths": {
+      "destinations/*": [
+        "nft-event-generator/src/destinations/*"
+      ],
+      "generators/*": [
+        "nft-event-generator/src/generators/*"
+      ],
       "jest": [
         "../../../node_modules/jest"
+      ],
+      "utils": [
+        "nft-event-generator/src/utils/index.ts"
+      ],
+      "utils/*": [
+        "nft-event-generator/src/utils/*"
       ]
     },
     "typeRoots": [

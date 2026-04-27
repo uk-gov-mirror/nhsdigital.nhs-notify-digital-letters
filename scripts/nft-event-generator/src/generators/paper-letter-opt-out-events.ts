@@ -29,7 +29,7 @@ function generatePaperLetterOptOutEvent(
       'customer/037f5f76-352c-445f-89a7-c3d18776ce86/message/3COesqsClaLyf0WNuLuhz1RDbWs/plan/3COezubdtrUFJlDOV4ucAQ93Akr',
     id: randomUUID(),
     time: new Date().toISOString(),
-    source: '/nhs/england/notify/comms-mgr-test/test/data-plane/messaging',
+    source: `/nhs/england/notify/comms-mgr-${environment}/${environment}/data-plane/messaging`,
     data: {
       messageReference,
       clientId: senderId,

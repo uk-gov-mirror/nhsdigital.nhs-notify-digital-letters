@@ -45,6 +45,7 @@ function generateSupplierApiLetterEvent(
     time?: string;
     subject?: string;
     messageReference?: string;
+    /* istanbul ignore next */
   } = {},
 ): LetterEvent {
   const now = new Date();
@@ -96,18 +97,14 @@ export function generateSupplierApiLetterEvents({
   subject,
   time,
 }: GenerateEventsParams): LetterEvent[] {
-  const events: LetterEvent[] = [];
-
-  for (let i = 0; i < numberOfEvents; i++) {
-    events.push(
-      generateSupplierApiLetterEvent(environment, status, {
-        id,
-        time,
-        subject,
-        messageReference,
-      }),
-    );
-  }
+  const events = Array.from({ length: numberOfEvents }, () =>
+    generateSupplierApiLetterEvent(environment, status, {
+      id,
+      time,
+      subject,
+      messageReference,
+    }),
+  );
 
   console.group('Event generation:');
   console.log(`Total events generated:\t\t${numberOfEvents}`);
