@@ -44,11 +44,11 @@ class MeshMessageProcessor:  # pylint: disable=too-many-instance-attributes
 
     def is_enough_time_to_process_message(self):
         """
-        Determines whether the lambda should continue to process messages
+        Determines whether the lambda should continue to process messages.
         """
         remaining_time_in_millis = self.__get_remaining_time_in_millis()
 
-        return int(self.__config.maximum_runtime_milliseconds) \
+        return int(self.__config.lambda_timeout_buffer_milliseconds) \
             < remaining_time_in_millis
 
     def process_messages(self):
