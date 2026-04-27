@@ -40,9 +40,9 @@ module.exports = {
         }),
       new CopyPlugin({
         patterns: [
-          { from: "node_modules/reveal.js-menu/", to: "reveal.js-menu/" },
-          //{ from: "node_modules/reveal.js-menu/font-awesome/", to: "reveal.js-menu/font-awesome/" },
-          //{ from: "node_modules/reveal.js-menu/menu.css", to: "reveal.js-menu/menu.css" },
+          { from: "../node_modules/reveal.js-menu/", to: "reveal.js-menu/" },
+          //{ from: "../node_modules/reveal.js-menu/font-awesome/", to: "reveal.js-menu/font-awesome/" },
+          //{ from: "../node_modules/reveal.js-menu/menu.css", to: "reveal.js-menu/menu.css" },
         ],
       }),
     ],

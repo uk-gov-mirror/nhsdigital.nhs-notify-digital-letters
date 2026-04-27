@@ -128,6 +128,12 @@ variable "apim_base_url" {
   default     = "https://int.api.service.nhs.uk"
 }
 
+variable "nhs_app_base_url" {
+  type        = string
+  description = "The URL used to build the NHS App resource URL"
+  default     = "https://example.com"
+}
+
 variable "core_notify_url" {
   type        = string
   description = "The URL used to send requests to Notify"

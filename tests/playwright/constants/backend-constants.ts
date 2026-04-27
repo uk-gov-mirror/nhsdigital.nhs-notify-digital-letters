@@ -4,6 +4,12 @@ export const ENV = process.env.ENVIRONMENT || 'main';
 export const REGION = process.env.AWS_REGION || 'eu-west-2';
 export const { AWS_ACCOUNT_ID } = process.env;
 
+if (!AWS_ACCOUNT_ID) {
+  throw new Error('AWS_ACCOUNT_ID environment variable is not set');
+}
+
+export const AWS_ACCOUNT_ID_SAFE: string = AWS_ACCOUNT_ID;
+
 // Compound Scope Indicator
 export const CSI = `nhs-${ENV}-dl`;
 

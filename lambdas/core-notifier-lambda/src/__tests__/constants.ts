@@ -22,7 +22,7 @@ export const mockRequest1: SingleMessageRequest = {
       },
       personalisation: {
         digitalLetterURL:
-          'https://www.nhsapp.service.nhs.uk/digital-letters?letterid=12345',
+          'https://example.com/patient/digital-letters/letter?id=12345',
       },
     },
   },

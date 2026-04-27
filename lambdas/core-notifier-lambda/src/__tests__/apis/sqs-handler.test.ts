@@ -13,6 +13,9 @@ import {
   MessageRequestSkipped,
   MessageRequestSubmitted,
 } from 'digital-letters-events';
+import { CoreRequestMapper } from 'domain/core-request-mapper';
+import { MessageRequestRejectedMapper } from 'domain/message-request-rejected-mapper';
+import { MessageRequestSubmittedMapper } from 'domain/message-request-submitted-mapper';
 
 jest.mock('app/parse-sqs-message');
 
@@ -21,6 +24,9 @@ const mockNotifyMessageProcessor = mock<NotifyMessageProcessor>();
 const mockSenderManagement = mock<ISenderManagement>();
 const mockEventPublisher = mock<EventPublisher>();
 const mockParseSqsRecord = jest.mocked(parseSqsRecord);
+const mockCoreRequestMapper = mock<CoreRequestMapper>();
+const mockMessageRequestSubmittedMapper = mock<MessageRequestSubmittedMapper>();
+const mockMessageRequestRejectedMapper = mock<MessageRequestRejectedMapper>();
 
 const createSqsRecord = (messageId: string): SQSRecord => ({
   messageId,
@@ -53,6 +59,9 @@ describe('createHandler', () => {
     notifyMessageProcessor: mockNotifyMessageProcessor,
     senderManagement: mockSenderManagement,
     eventPublisher: mockEventPublisher,
+    coreRequestMapper: mockCoreRequestMapper,
+    messageRequestSubmittedMapper: mockMessageRequestSubmittedMapper,
+    messageRequestRejectedMapper: mockMessageRequestRejectedMapper,
   };
 
   const senderId = 'sender-123';
@@ -71,6 +80,9 @@ describe('createHandler', () => {
       mockParseSqsRecord.mockReturnValueOnce(validPdmEvent);
       mockSenderManagement.getSender.mockResolvedValue(validSender);
       mockNotifyMessageProcessor.process.mockResolvedValueOnce(notifyId);
+      mockMessageRequestSubmittedMapper.mapPdmEventToMessageRequestSubmitted.mockReturnValueOnce(
+        {} as MessageRequestSubmitted,
+      );
 
       const result = await handler(sqsEvent);
 
@@ -270,6 +282,15 @@ describe('createHandler', () => {
       mockParseSqsRecord.mockReturnValueOnce(validPdmEvent);
       mockSenderManagement.getSender.mockResolvedValue(validSender);
       mockNotifyMessageProcessor.process.mockRejectedValueOnce(error);
+      mockMessageRequestRejectedMapper.mapPdmEventToMessageRequestRejected.mockReturnValueOnce(
+        {
+          data: {
+            senderId,
+            messageReference,
+            failureCode: errorCode,
+          },
+        } as MessageRequestRejected,
+      );
 
       const result = await handler(sqsEvent);
 

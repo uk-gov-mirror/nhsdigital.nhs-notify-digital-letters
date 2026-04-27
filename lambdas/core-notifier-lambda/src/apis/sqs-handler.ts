@@ -14,23 +14,23 @@ import {
   validateMessageRequestSkipped,
   validateMessageRequestSubmitted,
 } from 'digital-letters-events';
-import {
-  mapPdmEventToMessageRequestRejected,
-  mapPdmEventToMessageRequestSkipped,
-  mapPdmEventToMessageRequestSubmitted,
-  mapPdmEventToSingleMessageRequest,
-} from 'domain/mapper';
 import { parseSqsRecord } from 'app/parse-sqs-message';
-
 import type { NotifyMessageProcessor } from 'app/notify-message-processor';
 import { ISenderManagement } from 'sender-management';
 import { RequestNotifyError } from 'domain/request-notify-error';
+import { CoreRequestMapper } from 'domain/core-request-mapper';
+import { MessageRequestSubmittedMapper } from 'domain/message-request-submitted-mapper';
+import { MessageRequestRejectedMapper } from 'domain/message-request-rejected-mapper';
+import { mapPdmEventToMessageRequestSkipped } from 'domain/message-request-skipped-mapper';
 
 export interface SqsHandlerDependencies {
   logger: Logger;
   notifyMessageProcessor: NotifyMessageProcessor;
   senderManagement: ISenderManagement;
   eventPublisher: EventPublisher;
+  coreRequestMapper: CoreRequestMapper;
+  messageRequestSubmittedMapper: MessageRequestSubmittedMapper;
+  messageRequestRejectedMapper: MessageRequestRejectedMapper;
 }
 
 type EventToPublish = {
@@ -50,6 +50,8 @@ async function handlePdmResourceAvailable(
   notifyMessageProcessor: NotifyMessageProcessor,
   incoming: PDMResourceAvailable,
   sender: Sender,
+  coreRequestMapper: CoreRequestMapper,
+  messageRequestSubmittedMapper: MessageRequestSubmittedMapper,
 ): Promise<EventToPublish> {
   const eventToPublish = {} as EventToPublish;
 
@@ -60,16 +62,20 @@ async function handlePdmResourceAvailable(
     );
     eventToPublish.skipped = messageRequestSkipped;
   } else {
-    const request = mapPdmEventToSingleMessageRequest(incoming, sender);
+    const request = coreRequestMapper.mapPdmEventToSingleMessageRequest(
+      incoming,
+      sender,
+    );
     const notifyId = await notifyMessageProcessor.process(
       request,
       incoming.data.senderId,
     );
-    const messageRequestSubmitted = mapPdmEventToMessageRequestSubmitted(
-      incoming,
-      sender,
-      notifyId,
-    );
+    const messageRequestSubmitted =
+      messageRequestSubmittedMapper.mapPdmEventToMessageRequestSubmitted(
+        incoming,
+        sender,
+        notifyId,
+      );
     eventToPublish.submitted = messageRequestSubmitted;
   }
 
@@ -81,6 +87,9 @@ async function processSqsRecord(
   logger: Logger,
   senderManagement: ISenderManagement,
   notifyMessageProcessor: NotifyMessageProcessor,
+  coreRequestMapper: CoreRequestMapper,
+  messageRequestSubmittedMapper: MessageRequestSubmittedMapper,
+  messageRequestRejectedMapper: MessageRequestRejectedMapper,
 ): Promise<ProcessRecordResult> {
   const result: ProcessRecordResult = {};
 
@@ -103,6 +112,8 @@ async function processSqsRecord(
       notifyMessageProcessor,
       incoming,
       sender,
+      coreRequestMapper,
+      messageRequestSubmittedMapper,
     );
 
     if (eventToPublish.submitted) {
@@ -121,12 +132,13 @@ async function processSqsRecord(
 
     if (error instanceof RequestNotifyError && incoming && sender) {
       // CCM-12858 A/C 5: When any other response other than a 201 is returned, don't retry the message
-      result.rejected = mapPdmEventToMessageRequestRejected(
-        incoming,
-        sender,
-        error.errorCode,
-        error.failureReason,
-      );
+      result.rejected =
+        messageRequestRejectedMapper.mapPdmEventToMessageRequestRejected(
+          incoming,
+          sender,
+          error.errorCode,
+          error.failureReason,
+        );
     } else {
       // this might be a transient error so we notify the queue to retry
       result.batchItemFailure = { itemIdentifier: sqsRecord.messageId };
@@ -137,8 +149,11 @@ async function processSqsRecord(
 }
 
 export const createHandler = ({
+  coreRequestMapper,
   eventPublisher,
   logger,
+  messageRequestRejectedMapper,
+  messageRequestSubmittedMapper,
   notifyMessageProcessor,
   senderManagement,
 }: SqsHandlerDependencies) =>
@@ -161,6 +176,9 @@ export const createHandler = ({
           logger,
           senderManagement,
           notifyMessageProcessor,
+          coreRequestMapper,
+          messageRequestSubmittedMapper,
+          messageRequestRejectedMapper,
         ),
       ),
     );

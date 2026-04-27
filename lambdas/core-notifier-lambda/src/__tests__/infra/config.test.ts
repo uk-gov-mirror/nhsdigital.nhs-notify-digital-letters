@@ -22,6 +22,7 @@ describe('loadConfig', () => {
         'https://sqs.eu-west-2.amazonaws.com/123456789012/test-dlq',
       apimAccessTokenSsmParameterName: '/test/apim/access-token',
       apimBaseUrl: 'https://api.test.nhs.uk',
+      nhsAppBaseUrl: 'https://example.com',
       environment: 'test',
     };
 
@@ -30,12 +31,13 @@ describe('loadConfig', () => {
       .mockReturnValueOnce(mockConfig.eventPublisherDlqUrl)
       .mockReturnValueOnce(mockConfig.apimAccessTokenSsmParameterName)
       .mockReturnValueOnce(mockConfig.apimBaseUrl)
+      .mockReturnValueOnce(mockConfig.nhsAppBaseUrl)
       .mockReturnValueOnce(mockConfig.environment);
 
     const result = loadConfig();
 
     expect(result).toEqual(mockConfig);
-    expect(mockGetValue).toHaveBeenCalledTimes(5);
+    expect(mockGetValue).toHaveBeenCalledTimes(6);
     expect(mockGetValue).toHaveBeenNthCalledWith(
       1,
       'EVENT_PUBLISHER_EVENT_BUS_ARN',
@@ -46,7 +48,8 @@ describe('loadConfig', () => {
       'APIM_ACCESS_TOKEN_SSM_PARAMETER_NAME',
     );
     expect(mockGetValue).toHaveBeenNthCalledWith(4, 'APIM_BASE_URL');
-    expect(mockGetValue).toHaveBeenNthCalledWith(5, 'ENVIRONMENT');
+    expect(mockGetValue).toHaveBeenNthCalledWith(5, 'NHS_APP_BASE_URL');
+    expect(mockGetValue).toHaveBeenNthCalledWith(6, 'ENVIRONMENT');
   });
 
   it('returns config with correct types', () => {
@@ -55,6 +58,7 @@ describe('loadConfig', () => {
       .mockReturnValueOnce('https://dlq')
       .mockReturnValueOnce('/param')
       .mockReturnValueOnce('https://api')
+      .mockReturnValueOnce('https://example.com')
       .mockReturnValueOnce('prod');
 
     const result: NotifySendMessageConfig = loadConfig();
@@ -63,6 +67,7 @@ describe('loadConfig', () => {
     expect(typeof result.eventPublisherDlqUrl).toBe('string');
     expect(typeof result.apimAccessTokenSsmParameterName).toBe('string');
     expect(typeof result.apimBaseUrl).toBe('string');
+    expect(typeof result.nhsAppBaseUrl).toBe('string');
     expect(typeof result.environment).toBe('string');
   });
 });

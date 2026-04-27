@@ -1,12 +1,7 @@
-certifi>=2023.07.22
 mesh-client>=3.2.3
 structlog>=21.5.0
-orjson>=3.9.15
 pydantic>=2.0.0
 boto3>=1.28.62
-urllib3>=1.26.19,<2.0.0
-idna>=3.7
-requests>=2.32.0
 pyopenssl>=24.2.1
 nhs-notify-digital-letters-onboarding @ git+https://github.com/NHSDigital/nhs-notify-digital-letters-onboarding@0.1.0
 -e ../../src/digital-letters-events

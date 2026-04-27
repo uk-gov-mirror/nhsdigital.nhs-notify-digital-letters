@@ -1,5 +1,4 @@
 boto3>=1.40.70
-pydantic>=2.0.0
 structlog>=21.5.0
 mesh-client>=3.2.3
 pyopenssl>=24.0.0

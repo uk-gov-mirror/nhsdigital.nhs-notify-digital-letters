@@ -5,6 +5,7 @@ import {
   EVENT_BUS_LOG_GROUP_NAME,
 } from 'constants/backend-constants';
 import {
+  NHS_APP_BASE_URL,
   SENDER_ID_SKIPS_NOTIFY,
   SENDER_ID_THAT_TRIGGERS_ERROR_IN_NOTIFY_SANDBOX,
   SENDER_ID_VALID_FOR_NOTIFY_SANDBOX,
@@ -90,7 +91,7 @@ test.describe('Digital Letters - Core Notify', () => {
           '$.message_type = "EVENT_RECEIPT"',
           '$.details.detail_type = "uk.nhs.notify.digital.letters.messages.request.submitted.v1"',
           `$.details.event_detail = "*\\"notifyId\\":\\"*\\"*"`,
-          `$.details.event_detail = "*\\"messageUri\\":\\"https://www.nhsapp.service.nhs.uk/digital-letters?letterid=${resourceId}\\"*"`,
+          `$.details.event_detail = "*\\"messageUri\\":\\"${NHS_APP_BASE_URL}/patient/digital-letters/letter?id=${resourceId}\\"*"`,
           `$.details.event_detail = "*\\"messageReference\\":\\"${messageReference}\\"*"`,
           `$.details.event_detail = "*\\"senderId\\":\\"${SENDER_ID_VALID_FOR_NOTIFY_SANDBOX}\\"*"`,
         ],
@@ -143,7 +144,7 @@ test.describe('Digital Letters - Core Notify', () => {
           '$.message_type = "EVENT_RECEIPT"',
           '$.details.detail_type = "uk.nhs.notify.digital.letters.messages.request.rejected.v1"',
           `$.details.event_detail = "*\\"failureCode\\":\\"CM_INVALID_VALUE\\"*"`,
-          `$.details.event_detail = "*\\"messageUri\\":\\"https://www.nhsapp.service.nhs.uk/digital-letters?letterid=${resourceId}\\"*"`,
+          `$.details.event_detail = "*\\"messageUri\\":\\"${NHS_APP_BASE_URL}/patient/digital-letters/letter?id=${resourceId}\\"*"`,
           `$.details.event_detail = "*\\"messageReference\\":\\"${messageReference}\\"*"`,
           `$.details.event_detail = "*\\"senderId\\":\\"${SENDER_ID_THAT_TRIGGERS_ERROR_IN_NOTIFY_SANDBOX}\\"*"`,
         ],

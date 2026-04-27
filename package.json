@@ -60,6 +60,7 @@
   },
   "version": "0.0.1",
   "workspaces": [
+    "docs",
     "lambdas/file-scanner-lambda",
     "lambdas/key-generation",
     "lambdas/refresh-apim-access-token",
@@ -80,6 +81,7 @@
     "lambdas/nhsapp-status-handler",
     "utils/utils",
     "utils/sender-management",
+    "scripts",
     "src/cloudevents",
     "src/digital-letters-events",
     "src/python-schema-generator",
