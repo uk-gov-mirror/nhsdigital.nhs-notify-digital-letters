@@ -180,6 +180,7 @@ jobs:
             --terraformAction "apply" \
             --overrideProjectName "nhs" \
             --overrideRoleName "nhs-main-acct-digital-letters-github-deploy" \
+            --internalRef "feature/enable-component-test-sharding" \
             --overrides "branch_name=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
   acceptance-stage: # Recommended maximum execution time is 10 minutes
     name: "Acceptance stage"

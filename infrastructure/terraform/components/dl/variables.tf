@@ -324,15 +324,10 @@ variable "firehose_destination_buffer_interval" {
   type        = number
   description = "The Firehose destination buffer interval in seconds. Lower values reduce latency for tests but increase costs. Minimum is 60, default (Terraform) is 300."
   default     = 300
-
-  validation {
-    condition     = var.firehose_destination_buffer_interval >= 60 && var.firehose_destination_buffer_interval <= 900
-    error_message = "Buffer interval must be between 60 and 900 seconds."
-  }
 }
 
 variable "firehose_processor_buffer_interval" {
   type        = number
-  description = "The Firehose Lambda processor buffer interval in seconds. Should be greater than firehose_destination_buffer_interval. Minimum is 0, default is 301."
+  description = "The Firehose Lambda processor buffer interval in seconds. Should be greater than firehose_destination_buffer_interval. Minimum is 61, default is 301."
   default     = 301
 }
