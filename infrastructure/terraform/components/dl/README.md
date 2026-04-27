@@ -45,7 +45,7 @@ No requirements.
 | <a name="input_metadata_refresh_schedule"></a> [metadata\_refresh\_schedule](#input\_metadata\_refresh\_schedule) | Schedule for refreshing reporting metadata. | `string` | `"cron(10 6-22 * * ? *)"` | no |
 | <a name="input_parent_acct_environment"></a> [parent\_acct\_environment](#input\_parent\_acct\_environment) | Name of the environment responsible for the acct resources used, affects things like DNS zone. Useful for named dev environments | `string` | `"main"` | no |
 | <a name="input_pii_data_retention_non_current_days"></a> [pii\_data\_retention\_non\_current\_days](#input\_pii\_data\_retention\_non\_current\_days) | The number of non current days for data retention policy for PII | `number` | `14` | no |
-| <a name="input_pii_data_retention_policy_days"></a> [pii\_data\_retention\_policy\_days](#input\_pii\_data\_retention\_policy\_days) | The number of days for data retention policy for PII | `number` | `534` | no |
+| <a name="input_pii_data_retention_policy_days"></a> [pii\_data\_retention\_policy\_days](#input\_pii\_data\_retention\_policy\_days) | The number of days for data retention policy for PII | `number` | `90` | no |
 | <a name="input_project"></a> [project](#input\_project) | The name of the tfscaffold project | `string` | n/a | yes |
 | <a name="input_queue_batch_size"></a> [queue\_batch\_size](#input\_queue\_batch\_size) | maximum number of queue items to process | `number` | `10` | no |
 | <a name="input_queue_batch_window_seconds"></a> [queue\_batch\_window\_seconds](#input\_queue\_batch\_window\_seconds) | maximum time in seconds between processing events | `number` | `1` | no |
