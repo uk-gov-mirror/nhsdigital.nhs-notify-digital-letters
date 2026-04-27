@@ -9,4 +9,4 @@ npx playwright install --with-deps > /dev/null
 
 cd tests/playwright
 
-npm run test:component
+npm run test:component -- --shard="$PLAYWRIGHT_SHARD"
