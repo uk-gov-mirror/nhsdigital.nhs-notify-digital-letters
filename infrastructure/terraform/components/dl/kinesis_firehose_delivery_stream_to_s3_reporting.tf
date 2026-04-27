@@ -11,7 +11,7 @@ resource "aws_kinesis_firehose_delivery_stream" "to_s3_reporting" {
     error_output_prefix = "${local.firehose_output_path_prefix}/errors/!{timestamp:yyyy}-!{timestamp:MM}-!{timestamp:dd}-!{timestamp:HH}/!{firehose:error-output-type}/"
 
     buffering_size     = 128
-    buffering_interval = 300
+    buffering_interval = var.firehose_destination_buffer_interval
 
     dynamic_partitioning_configuration {
       enabled = true
@@ -37,7 +37,7 @@ resource "aws_kinesis_firehose_delivery_stream" "to_s3_reporting" {
         }
         parameters {
           parameter_name  = "BufferIntervalInSeconds"
-          parameter_value = 301
+          parameter_value = var.firehose_processor_buffer_interval
         }
       }
     }

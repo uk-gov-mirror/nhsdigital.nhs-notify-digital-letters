@@ -189,6 +189,7 @@ jobs:
     with:
       target_environment: "pr${{ needs.metadata.outputs.pr_number }}"
       target_account_group: nhs-notify-digital-letters-dev
+      internal_ref: "feature/enable-component-test-sharding"
     secrets:
       APP_PEM_FILE: ${{ secrets.APP_PEM_FILE }}
       APP_CLIENT_ID: ${{ secrets.APP_CLIENT_ID }}
