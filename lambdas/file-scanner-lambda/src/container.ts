@@ -3,6 +3,7 @@ import { FileScanner } from 'app/file-scanner';
 import { loadConfig } from 'infra/config';
 import {
   EventPublisher,
+  MetricHandler,
   eventBridgeClient,
   logger,
   s3Client,
@@ -11,7 +12,9 @@ import {
 
 export const createContainer = (): HandlerDependencies => {
   const {
+    dlMetricsNamespace,
     documentReferenceBucket,
+    environment,
     eventPublisherDlqUrl,
     eventPublisherEventBusArn,
     unscannedFilesBucket,
@@ -24,6 +27,9 @@ export const createContainer = (): HandlerDependencies => {
     logger,
     sqsClient,
     eventBridgeClient,
+    metricHandler: new MetricHandler(dlMetricsNamespace, [
+      { Name: 'Environment', Value: environment },
+    ]),
   });
 
   const fileScanner = new FileScanner({

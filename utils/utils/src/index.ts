@@ -16,3 +16,4 @@ export * from './key-generation-utils';
 export * from './schema-utils';
 export * from './pdm-client';
 export * from './reporting';
+export * from './cloudwatch';

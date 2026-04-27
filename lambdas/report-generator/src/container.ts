@@ -2,6 +2,7 @@ import {
   AthenaDataRepository,
   AthenaDataRepositoryDependencies,
   EventPublisher,
+  MetricHandler,
   ReportService,
   S3StorageRepository,
   eventBridgeClient,
@@ -17,6 +18,8 @@ import { AthenaClient } from '@aws-sdk/client-athena';
 export const createContainer = () => {
   const {
     athenaNamedQueryId,
+    dlMetricsNamespace,
+    environment,
     eventPublisherDlqUrl,
     eventPublisherEventBusArn,
     maxPollLimit,
@@ -56,12 +59,17 @@ export const createContainer = () => {
     athenaNamedQueryId,
   );
 
+  const metricHandler = new MetricHandler(dlMetricsNamespace, [
+    { Name: 'Environment', Value: environment },
+  ]);
+
   const eventPublisher = new EventPublisher({
     eventBusArn: eventPublisherEventBusArn,
     dlqUrl: eventPublisherDlqUrl,
     logger,
     sqsClient,
     eventBridgeClient,
+    metricHandler,
   });
 
   return {

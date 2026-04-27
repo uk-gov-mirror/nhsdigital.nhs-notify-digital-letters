@@ -12,6 +12,7 @@ jest.mock('utils', () => ({
     debug: jest.fn(),
   },
   EventPublisher: jest.fn(),
+  MetricHandler: jest.fn(),
   eventBridgeClient: {},
   sqsClient: {},
 }));
@@ -25,6 +26,7 @@ describe('createContainer', () => {
       'arn:aws:events:eu-west-2:123456789012:event-bus/test-bus',
     eventPublisherDlqUrl:
       'https://sqs.eu-west-2.amazonaws.com/123456789012/test-dlq',
+    dlMetricsNamespace: 'test-namespace',
     environment: 'test',
     keyPrefixUnscannedFiles: 'dl/',
     unscannedFileS3BucketName: 'unscanned-bucket',
@@ -79,6 +81,7 @@ describe('createContainer', () => {
         logger,
         sqsClient: expect.any(Object),
         eventBridgeClient: expect.any(Object),
+        metricHandler: expect.any(Object),
       }),
     );
   });

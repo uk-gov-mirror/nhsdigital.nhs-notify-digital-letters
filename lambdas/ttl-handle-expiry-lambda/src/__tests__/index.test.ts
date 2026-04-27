@@ -5,6 +5,7 @@ jest.mock('utils', () => ({
   EventPublisher: jest.fn().mockImplementation(() => ({
     sendEvents: jest.fn().mockResolvedValue({}),
   })),
+  MetricHandler: jest.fn().mockImplementation(() => ({})),
   eventBridgeClient: {},
   logger: {
     info: jest.fn(),

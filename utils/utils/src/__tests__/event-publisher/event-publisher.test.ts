@@ -78,7 +78,11 @@ describe('Event Publishing', () => {
     expect(result).toEqual([]);
     expect(eventBridgeMock.calls()).toHaveLength(1);
     expect(sqsMock.calls()).toHaveLength(0);
-    expect(metricHandlerMock.addMetrics).toHaveBeenCalledWith(['uk.nhs.notify.digital.letters.sent.v1_batchSuccess', 'Count', 2]);
+    expect(metricHandlerMock.addMetrics).toHaveBeenCalledWith([
+      'uk.nhs.notify.digital.letters.sent.v1_batchSuccess',
+      'Count',
+      2,
+    ]);
 
     const eventBridgeCall = eventBridgeMock.calls()[0];
     expect(eventBridgeCall.args[0].input).toEqual({
@@ -160,8 +164,16 @@ describe('Event Publishing', () => {
     const sqsInput = sqsCall.args[0].input as any;
     expect(sqsInput.Entries).toHaveLength(1);
     expect(sqsInput.Entries[0].MessageBody).toBe(JSON.stringify(event));
-    expect(metricHandlerMock.addMetrics).toHaveBeenNthCalledWith(1,['uk.nhs.notify.digital.letters.sent.v1_batchSuccess', 'Count', 1]);
-    expect(metricHandlerMock.addMetrics).toHaveBeenNthCalledWith(2,['uk.nhs.notify.digital.letters.sent.v1_batchFailure', 'Count', 1]);
+    expect(metricHandlerMock.addMetrics).toHaveBeenNthCalledWith(1, [
+      'uk.nhs.notify.digital.letters.sent.v1_batchSuccess',
+      'Count',
+      1,
+    ]);
+    expect(metricHandlerMock.addMetrics).toHaveBeenNthCalledWith(2, [
+      'uk.nhs.notify.digital.letters.sent.v1_batchFailure',
+      'Count',
+      1,
+    ]);
   });
 
   test('should handle EventBridge send error and send all events to DLQ', async () => {

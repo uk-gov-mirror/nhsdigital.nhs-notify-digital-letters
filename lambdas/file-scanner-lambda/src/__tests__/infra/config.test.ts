@@ -14,6 +14,7 @@ describe('loadConfig', () => {
 
   it('should load valid configuration', () => {
     process.env.DOCUMENT_REFERENCE_BUCKET = 'test-doc-ref-bucket';
+    process.env.ENVIRONMENT = 'test';
     process.env.UNSCANNED_FILES_BUCKET = 'test-unscanned-bucket';
     process.env.UNSCANNED_FILES_PATH_PREFIX = 'dev';
     process.env.EVENT_PUBLISHER_EVENT_BUS_ARN =
@@ -26,6 +27,7 @@ describe('loadConfig', () => {
 
     expect(config).toEqual({
       documentReferenceBucket: 'test-doc-ref-bucket',
+      environment: 'test',
       unscannedFilesBucket: 'test-unscanned-bucket',
       unscannedFilesPathPrefix: 'dev',
       eventPublisherEventBusArn:
@@ -37,6 +39,7 @@ describe('loadConfig', () => {
   });
 
   it('should throw error when DOCUMENT_REFERENCE_BUCKET is missing', () => {
+    process.env.ENVIRONMENT = 'test';
     process.env.UNSCANNED_FILES_BUCKET = 'test-unscanned-bucket';
     process.env.UNSCANNED_FILES_PATH_PREFIX = 'dev';
     process.env.EVENT_PUBLISHER_EVENT_BUS_ARN = 'arn:aws:events:test';
@@ -47,6 +50,7 @@ describe('loadConfig', () => {
 
   it('should throw error when UNSCANNED_FILES_BUCKET is missing', () => {
     process.env.DOCUMENT_REFERENCE_BUCKET = 'test-doc-ref-bucket';
+    process.env.ENVIRONMENT = 'test';
     process.env.UNSCANNED_FILES_PATH_PREFIX = 'dev';
     process.env.EVENT_PUBLISHER_EVENT_BUS_ARN = 'arn:aws:events:test';
     process.env.EVENT_PUBLISHER_DLQ_URL = 'https://sqs.test.com/dlq';
@@ -57,6 +61,7 @@ describe('loadConfig', () => {
 
   it('should throw error when UNSCANNED_FILES_PATH_PREFIX is missing', () => {
     process.env.DOCUMENT_REFERENCE_BUCKET = 'test-doc-ref-bucket';
+    process.env.ENVIRONMENT = 'test';
     process.env.UNSCANNED_FILES_BUCKET = 'test-unscanned-bucket';
     process.env.EVENT_PUBLISHER_EVENT_BUS_ARN = 'arn:aws:events:test';
     process.env.EVENT_PUBLISHER_DLQ_URL = 'https://sqs.test.com/dlq';
@@ -69,6 +74,7 @@ describe('loadConfig', () => {
 
   it('should throw error when EVENT_PUBLISHER_EVENT_BUS_ARN is missing', () => {
     process.env.DOCUMENT_REFERENCE_BUCKET = 'test-doc-ref-bucket';
+    process.env.ENVIRONMENT = 'test';
     process.env.UNSCANNED_FILES_BUCKET = 'test-unscanned-bucket';
     process.env.UNSCANNED_FILES_PATH_PREFIX = 'dev';
     process.env.EVENT_PUBLISHER_DLQ_URL = 'https://sqs.test.com/dlq';
@@ -81,6 +87,7 @@ describe('loadConfig', () => {
 
   it('should throw error when EVENT_PUBLISHER_DLQ_URL is missing', () => {
     process.env.DOCUMENT_REFERENCE_BUCKET = 'test-doc-ref-bucket';
+    process.env.ENVIRONMENT = 'test';
     process.env.UNSCANNED_FILES_BUCKET = 'test-unscanned-bucket';
     process.env.UNSCANNED_FILES_PATH_PREFIX = 'dev';
     process.env.EVENT_PUBLISHER_EVENT_BUS_ARN = 'arn:aws:events:test';
@@ -91,6 +98,7 @@ describe('loadConfig', () => {
 
   it('should handle empty string values as missing', () => {
     process.env.DOCUMENT_REFERENCE_BUCKET = '';
+    process.env.ENVIRONMENT = 'test';
     process.env.UNSCANNED_FILES_BUCKET = 'test-unscanned-bucket';
     process.env.UNSCANNED_FILES_PATH_PREFIX = 'dev';
     process.env.EVENT_PUBLISHER_EVENT_BUS_ARN = 'arn:aws:events:test';
@@ -102,11 +110,23 @@ describe('loadConfig', () => {
 
   it('should throw error when DL_METRICS_NAMESPACE is missing', () => {
     process.env.DOCUMENT_REFERENCE_BUCKET = 'test-doc-ref-bucket';
+    process.env.ENVIRONMENT = 'test';
     process.env.UNSCANNED_FILES_BUCKET = 'test-unscanned-bucket';
     process.env.UNSCANNED_FILES_PATH_PREFIX = 'dev';
     process.env.EVENT_PUBLISHER_EVENT_BUS_ARN = 'arn:aws:events:test';
     process.env.EVENT_PUBLISHER_DLQ_URL = 'https://sqs.test.com/dlq';
 
     expect(() => loadConfig()).toThrow('DL_METRICS_NAMESPACE is not set');
+  });
+
+  it('should throw error when ENVIRONMENT is missing', () => {
+    process.env.DOCUMENT_REFERENCE_BUCKET = 'test-doc-ref-bucket';
+    process.env.UNSCANNED_FILES_BUCKET = 'test-unscanned-bucket';
+    process.env.UNSCANNED_FILES_PATH_PREFIX = 'dev';
+    process.env.EVENT_PUBLISHER_EVENT_BUS_ARN = 'arn:aws:events:test';
+    process.env.EVENT_PUBLISHER_DLQ_URL = 'https://sqs.test.com/dlq';
+    process.env.DL_METRICS_NAMESPACE = 'test-namespace';
+
+    expect(() => loadConfig()).toThrow('ENVIRONMENT is not set');
   });
 });

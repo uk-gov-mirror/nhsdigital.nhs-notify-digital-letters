@@ -1,14 +1,25 @@
-import { EventPublisher, eventBridgeClient, logger, sqsClient } from 'utils';
+import {
+  EventPublisher,
+  MetricHandler,
+  eventBridgeClient,
+  logger,
+  sqsClient,
+} from 'utils';
 import { loadConfig } from 'infra/config';
 import { PrintSender } from 'app/print-sender';
 
 export const createContainer = () => {
   const {
     accountType,
+    dlMetricsNamespace,
     environment,
     eventPublisherDlqUrl,
     eventPublisherEventBusArn,
   } = loadConfig();
+
+  const metricHandler = new MetricHandler(dlMetricsNamespace, [
+    { Name: 'Environment', Value: environment },
+  ]);
 
   const eventPublisher = new EventPublisher({
     eventBusArn: eventPublisherEventBusArn,
@@ -16,6 +27,7 @@ export const createContainer = () => {
     logger,
     sqsClient,
     eventBridgeClient,
+    metricHandler,
   });
 
   const printSender = new PrintSender(

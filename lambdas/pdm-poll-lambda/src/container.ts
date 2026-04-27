@@ -3,6 +3,7 @@ import { Pdm } from 'app/pdm';
 import { loadConfig } from 'infra/config';
 import {
   EventPublisher,
+  MetricHandler,
   ParameterStoreCache,
   PdmClient,
   createGetApimAccessToken,
@@ -15,6 +16,8 @@ export const createContainer = (): HandlerDependencies => {
   const {
     apimAccessTokenSsmParameterName,
     apimBaseUrl,
+    dlMetricsNamespace,
+    environment,
     eventPublisherDlqUrl,
     eventPublisherEventBusArn,
     pollMaxRetries,
@@ -26,6 +29,9 @@ export const createContainer = (): HandlerDependencies => {
     logger,
     sqsClient,
     eventBridgeClient,
+    metricHandler: new MetricHandler(dlMetricsNamespace, [
+      { Name: 'Environment', Value: environment },
+    ]),
   });
 
   const parameterStore = new ParameterStoreCache();

@@ -3,8 +3,10 @@ import { createContainer } from 'container';
 jest.mock('infra/config', () => ({
   loadConfig: jest.fn(() => ({
     athenaNamedQueryId: 'test-named-query-id',
+    environment: 'test',
     eventPublisherDlqUrl: 'test-url',
     eventPublisherEventBusArn: 'test-arn',
+    dlMetricsNamespace: 'test-namespace',
     maxPollLimit: 10,
     reportName: 'test-report',
     reportingBucket: 'test-bucket',
@@ -21,6 +23,7 @@ jest.mock('utils', () => ({
   s3Client: {},
   eventBridgeClient: {},
   EventPublisher: jest.fn(() => ({})),
+  MetricHandler: jest.fn(() => ({})),
   logger: {},
   sqsClient: {},
 }));

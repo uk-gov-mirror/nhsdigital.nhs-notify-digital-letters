@@ -1,6 +1,6 @@
 import { MetricHandler } from '../../cloudwatch/metric-handler';
 
-const logMock = jest.spyOn(global.console, 'log').mockImplementation();
+const logMock = jest.spyOn(globalThis.console, 'log').mockImplementation();
 
 const dimensions = [
   {

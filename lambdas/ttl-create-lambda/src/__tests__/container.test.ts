@@ -4,6 +4,7 @@ jest.mock('infra/config', () => ({
   loadConfig: jest.fn(() => ({
     eventPublisherDlqUrl: 'test-url',
     eventPublisherEventBusArn: 'test-arn',
+    dlMetricsNamespace: 'test-namespace',
     ttlShardCount: 1,
     ttlTableName: 'test-table',
     environment: 'test-environment',
@@ -24,6 +25,7 @@ jest.mock('sender-management', () => ({
 
 jest.mock('utils', () => ({
   EventPublisher: jest.fn(() => ({})),
+  MetricHandler: jest.fn(() => ({})),
   dynamoClient: {},
   eventBridgeClient: {},
   logger: {},

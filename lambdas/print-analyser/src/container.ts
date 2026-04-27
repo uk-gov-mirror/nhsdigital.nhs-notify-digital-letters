@@ -1,9 +1,20 @@
 import { HandlerDependencies } from 'apis/sqs-handler';
 import { loadConfig } from 'infra/config';
-import { EventPublisher, eventBridgeClient, logger, sqsClient } from 'utils';
+import {
+  EventPublisher,
+  MetricHandler,
+  eventBridgeClient,
+  logger,
+  sqsClient,
+} from 'utils';
 
 export const createContainer = (): HandlerDependencies => {
-  const { eventPublisherDlqUrl, eventPublisherEventBusArn } = loadConfig();
+  const {
+    dlMetricsNamespace,
+    environment,
+    eventPublisherDlqUrl,
+    eventPublisherEventBusArn,
+  } = loadConfig();
 
   const eventPublisher = new EventPublisher({
     eventBusArn: eventPublisherEventBusArn,
@@ -11,6 +22,9 @@ export const createContainer = (): HandlerDependencies => {
     logger,
     sqsClient,
     eventBridgeClient,
+    metricHandler: new MetricHandler(dlMetricsNamespace, [
+      { Name: 'Environment', Value: environment },
+    ]),
   });
 
   return { eventPublisher, logger };

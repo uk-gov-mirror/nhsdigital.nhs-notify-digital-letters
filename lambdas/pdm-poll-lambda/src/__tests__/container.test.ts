@@ -4,8 +4,10 @@ jest.mock('infra/config', () => ({
   loadConfig: jest.fn(() => ({
     apimBaseUrl: 'https://test-apim-url',
     apimAccessTokenSsmParameterName: 'test-ssm-parameter-name',
+    environment: 'test',
     eventPublisherDlqUrl: 'test-url',
     eventPublisherEventBusArn: 'test-arn',
+    dlMetricsNamespace: 'test-namespace',
     maxPollCount: 10,
   })),
 }));
@@ -14,6 +16,7 @@ jest.mock('utils', () => ({
   createGetApimAccessToken: jest.fn(() => ({})),
   eventBridgeClient: {},
   EventPublisher: jest.fn(() => ({})),
+  MetricHandler: jest.fn(() => ({})),
   logger: {},
   ParameterStoreCache: jest.fn(() => ({})),
   PdmClient: jest.fn(() => ({})),

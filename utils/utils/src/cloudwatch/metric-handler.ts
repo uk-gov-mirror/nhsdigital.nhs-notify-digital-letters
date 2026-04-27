@@ -39,7 +39,7 @@ export class MetricHandler {
 
   constructor(
     private readonly namespace: string,
-    private readonly dimensions: Dimension[]
+    private readonly dimensions: Dimension[],
   ) {}
 
   public addMetrics(
@@ -48,12 +48,12 @@ export class MetricHandler {
       timestamp?: Date;
       extraDimensions?: Dimension[];
       storageResolution?: number;
-    } = {}
+    } = {},
   ) {
     const {
-      timestamp = new Date(),
       extraDimensions = [],
       storageResolution = 60,
+      timestamp = new Date(),
     } = options;
 
     const metrics = (
@@ -91,7 +91,7 @@ export class MetricHandler {
   }
 
   public getChildMetricHandler(
-    childMetricHandlerDimensions: Dimension[]
+    childMetricHandlerDimensions: Dimension[],
   ): MetricHandler {
     return new MetricHandler(this.namespace, [
       ...this.dimensions,

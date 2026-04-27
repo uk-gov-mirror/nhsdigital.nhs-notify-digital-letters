@@ -19,6 +19,7 @@ jest.mock('utils', () => ({
     debug: jest.fn(),
   },
   EventPublisher: jest.fn(),
+  MetricHandler: jest.fn(),
   eventBridgeClient: {},
   sqsClient: {},
 }));
@@ -42,6 +43,7 @@ describe('createContainer', () => {
     apimBaseUrl: 'https://api.test.nhs.uk',
     environment: 'test',
     nhsAppBaseUrl: 'https://example.com',
+    dlMetricsNamespace: 'test-namespace',
   };
 
   const mockSenderManagement = mock<ISenderManagement>();

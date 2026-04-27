@@ -6,6 +6,7 @@ export type TtlCreateConfig = {
   ttlShardCount: number;
   eventPublisherEventBusArn: string;
   eventPublisherDlqUrl: string;
+  dlMetricsNamespace: string;
 };
 
 export function loadConfig(): TtlCreateConfig {
@@ -19,5 +20,6 @@ export function loadConfig(): TtlCreateConfig {
     eventPublisherDlqUrl: defaultConfigReader.getValue(
       'EVENT_PUBLISHER_DLQ_URL',
     ),
+    dlMetricsNamespace: defaultConfigReader.getValue('DL_METRICS_NAMESPACE'),
   };
 }

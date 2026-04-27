@@ -2,6 +2,7 @@ import { logger } from 'utils';
 
 export interface Config {
   documentReferenceBucket: string;
+  environment: string;
   unscannedFilesBucket: string;
   unscannedFilesPathPrefix: string;
   eventPublisherEventBusArn: string;
@@ -11,6 +12,7 @@ export interface Config {
 
 export function loadConfig(): Config {
   const documentReferenceBucket = process.env.DOCUMENT_REFERENCE_BUCKET;
+  const environment = process.env.ENVIRONMENT;
   const unscannedFilesBucket = process.env.UNSCANNED_FILES_BUCKET;
   const unscannedFilesPathPrefix = process.env.UNSCANNED_FILES_PATH_PREFIX;
   const eventPublisherEventBusArn = process.env.EVENT_PUBLISHER_EVENT_BUS_ARN;
@@ -19,6 +21,10 @@ export function loadConfig(): Config {
 
   if (!documentReferenceBucket) {
     throw new Error('DOCUMENT_REFERENCE_BUCKET is not set');
+  }
+
+  if (!environment) {
+    throw new Error('ENVIRONMENT is not set');
   }
 
   if (!unscannedFilesBucket) {
@@ -50,6 +56,7 @@ export function loadConfig(): Config {
 
   return {
     documentReferenceBucket,
+    environment,
     unscannedFilesBucket,
     unscannedFilesPathPrefix,
     eventPublisherEventBusArn,

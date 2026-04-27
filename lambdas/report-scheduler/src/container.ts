@@ -3,6 +3,7 @@ import { CreateHandlerDependencies } from 'apis/scheduled-event-handler';
 import { SenderManagement } from 'sender-management';
 import {
   EventPublisher,
+  MetricHandler,
   ParameterStoreCache,
   eventBridgeClient,
   logger,
@@ -10,7 +11,12 @@ import {
 } from 'utils';
 
 export const createContainer = (): CreateHandlerDependencies => {
-  const { eventPublisherDlqUrl, eventPublisherEventBusArn } = loadConfig();
+  const {
+    dlMetricsNamespace,
+    environment,
+    eventPublisherDlqUrl,
+    eventPublisherEventBusArn,
+  } = loadConfig();
 
   const parameterStore = new ParameterStoreCache();
   const senderManagement = SenderManagement({
@@ -23,6 +29,9 @@ export const createContainer = (): CreateHandlerDependencies => {
     logger,
     sqsClient,
     eventBridgeClient,
+    metricHandler: new MetricHandler(dlMetricsNamespace, [
+      { Name: 'Environment', Value: environment },
+    ]),
   });
 
   return { senderManagement, eventPublisher };

@@ -65,6 +65,7 @@ describe('MoveFileHandler', () => {
     unscannedFileS3BucketName: 'unscanned-bucket',
     safeFileS3BucketName: 'safe-bucket',
     quarantineFileS3BucketName: 'quarantine-bucket',
+    dlMetricsNamespace: 'test-namespace',
   };
 
   const mockCopyAndDeleteObjectS3 = jest.mocked(utils.copyAndDeleteObjectS3);

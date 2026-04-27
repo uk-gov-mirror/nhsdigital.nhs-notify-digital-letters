@@ -4,6 +4,7 @@ import { createContainer } from 'container';
 
 jest.mock('utils', () => ({
   EventPublisher: jest.fn(),
+  MetricHandler: jest.fn(),
   eventBridgeClient: {},
   logger: {},
   sqsClient: {},
@@ -27,6 +28,8 @@ describe('createContainer', () => {
         'arn:aws:events:us-east-1:123456789012:event-bus/test-bus',
       eventPublisherDlqUrl:
         'https://sqs.us-east-1.amazonaws.com/123456789012/test-event-dlq',
+      environment: 'test',
+      dlMetricsNamespace: 'test-namespace',
       dlqUrl: 'https://sqs.us-east-1.amazonaws.com/123456789012/test-dlq',
     };
 
@@ -47,6 +50,7 @@ describe('createContainer', () => {
       logger: expect.any(Object),
       sqsClient: expect.any(Object),
       eventBridgeClient: expect.any(Object),
+      metricHandler: expect.any(Object),
     });
 
     expect(container).toEqual({

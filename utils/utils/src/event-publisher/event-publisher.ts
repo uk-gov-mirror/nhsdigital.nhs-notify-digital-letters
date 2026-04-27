@@ -60,7 +60,6 @@ export class EventPublisher {
     this.eventBridge = config.eventBridgeClient;
     this.sqs = config.sqsClient;
     this.metricHandler = config.metricHandler;
-
   }
 
   private async sendToEventBridge<T extends PublishableEvent>(
@@ -96,18 +95,11 @@ export class EventPublisher {
         this.logger.info({
           description: 'EventBridge batch sent',
           batchSize: batch.length,
-          failedEntryCount: failedEntryCount,
-          successfulCount: successfulCount,
+          failedEntryCount,
+          successfulCount,
         });
 
-        if (successfulCount > 0) {
-          this.metricHandler.addMetrics([`${entries[0].DetailType}_batchSuccess`, 'Count', successfulCount]);
-        }
-
-        if (failedEntryCount > 0) {
-          this.metricHandler.addMetrics([`${entries[0].DetailType}_batchFailure`, 'Count', failedEntryCount]);
-        }
-
+        this.recordMetrics(successfulCount, entries, failedEntryCount);
 
         if (failedEntryCount && response.Entries) {
           for (const [idx, entry] of response.Entries.entries()) {
@@ -133,6 +125,33 @@ export class EventPublisher {
     }
 
     return failedEvents;
+  }
+
+  private recordMetrics(
+    successfulCount: number,
+    entries: {
+      Source: string;
+      DetailType: string;
+      Detail: string;
+      EventBusName: string;
+    }[],
+    failedEntryCount: number,
+  ) {
+    if (successfulCount > 0) {
+      this.metricHandler.addMetrics([
+        `${entries[0].DetailType}_batchSuccess`,
+        'Count',
+        successfulCount,
+      ]);
+    }
+
+    if (failedEntryCount > 0) {
+      this.metricHandler.addMetrics([
+        `${entries[0].DetailType}_batchFailure`,
+        'Count',
+        failedEntryCount,
+      ]);
+    }
   }
 
   private async sendToDLQ<T extends PublishableEvent>(

@@ -40,6 +40,7 @@ module "ttl_poll" {
     "CONCURRENCY"          = 60
     "MAX_PROCESS_SECONDS"  = 300
     "TTL_SHARD_COUNT"      = local.ttl_shard_count
+    "ENVIRONMENT"          = var.environment
     "DL_METRICS_NAMESPACE" = local.metrics_namespace_name
   }
 }

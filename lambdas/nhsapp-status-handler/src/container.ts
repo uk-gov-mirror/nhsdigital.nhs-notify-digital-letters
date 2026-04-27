@@ -1,5 +1,6 @@
 import {
   EventPublisher,
+  MetricHandler,
   dynamoDocumentClient,
   eventBridgeClient,
   logger,
@@ -10,8 +11,13 @@ import { TtlRepository } from 'infra/ttl-repository';
 import { TtlActions } from 'app/ttl-actions';
 
 export const createContainer = () => {
-  const { eventPublisherDlqUrl, eventPublisherEventBusArn, ttlTableName } =
-    loadConfig();
+  const {
+    dlMetricsNamespace,
+    environment,
+    eventPublisherDlqUrl,
+    eventPublisherEventBusArn,
+    ttlTableName,
+  } = loadConfig();
 
   const requestTtlRepository = new TtlRepository(
     ttlTableName,
@@ -26,6 +32,9 @@ export const createContainer = () => {
     logger,
     sqsClient,
     eventBridgeClient,
+    metricHandler: new MetricHandler(dlMetricsNamespace, [
+      { Name: 'Environment', Value: environment },
+    ]),
   });
 
   return {

@@ -3,6 +3,7 @@ import { defaultConfigReader } from 'utils';
 export type MoveScannedFilesConfig = {
   eventPublisherEventBusArn: string;
   eventPublisherDlqUrl: string;
+  dlMetricsNamespace: string;
   environment: string;
   unscannedFileS3BucketName: string;
   safeFileS3BucketName: string;
@@ -18,6 +19,7 @@ export function loadConfig(): MoveScannedFilesConfig {
     eventPublisherDlqUrl: defaultConfigReader.getValue(
       'EVENT_PUBLISHER_DLQ_URL',
     ),
+    dlMetricsNamespace: defaultConfigReader.getValue('DL_METRICS_NAMESPACE'),
     // There is a limitation of how many buckets can be scanned with GuardDuty per account.
     // As DL will share the same bucket with other services, this is a safeguard to only process events for files for digital letters.
     keyPrefixUnscannedFiles: defaultConfigReader.getValue(

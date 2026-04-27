@@ -1,5 +1,6 @@
 import {
   EventPublisher,
+  MetricHandler,
   ParameterStoreCache,
   PdmClient,
   createGetApimAccessToken,
@@ -14,6 +15,8 @@ export const createContainer = () => {
   const {
     apimAccessTokenSsmParameterName,
     apimBaseUrl,
+    dlMetricsNamespace,
+    environment,
     eventPublisherDlqUrl,
     eventPublisherEventBusArn,
   } = loadConfig();
@@ -38,6 +41,9 @@ export const createContainer = () => {
     logger,
     sqsClient,
     eventBridgeClient,
+    metricHandler: new MetricHandler(dlMetricsNamespace, [
+      { Name: 'Environment', Value: environment },
+    ]),
   });
 
   return {

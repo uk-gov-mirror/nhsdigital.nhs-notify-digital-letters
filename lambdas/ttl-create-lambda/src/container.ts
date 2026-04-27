@@ -1,5 +1,6 @@
 import {
   EventPublisher,
+  MetricHandler,
   ParameterStoreCache,
   dynamoClient,
   eventBridgeClient,
@@ -13,6 +14,7 @@ import { SenderManagement } from 'sender-management';
 
 export const createContainer = () => {
   const {
+    dlMetricsNamespace,
     environment,
     eventPublisherDlqUrl,
     eventPublisherEventBusArn,
@@ -43,6 +45,9 @@ export const createContainer = () => {
     logger,
     sqsClient,
     eventBridgeClient,
+    metricHandler: new MetricHandler(dlMetricsNamespace, [
+      { Name: 'Environment', Value: environment },
+    ]),
   });
 
   return {
