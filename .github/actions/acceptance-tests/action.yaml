@@ -21,6 +21,11 @@ inputs:
     description: Name of the component under test
     default: dl
 
+  shard:
+    description: "Playwright shard in format index/total (e.g. 1/4). If empty, runs all tests."
+    required: false
+    default: ""
+
 runs:
   using: "composite"
 
@@ -58,6 +63,7 @@ runs:
       env:
         TEST_TYPE: ${{ inputs.testType }}
         ENVIRONMENT: ${{ inputs.targetEnvironment }}
+        PLAYWRIGHT_SHARD: ${{ inputs.shard }}
     - name: Archive integration test results
       if: ${{ inputs.testType == 'integration' }}
       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
