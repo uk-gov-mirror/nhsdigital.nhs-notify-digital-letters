@@ -43,7 +43,20 @@ runs:
       shell: bash
       run: |
         npm ci
+    - name: Cache generated dependencies
+      id: cache-generated
+      uses: actions/cache@v4
+      with:
+        path: |
+          schemas/digital-letters/
+          output/digital-letters/
+          src/digital-letters-events/types/
+          src/digital-letters-events/validators/
+          src/digital-letters-events/guard-functions/
+          src/digital-letters-events/digital_letters_events/models/
+        key: generated-deps-${{ hashFiles('src/cloudevents/**') }}
     - name: "Generate dependencies"
+      if: steps.cache-generated.outputs.cache-hit != 'true'
       shell: bash
       run: |
         npm run generate-dependencies
