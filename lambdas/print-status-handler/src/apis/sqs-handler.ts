@@ -6,14 +6,15 @@ import type {
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import {
-  $LetterEvent,
-  LetterEvent,
-} from '@nhsdigital/nhs-notify-event-schemas-supplier-api/src/events/letter-events';
-import {
   PrintLetterTransitioned,
   validatePrintLetterTransitioned,
 } from 'digital-letters-events';
-import { EventPublisher, Logger } from 'utils';
+import {
+  $SupplierApiLetterEvent,
+  EventPublisher,
+  Logger,
+  SupplierApiLetterEvent,
+} from 'utils';
 
 export interface HandlerDependencies {
   eventPublisher: EventPublisher;
@@ -22,7 +23,7 @@ export interface HandlerDependencies {
 
 type ValidatedRecord = {
   messageId: string;
-  event: LetterEvent;
+  event: SupplierApiLetterEvent;
 };
 
 const originSubjectSchema = z
@@ -44,7 +45,7 @@ function validateRecord(
       data: item,
       error: parseError,
       success: parseSuccess,
-    } = $LetterEvent.safeParse(sqsEventDetail);
+    } = $SupplierApiLetterEvent.safeParse(sqsEventDetail);
 
     if (!parseSuccess) {
       logger.warn({
@@ -85,7 +86,9 @@ function validateRecord(
   }
 }
 
-function generateUpdatedEvent(event: LetterEvent): PrintLetterTransitioned {
+function generateUpdatedEvent(
+  event: SupplierApiLetterEvent,
+): PrintLetterTransitioned {
   const eventTime = new Date().toISOString();
 
   const {
@@ -104,7 +107,6 @@ function generateUpdatedEvent(event: LetterEvent): PrintLetterTransitioned {
   const messageReference = subject.split('/')[3];
 
   return {
-    ...event,
     id: randomUUID(),
     time: eventTime,
     recordedtime: eventTime,
@@ -116,6 +118,11 @@ function generateUpdatedEvent(event: LetterEvent): PrintLetterTransitioned {
     source: '/nhs/england/notify/production/primary/digitalletters/print',
     plane: 'data',
     dataschemaversion: '1.0.0',
+    specversion: '1.0',
+    datacontenttype: 'application/json',
+    traceparent: '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01',
+    severitynumber: 2,
+    severitytext: 'INFO',
     data: {
       senderId,
       messageReference,

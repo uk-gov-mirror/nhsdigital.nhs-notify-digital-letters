@@ -1,5 +1,5 @@
 
-import LetterAccpectedEvent from '@nhsdigital/nhs-notify-event-schemas-supplier-api/schemas/examples/letter.ACCEPTED.json';
+import LetterAcceptedEvent from '@nhsdigital/nhs-notify-event-schemas-supplier-api/schemas/examples/letter.ACCEPTED.json';
 import LetterReturnedEvent from '@nhsdigital/nhs-notify-event-schemas-supplier-api/schemas/examples/letter.RETURNED.json';
 import LetterFailedEvent from '@nhsdigital/nhs-notify-event-schemas-supplier-api/schemas/examples/letter.FAILED.json';
 import LetterDispatchedEvent from '@nhsdigital/nhs-notify-event-schemas-supplier-api/schemas/examples/letter.DISPATCHED.json';
@@ -43,14 +43,14 @@ describe('Pact message consumer - Supplier API events', () => {
             origin: {
               subject: MatchersV3.regex(
                 /^client\/[^/]+\/letter-request\/[^/]+$/,
-                LetterAccpectedEvent.data.origin.subject,
+                LetterAcceptedEvent.data.origin.subject,
               ),
             },
-            specificationId: MatchersV3.string(LetterAccpectedEvent.data.specificationId),
-            status: LetterAccpectedEvent.data.status,
-            supplierId: MatchersV3.string(LetterAccpectedEvent.data.supplierId),
+            specificationId: MatchersV3.string(LetterAcceptedEvent.data.specificationId),
+            status: LetterAcceptedEvent.data.status,
+            supplierId: MatchersV3.string(LetterAcceptedEvent.data.supplierId),
           },
-          time: MatchersV3.timestamp("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", LetterAccpectedEvent.time),
+          time: MatchersV3.timestamp("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", LetterAcceptedEvent.time),
         })
         .verify(asynchronousBodyHandler(handle)),
     ).resolves.not.toThrow();

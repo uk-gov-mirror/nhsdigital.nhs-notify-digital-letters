@@ -37,11 +37,16 @@ describe('SQS Handler', () => {
       expect(eventPublisher.sendEvents).toHaveBeenCalledWith(
         [
           {
-            ...acceptedLetterEvent,
             id: '550e8400-e29b-41d4-a716-446655440001',
             time: '2023-06-20T12:00:00.250Z',
             recordedtime: '2023-06-20T12:00:00.250Z',
             plane: 'data',
+            specversion: '1.0',
+            datacontenttype: 'application/json',
+            traceparent:
+              '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01',
+            severitynumber: 2,
+            severitytext: 'INFO',
             dataschema:
               'https://notify.nhs.uk/cloudevents/schemas/digital-letters/2025-10-draft/data/digital-letters-print-letter-transitioned-data.schema.json',
             type: 'uk.nhs.notify.digital.letters.print.letter.transitioned.v1',
@@ -78,10 +83,16 @@ describe('SQS Handler', () => {
       expect(eventPublisher.sendEvents).toHaveBeenCalledWith(
         [
           {
-            ...failedLetterEvent,
             id: '550e8400-e29b-41d4-a716-446655440001',
             time: '2023-06-20T12:00:00.250Z',
             recordedtime: '2023-06-20T12:00:00.250Z',
+            plane: 'data',
+            specversion: '1.0',
+            datacontenttype: 'application/json',
+            traceparent:
+              '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01',
+            severitynumber: 2,
+            severitytext: 'INFO',
             dataschema:
               'https://notify.nhs.uk/cloudevents/schemas/digital-letters/2025-10-draft/data/digital-letters-print-letter-transitioned-data.schema.json',
             type: 'uk.nhs.notify.digital.letters.print.letter.transitioned.v1',
@@ -181,9 +192,12 @@ describe('SQS Handler', () => {
     it('should return failed items to the queue if an invalid letter.ACCEPTED event is received', async () => {
       const invalidAcceptedLetterEvent = {
         ...acceptedLetterEvent,
-        source: 'invalid letter.ACCEPTED source',
+        data: {
+          ...acceptedLetterEvent.data,
+          status: 'INVALID_STATUS',
+        },
       };
-      const event = recordEvent([invalidAcceptedLetterEvent]);
+      const event = recordEvent([invalidAcceptedLetterEvent as any]);
 
       const result = await handler(event);
 
@@ -191,7 +205,7 @@ describe('SQS Handler', () => {
         err: expect.objectContaining({
           issues: expect.arrayContaining([
             expect.objectContaining({
-              path: ['source'],
+              path: ['data', 'status'],
             }),
           ]),
         }),
