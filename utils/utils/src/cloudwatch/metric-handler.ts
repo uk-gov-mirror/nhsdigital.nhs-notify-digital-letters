@@ -86,8 +86,7 @@ export class MetricHandler {
       ...dimensions,
       ...Object.fromEntries(metrics.map(([name, , value]) => [name, value])),
     };
-    // eslint-disable-next-line no-console
-    console.log(JSON.stringify(metric));
+    process.stdout.write(JSON.stringify(metric));
   }
 
   public getChildMetricHandler(

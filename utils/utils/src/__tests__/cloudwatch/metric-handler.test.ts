@@ -1,6 +1,6 @@
 import { MetricHandler } from '../../cloudwatch/metric-handler';
 
-const logMock = jest.spyOn(globalThis.console, 'log').mockImplementation();
+const logMock = jest.spyOn(process.stdout, 'write').mockImplementation();
 
 const dimensions = [
   {
@@ -34,7 +34,7 @@ it('puts metric data without timestamp', () => {
 
   expect(logMock).toHaveBeenCalledTimes(1);
 
-  const lastCalledWith = logMock.mock.calls[0][0];
+  const lastCalledWith = logMock.mock.calls[0][0] as string;
 
   expect(JSON.parse(lastCalledWith)).toEqual({
     _aws: {
@@ -66,7 +66,7 @@ it('logs multiple metrics', () => {
 
   expect(logMock).toHaveBeenCalledTimes(1);
 
-  const calledWith = logMock.mock.calls[0][0];
+  const calledWith = logMock.mock.calls[0][0] as string;
 
   expect(JSON.parse(calledWith)).toEqual({
     _aws: {
@@ -103,7 +103,7 @@ it('puts metric data with timestamp', () => {
 
   expect(logMock).toHaveBeenCalledTimes(1);
 
-  const lastCalledWith = logMock.mock.calls[0][0];
+  const lastCalledWith = logMock.mock.calls[0][0] as string;
 
   expect(JSON.parse(lastCalledWith)).toEqual({
     _aws: {
@@ -142,7 +142,7 @@ it('generates child metric handler', () => {
 
   expect(logMock).toHaveBeenCalledTimes(1);
 
-  const lastCalledWith = logMock.mock.calls[0][0];
+  const lastCalledWith = logMock.mock.calls[0][0] as string;
 
   expect(JSON.parse(lastCalledWith)).toEqual({
     _aws: {
