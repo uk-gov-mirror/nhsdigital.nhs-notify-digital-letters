@@ -1,6 +1,7 @@
 {
   "devDependencies": {
     "@nhsdigital/nhs-notify-event-schemas-status-published": "^1.0.1",
+    "@nhsdigital/nhs-notify-event-schemas-supplier-api": "^1.0.17",
     "@pact-foundation/pact": "^16.3.0",
     "@types/jest": "^29.5.14",
     "jest": "^29.7.0",
