@@ -23,13 +23,6 @@ module "s3bucket_pii_data" {
         days = var.pii_data_retention_policy_days
       }
 
-      noncurrent_version_transition = [
-        {
-          noncurrent_days = "30"
-          storage_class   = "STANDARD_IA"
-        }
-      ]
-
       noncurrent_version_expiration = {
         noncurrent_days = var.pii_data_retention_non_current_days
       }
