@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { LetterEvent } from '@nhsdigital/nhs-notify-event-schemas-supplier-api/src/events/letter-events';
+import { LetterStatusChangeEvent } from '@nhsdigital/nhs-notify-event-schemas-supplier-api/src/events/letter-events';
 import {
   ENV,
   PRINT_STATUS_HANDLER_DLQ_NAME,
@@ -36,7 +36,7 @@ const baseLetterEvent = {
       source: '/data-plane/letter-rendering/prod/render-pdf',
     },
   },
-} as LetterEvent;
+} as LetterStatusChangeEvent;
 
 const letterStatuses = [
   'ACCEPTED',
@@ -76,7 +76,10 @@ test.describe('Print status handler', () => {
         },
       };
 
-      await eventPublisher.sendEvents<LetterEvent>([letterEvent], () => true);
+      await eventPublisher.sendEvents<LetterStatusChangeEvent>(
+        [letterEvent],
+        () => true,
+      );
 
       await expectToPassEventually(async () => {
         const eventLogEntry = await getLogsFromCloudwatch(
@@ -100,7 +103,7 @@ test.describe('Print status handler', () => {
     const messageReference = uuidv4();
 
     // Send letter.ACCEPTED event with no data.status
-    await eventPublisher.sendEvents<LetterEvent>(
+    await eventPublisher.sendEvents<LetterStatusChangeEvent>(
       [
         {
           ...baseLetterEvent,

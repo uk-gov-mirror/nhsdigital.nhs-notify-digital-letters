@@ -1,5 +1,5 @@
 import type { SQSEvent, SQSRecord } from 'aws-lambda';
-import { LetterEvent } from '@nhsdigital/nhs-notify-event-schemas-supplier-api/src/events/letter-events';
+import { LetterStatusChangeEvent } from '@nhsdigital/nhs-notify-event-schemas-supplier-api/src/events/letter-events';
 
 export const acceptedLetterEvent = {
   id: '550e8400-e29b-41d4-a716-446655440001',
@@ -34,7 +34,7 @@ export const acceptedLetterEvent = {
         'client/f47ac10b-58cc-4372-a567-0e02b2c3d479/letter-request/2503cbd5-6722-4e90-9fbd-5f1e96d65c22',
     },
   },
-} as LetterEvent;
+} as LetterStatusChangeEvent;
 
 export const failedLetterEvent = {
   id: '550e8400-e29b-41d4-a716-446655440002',
@@ -71,7 +71,7 @@ export const failedLetterEvent = {
         'client/f47ac10b-58cc-4372-a567-0e02b2c3d480/letter-request/2503cbd5-6722-4e90-9fbd-5f1e96d65c22',
     },
   },
-} as LetterEvent;
+} as LetterStatusChangeEvent;
 
 const busEvent = {
   version: '0',
@@ -94,7 +94,7 @@ const sqsRecord = {
   awsRegion: '',
 } as SQSRecord;
 
-export const recordEvent = (events: LetterEvent[]): SQSEvent => ({
+export const recordEvent = (events: LetterStatusChangeEvent[]): SQSEvent => ({
   Records: events.map((event, i) => ({
     ...sqsRecord,
     messageId: String(i + 1),
