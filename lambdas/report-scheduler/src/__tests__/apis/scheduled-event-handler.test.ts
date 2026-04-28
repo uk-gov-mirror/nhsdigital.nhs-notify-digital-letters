@@ -1,4 +1,4 @@
-import { EventPublisher, Logger, Sender } from 'utils';
+import { EventPublisher, Logger, MetricHandler, Sender } from 'utils';
 import { ISenderManagement } from 'sender-management';
 import { GenerateReport, validateGenerateReport } from 'digital-letters-events';
 import { createHandler } from 'apis/scheduled-event-handler';
@@ -7,6 +7,7 @@ describe('scheduled-event-handler', () => {
   let mockSenderManagement: jest.Mocked<ISenderManagement>;
   let mockEventPublisher: jest.Mocked<EventPublisher>;
   let mockLogger: jest.Mocked<Logger>;
+  let mockMetricHandler: jest.Mocked<MetricHandler>;
 
   beforeEach(() => {
     mockSenderManagement = {
@@ -24,6 +25,10 @@ describe('scheduled-event-handler', () => {
       child: jest.fn().mockReturnThis(),
     } as unknown as jest.Mocked<Logger>;
 
+    mockMetricHandler = {
+      addMetrics: jest.fn(),
+    } as unknown as jest.Mocked<MetricHandler>;
+
     jest.useFakeTimers();
   });
 
@@ -39,11 +44,13 @@ describe('scheduled-event-handler', () => {
       const handler = createHandler({
         senderManagement: mockSenderManagement,
         eventPublisher: mockEventPublisher,
+        metricHandler: mockMetricHandler,
       });
 
       await handler();
 
       expect(mockSenderManagement.listSenders).toHaveBeenCalledTimes(1);
+      expect(mockMetricHandler.addMetrics).toHaveBeenCalledTimes(1);
     });
 
     it('should publish generate report events for each sender', async () => {
@@ -62,6 +69,7 @@ describe('scheduled-event-handler', () => {
       const handler = createHandler({
         senderManagement: mockSenderManagement,
         eventPublisher: mockEventPublisher,
+        metricHandler: mockMetricHandler,
       });
 
       await handler();
@@ -71,6 +79,7 @@ describe('scheduled-event-handler', () => {
 
       expect(events).toHaveLength(3);
       expect(validator).toBeDefined();
+      expect(mockMetricHandler.addMetrics).toHaveBeenCalledWith(['TotalSenders', 'Count', 3]);
     });
 
     it('should create events with correct structure for each sender', async () => {
@@ -87,6 +96,7 @@ describe('scheduled-event-handler', () => {
       const handler = createHandler({
         senderManagement: mockSenderManagement,
         eventPublisher: mockEventPublisher,
+        metricHandler: mockMetricHandler,
       });
 
       await handler();
@@ -115,6 +125,7 @@ describe('scheduled-event-handler', () => {
       expect(event.datacontenttype).toBe('application/json');
 
       expect(() => validateGenerateReport(event, mockLogger)).not.toThrow();
+      expect(mockMetricHandler.addMetrics).toHaveBeenCalledWith(['TotalSenders', 'Count', 1]);
     });
 
     it('should handle empty sender list', async () => {
@@ -124,12 +135,14 @@ describe('scheduled-event-handler', () => {
       const handler = createHandler({
         senderManagement: mockSenderManagement,
         eventPublisher: mockEventPublisher,
+        metricHandler: mockMetricHandler,
       });
 
       await handler();
 
       const [[events]] = mockEventPublisher.sendEvents.mock.calls;
       expect(events).toHaveLength(0);
+      expect(mockMetricHandler.addMetrics).toHaveBeenCalledWith(['TotalSenders', 'Count', 0]);
     });
 
     it('should handle event publisher errors', async () => {
@@ -142,9 +155,11 @@ describe('scheduled-event-handler', () => {
       const handler = createHandler({
         senderManagement: mockSenderManagement,
         eventPublisher: mockEventPublisher,
+        metricHandler: mockMetricHandler,
       });
 
       await expect(handler()).rejects.toThrow('Failed to publish events');
+      expect(mockMetricHandler.addMetrics).toHaveBeenCalledTimes(0);
     });
 
     it('should generate unique event IDs for multiple senders', async () => {
@@ -159,6 +174,7 @@ describe('scheduled-event-handler', () => {
       const handler = createHandler({
         senderManagement: mockSenderManagement,
         eventPublisher: mockEventPublisher,
+        metricHandler: mockMetricHandler,
       });
 
       await handler();
@@ -167,6 +183,7 @@ describe('scheduled-event-handler', () => {
       const eventIds = events.map((e) => e.id);
 
       expect(new Set(eventIds).size).toBe(eventIds.length);
+      expect(mockMetricHandler.addMetrics).toHaveBeenCalledWith(['TotalSenders', 'Count', 2]);
     });
   });
 });

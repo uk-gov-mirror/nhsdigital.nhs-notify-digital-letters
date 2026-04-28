@@ -23,18 +23,20 @@ export const createContainer = (): CreateHandlerDependencies => {
     parameterStore,
   });
 
+  const metricHandler = new MetricHandler(dlMetricsNamespace, [
+      { Name: 'Environment', Value: environment },
+    ]);
+
   const eventPublisher = new EventPublisher({
     eventBusArn: eventPublisherEventBusArn,
     dlqUrl: eventPublisherDlqUrl,
     logger,
     sqsClient,
     eventBridgeClient,
-    metricHandler: new MetricHandler(dlMetricsNamespace, [
-      { Name: 'Environment', Value: environment },
-    ]),
+    metricHandler,
   });
 
-  return { senderManagement, eventPublisher };
+  return { senderManagement, eventPublisher, metricHandler };
 };
 
 export default createContainer;

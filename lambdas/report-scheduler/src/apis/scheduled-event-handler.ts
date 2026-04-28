@@ -1,4 +1,4 @@
-import { EventPublisher } from 'utils';
+import { EventPublisher, MetricHandler } from 'utils';
 import { ISenderManagement } from 'sender-management';
 import { GenerateReport, validateGenerateReport } from 'digital-letters-events';
 import { randomUUID } from 'node:crypto';
@@ -6,11 +6,13 @@ import { randomUUID } from 'node:crypto';
 export type CreateHandlerDependencies = {
   senderManagement: ISenderManagement;
   eventPublisher: EventPublisher;
+  metricHandler: MetricHandler;
 };
 
 export const createHandler = ({
   eventPublisher,
   senderManagement,
+  metricHandler,
 }: CreateHandlerDependencies) => {
   return async () => {
     const yesterday = new Date();
@@ -43,5 +45,6 @@ export const createHandler = ({
       })),
       validateGenerateReport,
     );
+    metricHandler.addMetrics(['TotalSenders', 'Count', senders.length]);
   };
 };
