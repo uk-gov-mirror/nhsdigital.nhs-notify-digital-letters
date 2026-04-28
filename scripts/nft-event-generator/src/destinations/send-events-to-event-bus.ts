@@ -6,20 +6,9 @@ import {
   DestinationClient,
   PublishableEvent,
 } from 'destinations/destination-client';
-import { sleep } from 'utils';
+import { sleepMs } from 'utils';
 
 /* eslint-disable no-console */
-
-/**
- * Internal shape expected from events sent to EventBridge.
- * Matches the CloudEvent structure used by SupplierApiLetterEvent
- * where the event itself is the detail payload.
- */
-type CloudEventEnvelope = {
-  source: string;
-  type: string;
-  time: string;
-};
 
 function buildEventBusName(environment: string): string {
   return `nhs-${environment}-dl`;
@@ -53,13 +42,12 @@ export async function sendEventsToEventBus(
     currentBatch += 1;
 
     const entries = batch.map((event) => {
-      const cloudEvent = event as CloudEventEnvelope;
       return {
         EventBusName: eventBusName,
-        Source: cloudEvent.source,
-        DetailType: cloudEvent.type,
+        Source: event.source,
+        DetailType: event.type,
         Detail: JSON.stringify(event),
-        Time: new Date(cloudEvent.time),
+        Time: new Date(event.time),
       };
     });
 
@@ -85,7 +73,7 @@ export async function sendEventsToEventBus(
 
     // Wait before sending the next batch, but skip waiting after the last batch
     if (batch !== batches.at(-1)) {
-      await sleep(interval / 1000);
+      await sleepMs(interval);
     }
   }
 
