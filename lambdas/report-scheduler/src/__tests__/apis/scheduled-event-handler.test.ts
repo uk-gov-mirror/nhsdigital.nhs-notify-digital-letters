@@ -79,7 +79,11 @@ describe('scheduled-event-handler', () => {
 
       expect(events).toHaveLength(3);
       expect(validator).toBeDefined();
-      expect(mockMetricHandler.addMetrics).toHaveBeenCalledWith(['TotalSenders', 'Count', 3]);
+      expect(mockMetricHandler.addMetrics).toHaveBeenCalledWith([
+        'TotalSenders',
+        'Count',
+        3,
+      ]);
     });
 
     it('should create events with correct structure for each sender', async () => {
@@ -125,7 +129,11 @@ describe('scheduled-event-handler', () => {
       expect(event.datacontenttype).toBe('application/json');
 
       expect(() => validateGenerateReport(event, mockLogger)).not.toThrow();
-      expect(mockMetricHandler.addMetrics).toHaveBeenCalledWith(['TotalSenders', 'Count', 1]);
+      expect(mockMetricHandler.addMetrics).toHaveBeenCalledWith([
+        'TotalSenders',
+        'Count',
+        1,
+      ]);
     });
 
     it('should handle empty sender list', async () => {
@@ -142,7 +150,11 @@ describe('scheduled-event-handler', () => {
 
       const [[events]] = mockEventPublisher.sendEvents.mock.calls;
       expect(events).toHaveLength(0);
-      expect(mockMetricHandler.addMetrics).toHaveBeenCalledWith(['TotalSenders', 'Count', 0]);
+      expect(mockMetricHandler.addMetrics).toHaveBeenCalledWith([
+        'TotalSenders',
+        'Count',
+        0,
+      ]);
     });
 
     it('should handle event publisher errors', async () => {
@@ -183,7 +195,11 @@ describe('scheduled-event-handler', () => {
       const eventIds = events.map((e) => e.id);
 
       expect(new Set(eventIds).size).toBe(eventIds.length);
-      expect(mockMetricHandler.addMetrics).toHaveBeenCalledWith(['TotalSenders', 'Count', 2]);
+      expect(mockMetricHandler.addMetrics).toHaveBeenCalledWith([
+        'TotalSenders',
+        'Count',
+        2,
+      ]);
     });
   });
 });

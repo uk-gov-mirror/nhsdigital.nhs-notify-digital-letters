@@ -11,8 +11,8 @@ export type CreateHandlerDependencies = {
 
 export const createHandler = ({
   eventPublisher,
-  senderManagement,
   metricHandler,
+  senderManagement,
 }: CreateHandlerDependencies) => {
   return async () => {
     const yesterday = new Date();

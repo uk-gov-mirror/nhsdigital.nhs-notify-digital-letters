@@ -24,8 +24,8 @@ export const createContainer = (): CreateHandlerDependencies => {
   });
 
   const metricHandler = new MetricHandler(dlMetricsNamespace, [
-      { Name: 'Environment', Value: environment },
-    ]);
+    { Name: 'Environment', Value: environment },
+  ]);
 
   const eventPublisher = new EventPublisher({
     eventBusArn: eventPublisherEventBusArn,
