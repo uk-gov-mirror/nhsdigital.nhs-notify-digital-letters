@@ -4,6 +4,7 @@
     "@nhsdigital/nhs-notify-event-schemas-status-published": "1.0.1",
     "@nhsdigital/nhs-notify-event-schemas-supplier-api": "1.0.17",
     "csv-parse": "^6.1.0",
+    "tsx": "^4.20.6",
     "utils": "^0.0.1",
     "yargs": "^17.7.2"
   },
@@ -20,9 +21,10 @@
   "name": "nhs-notify-digital-letters-scripts",
   "private": true,
   "scripts": {
-    "bump-terraform-modules": "ts-node terraform/bump-shared-modules.ts",
+    "bump-terraform-modules": "tsx terraform/bump-shared-modules.ts",
     "lint": "eslint nft-event-generator/",
     "lint:fix": "eslint nft-event-generator/ --fix",
+    "start": "tsx nft-event-generator/src/cli.ts",
     "start:nft": "npm start -- supplier-api-letter-event --environment nft --numberOfEvents 2 --interval 2000",
     "test:unit": "jest",
     "typecheck": "tsc --noEmit"
