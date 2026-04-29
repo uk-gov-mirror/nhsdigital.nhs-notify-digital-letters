@@ -42,7 +42,7 @@ module "mesh_poll" {
     ENVIRONMENT                         = var.environment
     EVENT_PUBLISHER_DLQ_URL             = module.sqs_event_publisher_errors.sqs_queue_url
     EVENT_PUBLISHER_EVENT_BUS_ARN       = aws_cloudwatch_event_bus.main.arn
-    MAXIMUM_RUNTIME_MILLISECONDS        = "240000" # 4 minutes (Lambda has 5 min timeout)
+    LAMBDA_TIMEOUT_BUFFER_MILLISECONDS  = "60000" # 1 minute, to leave time for mesh-download to acknowledge the message before we run again.
     POLLING_METRIC_NAME                 = "mesh-poll-successful-polls"
     POLLING_METRIC_NAMESPACE            = "dl-mesh-poll"
     SSM_MESH_PREFIX                     = local.ssm_mesh_prefix
