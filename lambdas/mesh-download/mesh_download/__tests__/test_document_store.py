@@ -2,7 +2,12 @@
 import pytest
 from unittest.mock import Mock
 from botocore.exceptions import ClientError
-from mesh_download.document_store import DocumentStore, IntermediaryBodyStoreError, DocumentAlreadyExistsError
+from mesh_download.document_store import (
+    DocumentStore,
+    IntermediaryBodyStoreError,
+    DocumentAlreadyExistsError,
+    DocumentAlreadyExistsInternalRetryError,
+)
 
 
 def make_client_error(code):
@@ -36,11 +41,12 @@ class TestDocumentStore:
             content=b'test content'
         )
 
-        assert result == 'document-reference/SENDER-001/ref-123_mesh-456'
+        assert result == 'document-reference/SENDER-001/ref-123'
         mock_s3_client.put_object.assert_called_once_with(
             Bucket='test-pii-bucket',
-            Key='document-reference/SENDER-001/ref-123_mesh-456',
+            Key='document-reference/SENDER-001/ref-123',
             Body=b'test content',
+            Metadata={'mesh_message_id': 'mesh-456'},
             IfNoneMatch='*'
         )
 
@@ -84,10 +90,13 @@ class TestDocumentStore:
                 content=b'test content'
             )
 
-    def test_store_document_precondition_failed_raises_document_already_exists(self):
-        """Raises DocumentAlreadyExistsError when S3 returns PreconditionFailed (object already exists)"""
+    def test_store_document_precondition_failed_same_mesh_message_id_raises_internal_retry(self):
+        """Raises DocumentAlreadyExistsInternalRetryError when stored meshMessageId matches incoming (internal retry)"""
         mock_s3_client = Mock()
         mock_s3_client.put_object.side_effect = make_client_error('PreconditionFailed')
+        mock_s3_client.head_object.return_value = {
+            'Metadata': {'mesh_message_id': 'mesh-456'}
+        }
 
         config = Mock()
         config.s3_client = mock_s3_client
@@ -95,10 +104,42 @@ class TestDocumentStore:
 
         store = DocumentStore(config)
 
-        with pytest.raises(DocumentAlreadyExistsError, match='document-reference/SENDER-001/ref-123_mesh-456'):
+        with pytest.raises(DocumentAlreadyExistsInternalRetryError, match='document-reference/SENDER-001/ref-123'):
             store.store_document(
                 sender_id='SENDER-001',
                 message_reference='ref-123',
                 mesh_message_id='mesh-456',
                 content=b'test content'
             )
+
+        mock_s3_client.head_object.assert_called_once_with(
+            Bucket='test-pii-bucket',
+            Key='document-reference/SENDER-001/ref-123'
+        )
+
+    def test_store_document_precondition_failed_different_mesh_message_id_raises_trust_duplicate(self):
+        """Raises DocumentAlreadyExistsError when stored meshMessageId differs from incoming (trust duplicate)"""
+        mock_s3_client = Mock()
+        mock_s3_client.put_object.side_effect = make_client_error('PreconditionFailed')
+        mock_s3_client.head_object.return_value = {
+            'Metadata': {'mesh_message_id': 'original-mesh-id'}
+        }
+
+        config = Mock()
+        config.s3_client = mock_s3_client
+        config.transactional_data_bucket = 'test-pii-bucket'
+
+        store = DocumentStore(config)
+
+        with pytest.raises(DocumentAlreadyExistsError, match='document-reference/SENDER-001/ref-123'):
+            store.store_document(
+                sender_id='SENDER-001',
+                message_reference='ref-123',
+                mesh_message_id='new-mesh-id',
+                content=b'test content'
+            )
+
+        mock_s3_client.head_object.assert_called_once_with(
+            Bucket='test-pii-bucket',
+            Key='document-reference/SENDER-001/ref-123'
+        )

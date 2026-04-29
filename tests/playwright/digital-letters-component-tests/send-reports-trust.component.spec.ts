@@ -9,7 +9,7 @@ import { getLogsFromCloudwatch } from 'helpers/cloudwatch-helpers';
 import eventPublisher from 'helpers/event-bus-helpers';
 import expectToPassEventually from 'helpers/expectations';
 import { downloadFromS3, uploadToS3 } from 'helpers/s3-helpers';
-import { expectMessageContainingString } from 'helpers/sqs-helpers';
+import { expectMessageContainingString, purgeQueue } from 'helpers/sqs-helpers';
 import { v4 as uuidv4 } from 'uuid';
 import { SENDER_ID_SKIPS_NOTIFY } from 'constants/tests-constants';
 import { validateReportGenerated } from 'digital-letters-events';
@@ -18,6 +18,10 @@ test.describe('Digital Letters - Send reports to Trust', () => {
   const senderId = SENDER_ID_SKIPS_NOTIFY;
   const trustMeshMailboxReportsId = 'test-mesh-reports-1';
   const messageContent = 'Sample content';
+
+  test.beforeAll(async () => {
+    await purgeQueue(REPORT_SENDER_DLQ_NAME);
+  });
 
   async function publishReportGeneratedEvent(reportKey: string): Promise<void> {
     await eventPublisher.sendEvents(

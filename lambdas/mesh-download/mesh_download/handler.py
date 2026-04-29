@@ -44,7 +44,8 @@ def handler(event, context):
                 log=log,
                 mesh_client=config.mesh_client,
                 download_metric=config.download_metric,
-                duplicate_download_metric=config.duplicate_download_metric,
+                internal_duplicate_download_metric=config.internal_duplicate_download_metric,
+                trust_duplicate_download_metric=config.trust_duplicate_download_metric,
                 document_store=document_store,
                 event_publisher=event_publisher
             )

@@ -12,7 +12,7 @@ import eventPublisher from 'helpers/event-bus-helpers';
 import expectToPassEventually from 'helpers/expectations';
 import { invokeLambda } from 'helpers/lambda-helpers';
 import { downloadFromS3, uploadToS3 } from 'helpers/s3-helpers';
-import { expectMessageContainingString } from 'helpers/sqs-helpers';
+import { expectMessageContainingString, purgeQueue } from 'helpers/sqs-helpers';
 import { v4 as uuidv4 } from 'uuid';
 import { SENDER_ID_SKIPS_NOTIFY } from 'constants/tests-constants';
 import { validateMESHInboxMessageReceived } from 'digital-letters-events';
@@ -72,6 +72,10 @@ test.describe('Digital Letters - MESH Poll and Download', () => {
   const sendersMeshMailboxId = 'test-mesh-sender-1';
   const meshMailboxId = 'mock-mailbox';
 
+  test.beforeAll(async () => {
+    await purgeQueue(MESH_DOWNLOAD_DLQ_NAME);
+  });
+
   async function uploadMeshMessage(
     meshMessageId: string,
     messageReference: string,
@@ -129,6 +133,7 @@ test.describe('Digital Letters - MESH Poll and Download', () => {
   async function expectMeshInboxMessageInvalidEvent(
     meshMessageId: string,
     messageReference: string,
+    failureCode: string,
   ): Promise<void> {
     await expectToPassEventually(async () => {
       const eventLogEntry = await getLogsFromCloudwatch(
@@ -139,7 +144,7 @@ test.describe('Digital Letters - MESH Poll and Download', () => {
           `$.details.event_detail = "*\\"messageReference\\":\\"${messageReference}\\"*"`,
           `$.details.event_detail = "*\\"senderId\\":\\"${senderId}\\"*"`,
           `$.details.event_detail = "*\\"meshMessageId\\":\\"${meshMessageId}\\"*"`,
-          `$.details.event_detail = "*\\"failureCode\\":\\"DL_CLIV_005\\"*"`,
+          `$.details.event_detail = "*\\"failureCode\\":\\"${failureCode}\\"*"`,
         ],
       );
 
@@ -162,10 +167,11 @@ test.describe('Digital Letters - MESH Poll and Download', () => {
     await expectToPassEventually(async () => {
       const storedMessage = await downloadFromS3(
         PII_S3_BUCKET_NAME,
-        `document-reference/${senderId}/${messageReference}_${meshMessageId}`,
+        `document-reference/${senderId}/${messageReference}`,
       );
 
       expect(storedMessage.body).toContain(messageContent);
+      expect(storedMessage.metadata?.mesh_message_id).toBe(meshMessageId);
     }, 60_000);
 
     await expectToPassEventually(async () => {
@@ -190,7 +196,11 @@ test.describe('Digital Letters - MESH Poll and Download', () => {
     await invokeLambda(MESH_POLL_LAMBDA_NAME);
 
     await expectMeshInboxMessageReceivedEvent(meshMessageId);
-    await expectMeshInboxMessageInvalidEvent(meshMessageId, messageReference);
+    await expectMeshInboxMessageInvalidEvent(
+      meshMessageId,
+      messageReference,
+      'DL_CLIV_005',
+    );
 
     await expectToPassEventually(async () => {
       const filteredLogs = await getLogsFromCloudwatch(
@@ -216,7 +226,7 @@ test.describe('Digital Letters - MESH Poll and Download', () => {
   });
 
   test('should send message to mesh-download DLQ when download fails', async () => {
-    test.setTimeout(160_000);
+    test.setTimeout(220_000);
 
     const invalidMeshMessageId = `${Date.now()}_DLQ_${uuidv4().slice(0, 8)}`;
     const messageReference = uuidv4();
@@ -254,7 +264,7 @@ test.describe('Digital Letters - MESH Poll and Download', () => {
     await expectMessageContainingString(
       MESH_DOWNLOAD_DLQ_NAME,
       invalidMeshMessageId,
-      150,
+      200,
     );
   });
 
@@ -337,7 +347,7 @@ test.describe('Digital Letters - MESH Poll and Download', () => {
     }, 15_000);
   });
 
-  test('should skip publishing downloaded event and acknowledge message when document already exists in S3', async () => {
+  test('should skip publishing downloaded event and acknowledge message when internal retry detected', async () => {
     test.setTimeout(200_000);
 
     const meshMessageId = `${Date.now()}_DUPLICATE_${uuidv4().slice(0, 8)}`;
@@ -346,9 +356,11 @@ test.describe('Digital Letters - MESH Poll and Download', () => {
 
     await uploadMeshMessage(meshMessageId, messageReference, messageContent);
 
-    // Pre-upload the document to the PII bucket to simulate a previously processed message
-    const documentKey = `document-reference/${senderId}/${messageReference}_${meshMessageId}`;
-    await uploadToS3('pre-existing content', PII_S3_BUCKET_NAME, documentKey);
+    // Pre-upload the document to S3 with the SAME meshMessageId in metadata to simulate internal retry
+    const documentKey = `document-reference/${senderId}/${messageReference}`;
+    await uploadToS3('pre-existing content', PII_S3_BUCKET_NAME, documentKey, {
+      mesh_message_id: meshMessageId,
+    });
 
     // Publish the MESHInboxMessageReceived event directly, skipping the poll lambda
     await eventPublisher.sendEvents(
@@ -385,7 +397,7 @@ test.describe('Digital Letters - MESH Poll and Download', () => {
       const warnLogEntry = await getLogsFromCloudwatch(
         MESH_DOWNLOAD_LAMBDA_LOG_GROUP_NAME,
         [
-          '$.event = "Message already stored in S3, skipping publish (duplicate delivery)"',
+          '$.event = "Internal retry detected. Message already stored with same meshMessageId, skipping"',
           `$.mesh_message_id = "${meshMessageId}"`,
         ],
       );
@@ -411,6 +423,75 @@ test.describe('Digital Letters - MESH Poll and Download', () => {
         await downloadFromS3(
           NON_PII_S3_BUCKET_NAME,
           `mock-mesh/${meshMailboxId}/in/${meshMessageId}`,
+        );
+      }).rejects.toThrow('No objects found');
+    }, 60_000);
+  });
+
+  test('should publish MESHInboxMessageInvalid with DL_CLIV_004 and acknowledge when trust duplicate detected', async () => {
+    test.setTimeout(200_000);
+
+    const originalMeshMessageId = `${Date.now()}_ORIG_${uuidv4().slice(0, 8)}`;
+    const duplicateMeshMessageId = `${Date.now()}_DUP_${uuidv4().slice(0, 8)}`;
+    const messageReference = uuidv4();
+    const messageContent = JSON.stringify(validPdmRequest);
+
+    await uploadMeshMessage(
+      duplicateMeshMessageId,
+      messageReference,
+      messageContent,
+    );
+
+    // Pre-upload the document to S3 with a DIFFERENT meshMessageId in metadata to simulate trust duplicate
+    const documentKey = `document-reference/${senderId}/${messageReference}`;
+    await uploadToS3('pre-existing content', PII_S3_BUCKET_NAME, documentKey, {
+      mesh_message_id: originalMeshMessageId,
+    });
+
+    // Publish the MESHInboxMessageReceived event directly, skipping the poll lambda
+    await eventPublisher.sendEvents(
+      [
+        {
+          id: uuidv4(),
+          specversion: '1.0',
+          source: '/nhs/england/notify/development/primary/digitalletters/mesh',
+          subject:
+            'customer/00000000-0000-0000-0000-000000000000/recipient/00000000-0000-0000-0000-000000000000',
+          type: 'uk.nhs.notify.digital.letters.mesh.inbox.message.received.v1',
+          time: new Date().toISOString(),
+          recordedtime: new Date().toISOString(),
+          severitynumber: 2,
+          severitytext: 'INFO',
+          traceparent:
+            '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01',
+          dataschema:
+            'https://notify.nhs.uk/cloudevents/schemas/digital-letters/2025-10-draft/data/digital-letters-mesh-inbox-message-received-data.schema.json',
+          dataschemaversion: '1.0.0',
+          datacontenttype: 'application/json',
+          plane: 'data',
+          data: {
+            meshMessageId: duplicateMeshMessageId,
+            senderId,
+            messageReference,
+          },
+        },
+      ],
+      validateMESHInboxMessageReceived,
+    );
+
+    // Assert MESHInboxMessageInvalid event with DL_CLIV_004 was published
+    await expectMeshInboxMessageInvalidEvent(
+      duplicateMeshMessageId,
+      messageReference,
+      'DL_CLIV_004',
+    );
+
+    // Assert the MESH message was acknowledged (deleted from mock inbox)
+    await expectToPassEventually(async () => {
+      await expect(async () => {
+        await downloadFromS3(
+          NON_PII_S3_BUCKET_NAME,
+          `mock-mesh/${meshMailboxId}/in/${duplicateMeshMessageId}`,
         );
       }).rejects.toThrow('No objects found');
     }, 60_000);

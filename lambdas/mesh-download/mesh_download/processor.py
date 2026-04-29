@@ -5,7 +5,7 @@ from uuid import uuid4
 from pydantic import ValidationError
 from digital_letters_events import MESHInboxMessageDownloaded, MESHInboxMessageReceived, MESHInboxMessageInvalid
 from mesh_download.errors import MeshMessageNotFound
-from mesh_download.document_store import DocumentAlreadyExistsError
+from mesh_download.document_store import DocumentAlreadyExistsError, DocumentAlreadyExistsInternalRetryError
 from nhs_notify_letters_onboarding import validate
 
 
@@ -15,7 +15,8 @@ class MeshDownloadProcessor:
         self.__log = kwargs['log']
         self.__mesh_client = kwargs['mesh_client']
         self.__download_metric = kwargs['download_metric']
-        self.__duplicate_download_metric = kwargs['duplicate_download_metric']
+        self.__internal_duplicate_download_metric = kwargs['internal_duplicate_download_metric']
+        self.__trust_duplicate_download_metric = kwargs['trust_duplicate_download_metric']
         self.__document_store = kwargs['document_store']
         self.__event_publisher = kwargs['event_publisher']
 
@@ -83,15 +84,11 @@ class MeshDownloadProcessor:
             self._validate_fhir_content(content)
         except Exception as e:
             logger.error("FHIR content is invalid", error=str(e))
-
-            self._publish_message_invalid_event(incoming_event=event)
-
+            self._publish_message_invalid_event(incoming_event=event, failure_code='DL_CLIV_005')
             message.acknowledge()
             logger.info("Acknowledged message")
-
             return
 
-        duplicate = False
         try:
             uri = self._store_message_content(
                 sender_id=data.senderId,
@@ -100,26 +97,36 @@ class MeshDownloadProcessor:
                 message_content=content,
                 logger=logger
             )
-        except DocumentAlreadyExistsError:
+        except DocumentAlreadyExistsInternalRetryError:
             logger.warning(
-                "Message already stored in S3, skipping publish (duplicate delivery)",
+                "Internal retry detected. Message already stored with same meshMessageId, skipping",
                 mesh_message_id=data.meshMessageId,
                 message_reference=data.messageReference
             )
-            duplicate = True
-            self.__duplicate_download_metric.record(1)
-
-        if not duplicate:
-            self._publish_downloaded_event(
-                incoming_event=event,
-                message_uri=uri
+            self.__internal_duplicate_download_metric.record(1)
+            message.acknowledge()
+            logger.info("Acknowledged message")
+            return 'skipped'
+        except DocumentAlreadyExistsError:
+            logger.warning(
+                "Trust duplicate detected. Same senderId + messageReference but different meshMessageId",
+                mesh_message_id=data.meshMessageId,
+                message_reference=data.messageReference
             )
-            self.__download_metric.record(1)
+            self.__trust_duplicate_download_metric.record(1)
+            self._publish_message_invalid_event(incoming_event=event, failure_code='DL_CLIV_004')
+            message.acknowledge()
+            logger.info("Acknowledged message")
+            return 'duplicate'
 
+        self._publish_downloaded_event(
+            incoming_event=event,
+            message_uri=uri
+        )
+        self.__download_metric.record(1)
         message.acknowledge()
         logger.info("Acknowledged message")
-
-        return 'skipped' if duplicate else 'downloaded'
+        return 'downloaded'
 
     def _store_message_content(self, sender_id, message_reference, mesh_message_id, message_content, logger):
         s3_key = self.__document_store.store_document(
@@ -175,7 +182,7 @@ class MeshDownloadProcessor:
             message_reference=incoming_event.data.messageReference
         )
 
-    def _publish_message_invalid_event(self, incoming_event):
+    def _publish_message_invalid_event(self, incoming_event, failure_code: str):
         """
         Publishes a MESHInboxMessageInvalid event.
         """
@@ -194,7 +201,7 @@ class MeshDownloadProcessor:
             'data': {
                 'senderId': incoming_event.data.senderId,
                 'meshMessageId': incoming_event.data.meshMessageId,
-                'failureCode': 'DL_CLIV_005',
+                'failureCode': failure_code,
                 'messageReference': incoming_event.data.messageReference,
             }
         }
