@@ -7,6 +7,7 @@ export const $SupplierApiLetterEvent = z.object({
     }),
     specificationId: z.string(),
     status: z.enum([
+      'PENDING',
       'RETURNED',
       'DISPATCHED',
       'PRINTED',
@@ -16,7 +17,6 @@ export const $SupplierApiLetterEvent = z.object({
       'CANCELLED',
       'FORWARDED',
       'DELIVERED',
-      'PENDING',
       'ENCLOSED',
     ]),
     supplierId: z.string(),
