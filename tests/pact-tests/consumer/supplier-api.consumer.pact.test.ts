@@ -1,9 +1,14 @@
 import LetterAcceptedEvent from '@nhsdigital/nhs-notify-event-schemas-supplier-api/schemas/examples/letter.ACCEPTED.json';
-import LetterReturnedEvent from '@nhsdigital/nhs-notify-event-schemas-supplier-api/schemas/examples/letter.RETURNED.json';
-import LetterFailedEvent from '@nhsdigital/nhs-notify-event-schemas-supplier-api/schemas/examples/letter.FAILED.json';
+import LetterCancelledEvent from '@nhsdigital/nhs-notify-event-schemas-supplier-api/schemas/examples/letter.CANCELLED.json';
+import LetterDeliveredEvent from '@nhsdigital/nhs-notify-event-schemas-supplier-api/schemas/examples/letter.DELIVERED.json';
 import LetterDispatchedEvent from '@nhsdigital/nhs-notify-event-schemas-supplier-api/schemas/examples/letter.DISPATCHED.json';
+import LetterEnclosedEvent from '@nhsdigital/nhs-notify-event-schemas-supplier-api/schemas/examples/letter.ENCLOSED.json';
+import LetterFailedEvent from '@nhsdigital/nhs-notify-event-schemas-supplier-api/schemas/examples/letter.FAILED.json';
+import LetterForwardedEvent from '@nhsdigital/nhs-notify-event-schemas-supplier-api/schemas/examples/letter.FORWARDED.json';
+import LetterPendingEvent from '@nhsdigital/nhs-notify-event-schemas-supplier-api/schemas/examples/letter.PENDING.json';
 import LetterPrintedEvent from '@nhsdigital/nhs-notify-event-schemas-supplier-api/schemas/examples/letter.PRINTED.json';
 import LetterRejectedEvent from '@nhsdigital/nhs-notify-event-schemas-supplier-api/schemas/examples/letter.REJECTED.json';
+import LetterReturnedEvent from '@nhsdigital/nhs-notify-event-schemas-supplier-api/schemas/examples/letter.RETURNED.json';
 import {
   MatchersV3,
   MessageConsumerPact,
@@ -192,6 +197,145 @@ describe('Pact message consumer - Supplier API events', () => {
           time: MatchersV3.timestamp(
             "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
             LetterRejectedEvent.time,
+          ),
+        })
+        .verify(asynchronousBodyHandler(handle)),
+    ).resolves.not.toThrow();
+  });
+
+  it('validates a letter cancelled event', async () => {
+    await expect(
+      messagePact
+        .expectsToReceive('SupplierApiEvent-letter_cancelled')
+        .withContent({
+          data: {
+            origin: {
+              subject: MatchersV3.regex(
+                /^client\/[^/]+\/letter-request\/[^/]+$/,
+                LetterCancelledEvent.data.origin.subject,
+              ),
+            },
+            reasonCode: MatchersV3.string(LetterCancelledEvent.data.reasonCode),
+            reasonText: MatchersV3.string(LetterCancelledEvent.data.reasonText),
+            specificationId: MatchersV3.string(
+              LetterCancelledEvent.data.specificationId,
+            ),
+            status: LetterCancelledEvent.data.status,
+            supplierId: MatchersV3.string(LetterCancelledEvent.data.supplierId),
+          },
+          time: MatchersV3.timestamp(
+            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+            LetterCancelledEvent.time,
+          ),
+        })
+        .verify(asynchronousBodyHandler(handle)),
+    ).resolves.not.toThrow();
+  });
+
+  it('validates a letter delivered event', async () => {
+    await expect(
+      messagePact
+        .expectsToReceive('SupplierApiEvent-letter_delivered')
+        .withContent({
+          data: {
+            origin: {
+              subject: MatchersV3.regex(
+                /^client\/[^/]+\/letter-request\/[^/]+$/,
+                LetterDeliveredEvent.data.origin.subject,
+              ),
+            },
+            specificationId: MatchersV3.string(
+              LetterDeliveredEvent.data.specificationId,
+            ),
+            status: LetterDeliveredEvent.data.status,
+            supplierId: MatchersV3.string(LetterDeliveredEvent.data.supplierId),
+          },
+          time: MatchersV3.timestamp(
+            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+            LetterDeliveredEvent.time,
+          ),
+        })
+        .verify(asynchronousBodyHandler(handle)),
+    ).resolves.not.toThrow();
+  });
+
+  it('validates a letter enclosed event', async () => {
+    await expect(
+      messagePact
+        .expectsToReceive('SupplierApiEvent-letter_enclosed')
+        .withContent({
+          data: {
+            origin: {
+              subject: MatchersV3.regex(
+                /^client\/[^/]+\/letter-request\/[^/]+$/,
+                LetterEnclosedEvent.data.origin.subject,
+              ),
+            },
+            specificationId: MatchersV3.string(
+              LetterEnclosedEvent.data.specificationId,
+            ),
+            status: LetterEnclosedEvent.data.status,
+            supplierId: MatchersV3.string(LetterEnclosedEvent.data.supplierId),
+          },
+          time: MatchersV3.timestamp(
+            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+            LetterEnclosedEvent.time,
+          ),
+        })
+        .verify(asynchronousBodyHandler(handle)),
+    ).resolves.not.toThrow();
+  });
+
+  it('validates a letter forwarded event', async () => {
+    await expect(
+      messagePact
+        .expectsToReceive('SupplierApiEvent-letter_forwarded')
+        .withContent({
+          data: {
+            origin: {
+              subject: MatchersV3.regex(
+                /^client\/[^/]+\/letter-request\/[^/]+$/,
+                LetterForwardedEvent.data.origin.subject,
+              ),
+            },
+            reasonCode: MatchersV3.string(LetterForwardedEvent.data.reasonCode),
+            reasonText: MatchersV3.string(LetterForwardedEvent.data.reasonText),
+            specificationId: MatchersV3.string(
+              LetterForwardedEvent.data.specificationId,
+            ),
+            status: LetterForwardedEvent.data.status,
+            supplierId: MatchersV3.string(LetterForwardedEvent.data.supplierId),
+          },
+          time: MatchersV3.timestamp(
+            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+            LetterForwardedEvent.time,
+          ),
+        })
+        .verify(asynchronousBodyHandler(handle)),
+    ).resolves.not.toThrow();
+  });
+
+  it('validates a letter pending event', async () => {
+    await expect(
+      messagePact
+        .expectsToReceive('SupplierApiEvent-letter_pending')
+        .withContent({
+          data: {
+            origin: {
+              subject: MatchersV3.regex(
+                /^client\/[^/]+\/letter-request\/[^/]+$/,
+                LetterPendingEvent.data.origin.subject,
+              ),
+            },
+            specificationId: MatchersV3.string(
+              LetterPendingEvent.data.specificationId,
+            ),
+            status: LetterPendingEvent.data.status,
+            supplierId: MatchersV3.string(LetterPendingEvent.data.supplierId),
+          },
+          time: MatchersV3.timestamp(
+            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+            LetterPendingEvent.time,
           ),
         })
         .verify(asynchronousBodyHandler(handle)),
