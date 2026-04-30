@@ -1,5 +1,5 @@
 module "s3bucket_file_safe" {
-  source = "https://github.com/NHSDigital/nhs-notify-shared-modules/releases/download/3.0.6/terraform-s3bucket.zip"
+  source = "git::ssh://git@github.com/NHSDigital/nhs-notify-shared-modules.git//infrastructure/terraform/modules/s3bucket?ref=feature/CCM-16776_s3_pii_access" #Change this later to actual tag
 
   name = "file-safe"
 
@@ -10,6 +10,7 @@ module "s3bucket_file_safe" {
   component      = local.component
 
   kms_key_arn = module.kms.key_arn
+  enable_abac = var.restrict_pii_data_access ? true : false
 
   policy_documents = [data.aws_iam_policy_document.s3bucket_file_safe.json]
 
@@ -41,7 +42,8 @@ module "s3bucket_file_safe" {
   ]
 
   default_tags = {
-    NHSE-Enable-S3-Backup-Acct = "True"
+    NHSE-Enable-S3-Backup-Acct = "True",
+    NHSE-PII-Data              = "True"
   }
 }
 
@@ -85,4 +87,28 @@ data "aws_iam_policy_document" "s3bucket_file_safe" {
       ]
     }
   }
+
+  # dynamic "statement" {
+  #   for_each = var.restrict_pii_data_access ? [1] : []
+  #   content {
+  #     effect = "Deny"
+  #     actions = [
+  #       "s3:GetObject",
+  #       "s3:GetObjectVersion",
+  #       "s3:PutObject",
+  #       "s3:DeleteObject"
+  #     ]
+  #     resources = [
+  #       module.s3bucket_file_safe.arn,
+  #       "${module.s3bucket_file_safe.arn}/*",
+  #     ]
+
+  #     principals {
+  #       type = "AWS"
+  #       identifiers = [
+  #         local.bc_restricted_dev_role
+  #       ]
+  #     }
+  #   }
+  # }
 }

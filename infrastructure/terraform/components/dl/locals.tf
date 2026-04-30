@@ -16,4 +16,6 @@ locals {
   ssm_senders_prefix                   = "${local.ssm_prefix}/senders"
   ttl_shard_count                      = 3
   unscanned_files_bucket               = local.acct.additional_s3_buckets["digital-letters_unscanned-files"]["id"]
+
+  bc_restricted_dev_role = try(tolist(data.aws_iam_roles.sso_bc_restricted_dev[0].arns)[0], null)
 }
