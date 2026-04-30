@@ -2,6 +2,7 @@ import { test as setup } from '@playwright/test';
 import senderRepository from 'helpers/sender-helpers';
 import { Sender } from 'utils';
 import {
+  ROUTING_CONFIG_ID,
   SENDER_ID_SKIPS_NOTIFY,
   SENDER_ID_THAT_TRIGGERS_ERROR_IN_NOTIFY_SANDBOX,
   SENDER_ID_VALID_FOR_NOTIFY_SANDBOX,
@@ -20,7 +21,7 @@ const testSenders: Sender[] = [
     senderName: 'componentTestSender_RoutingConfig',
     meshMailboxSenderId: 'meshMailboxSender1',
     meshMailboxReportsId: 'meshMailboxReports1',
-    routingConfigId: 'b838b13c-f98c-4def-93f0-515d4e4f4ee1',
+    routingConfigId: ROUTING_CONFIG_ID,
     fallbackWaitTimeSeconds: 100,
   },
   {

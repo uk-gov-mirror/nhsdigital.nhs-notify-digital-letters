@@ -14,14 +14,16 @@ export const EXISTING_SENDER_IDS = [
 ];
 
 export const ENVIRONMENT_SPECIFIC_CONSTANTS = {
-  // Suppliers Dev Account
+  // Suppliers Dev Account (Sandbox)
   '820178564574': {
     nhsAppBaseUrl: 'https://example.com',
+    routingConfigId: 'b838b13c-f98c-4def-93f0-515d4e4f4ee1',
   },
 
-  // Suppliers Non Prod Account
+  // Suppliers Non Prod Account (Int)
   '885964308133': {
     nhsAppBaseUrl: 'https://www-onboardingaos.nhsapp.service.nhs.uk',
+    routingConfigId: 'c940a9ce-e70d-4986-8046-afd168b39738',
   },
 };
 
@@ -29,3 +31,8 @@ export const NHS_APP_BASE_URL =
   ENVIRONMENT_SPECIFIC_CONSTANTS[
     AWS_ACCOUNT_ID_SAFE as keyof typeof ENVIRONMENT_SPECIFIC_CONSTANTS
   ].nhsAppBaseUrl;
+
+export const ROUTING_CONFIG_ID =
+  ENVIRONMENT_SPECIFIC_CONSTANTS[
+    AWS_ACCOUNT_ID_SAFE as keyof typeof ENVIRONMENT_SPECIFIC_CONSTANTS
+  ].routingConfigId;
