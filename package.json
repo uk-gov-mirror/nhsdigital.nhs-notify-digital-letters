@@ -86,6 +86,7 @@
     "src/digital-letters-events",
     "src/python-schema-generator",
     "src/typescript-schema-generator",
+    "scripts",
     "tests/playwright",
     "tests/pact-tests"
   ]
