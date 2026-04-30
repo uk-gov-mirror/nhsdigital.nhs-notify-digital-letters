@@ -111,7 +111,7 @@ describe('Pact message consumer - Supplier API events', () => {
     await expect(
       messagePact
         .expectsToReceive('SupplierApiEvent-letter_rejected')
-        .withContent(buildValidator(LetterRejectedEvent.data.status))
+        .withContent(buildValidator(LetterRejectedEvent.data.status, true))
         .verify(asynchronousBodyHandler(handle)),
     ).resolves.not.toThrow();
   });
@@ -120,7 +120,7 @@ describe('Pact message consumer - Supplier API events', () => {
     await expect(
       messagePact
         .expectsToReceive('SupplierApiEvent-letter_cancelled')
-        .withContent(buildValidator(LetterCancelledEvent.data.status))
+        .withContent(buildValidator(LetterCancelledEvent.data.status, true))
         .verify(asynchronousBodyHandler(handle)),
     ).resolves.not.toThrow();
   });
@@ -147,7 +147,7 @@ describe('Pact message consumer - Supplier API events', () => {
     await expect(
       messagePact
         .expectsToReceive('SupplierApiEvent-letter_forwarded')
-        .withContent(buildValidator(LetterForwardedEvent.data.status))
+        .withContent(buildValidator(LetterForwardedEvent.data.status, true))
         .verify(asynchronousBodyHandler(handle)),
     ).resolves.not.toThrow();
   });
