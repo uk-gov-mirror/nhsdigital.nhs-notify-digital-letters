@@ -1,5 +1,5 @@
 module "s3bucket_pii_data" {
-  source = "git::ssh://git@github.com/NHSDigital/nhs-notify-shared-modules.git//infrastructure/terraform/modules/s3bucket?ref=feature/CCM-16776_s3_pii_access" #Change this later to actual tag
+  source = "git::https://github.com/NHSDigital/nhs-notify-shared-modules.git//infrastructure/terraform/modules/s3bucket?ref=feature/CCM-16776_s3_pii_access" #Change this later to actual tag
 
   name = "pii-data"
 
