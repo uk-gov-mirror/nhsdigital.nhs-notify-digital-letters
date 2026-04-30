@@ -7,6 +7,7 @@ import {
   failedLetterEvent,
   recordEvent,
 } from '__tests__/test-data';
+import { LetterStatusChangeEvent } from '@nhsdigital/nhs-notify-event-schemas-supplier-api/src/events/letter-events';
 
 const logger = mock<Logger>();
 const eventPublisher = mock<EventPublisher>();
@@ -197,7 +198,9 @@ describe('SQS Handler', () => {
           status: 'INVALID_STATUS',
         },
       };
-      const event = recordEvent([invalidAcceptedLetterEvent as any]);
+      const event = recordEvent([
+        invalidAcceptedLetterEvent as LetterStatusChangeEvent,
+      ]);
 
       const result = await handler(event);
 
@@ -245,7 +248,7 @@ describe('SQS Handler', () => {
             }),
           ]),
         }),
-        description: 'Invalid origin.subject format',
+        description: 'Error parsing queue item',
       });
 
       expect(logger.info).toHaveBeenCalledWith(

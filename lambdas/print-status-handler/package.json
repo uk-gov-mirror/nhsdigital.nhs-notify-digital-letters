@@ -1,11 +1,11 @@
 {
   "dependencies": {
-    "@nhsdigital/nhs-notify-event-schemas-supplier-api": "^1.0.17",
     "digital-letters-events": "^0.0.1",
     "utils": "^0.0.1",
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@nhsdigital/nhs-notify-event-schemas-supplier-api": "^1.0.17",
     "@tsconfig/node22": "^22.0.2",
     "@types/aws-lambda": "^8.10.155",
     "@types/jest": "^29.5.14",

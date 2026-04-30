@@ -1,5 +1,4 @@
 import { MessageProviderPact } from '@pact-foundation/pact';
-import path from 'node:path';
 
 import LetterAcceptedEvent from '@nhsdigital/nhs-notify-event-schemas-supplier-api/schemas/examples/letter.ACCEPTED.json';
 import LetterCancelledEvent from '@nhsdigital/nhs-notify-event-schemas-supplier-api/schemas/examples/letter.CANCELLED.json';
@@ -13,19 +12,18 @@ import LetterPrintedEvent from '@nhsdigital/nhs-notify-event-schemas-supplier-ap
 import LetterRejectedEvent from '@nhsdigital/nhs-notify-event-schemas-supplier-api/schemas/examples/letter.REJECTED.json';
 import LetterReturnedEvent from '@nhsdigital/nhs-notify-event-schemas-supplier-api/schemas/examples/letter.RETURNED.json';
 
-import { PACT_CONSUMER } from '../utils/pact-config';
+import {
+  PACT_CONSUMER,
+  PACT_SUPPLIER_API_PROVIDER,
+} from '../utils/pact-config';
+import { getPactFilePath } from '../utils/path-utils';
 
-const PACT_PROVIDER = 'supplier-api';
-const PACT_DIRECTORY = path.resolve(__dirname, '../.pacts/supplier-api');
-const PACT_FILE = path.join(
-  PACT_DIRECTORY,
-  `${PACT_CONSUMER}-${PACT_PROVIDER}.json`,
-);
+const PACT_FILE = getPactFilePath(PACT_CONSUMER, PACT_SUPPLIER_API_PROVIDER);
 
 describe('Supplier API provider tests', () => {
   test('verify pacts', async () => {
     const p = new MessageProviderPact({
-      provider: PACT_PROVIDER,
+      provider: PACT_SUPPLIER_API_PROVIDER,
       pactUrls: [PACT_FILE],
       messageProviders: {
         'SupplierApiEvent-letter_accepted': () => LetterAcceptedEvent,

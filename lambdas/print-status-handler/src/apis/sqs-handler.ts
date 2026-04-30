@@ -4,7 +4,6 @@ import type {
   SQSEvent,
 } from 'aws-lambda';
 import { randomUUID } from 'node:crypto';
-import { z } from 'zod';
 import {
   PrintLetterTransitioned,
   validatePrintLetterTransitioned,
@@ -26,13 +25,6 @@ type ValidatedRecord = {
   event: SupplierApiLetterEvent;
 };
 
-const originSubjectSchema = z
-  .string()
-  .regex(
-    /^client\/[^/]+\/letter-request\/[^/]+$/,
-    'Subject must be in format: client/{senderId}/letter-request/{messageReference}',
-  );
-
 function validateRecord(
   { body, messageId }: { body: string; messageId: string },
   logger: Logger,
@@ -51,19 +43,6 @@ function validateRecord(
       logger.warn({
         err: parseError,
         description: 'Error parsing queue item',
-      });
-
-      return null;
-    }
-
-    const subjectValidation = originSubjectSchema.safeParse(
-      item.data.origin.subject,
-    );
-
-    if (!subjectValidation.success) {
-      logger.warn({
-        err: subjectValidation.error,
-        description: 'Invalid origin.subject format',
       });
 
       return null;

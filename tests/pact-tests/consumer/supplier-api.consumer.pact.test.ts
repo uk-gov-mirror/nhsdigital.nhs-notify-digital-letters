@@ -15,19 +15,48 @@ import {
   asynchronousBodyHandler,
 } from '@pact-foundation/pact';
 import { $SupplierApiLetterEvent } from 'utils';
-import path from 'node:path';
-import { PACT_CONSUMER } from '../utils/pact-config';
+import {
+  PACT_CONSUMER,
+  PACT_SUPPLIER_API_PROVIDER,
+} from '../utils/pact-config';
+import { getPathFromProvider } from '../utils/path-utils';
 
-const PACT_DIRECTORY = path.resolve(__dirname, '../.pacts/supplier-api');
+const PACT_DIRECTORY = getPathFromProvider(PACT_SUPPLIER_API_PROVIDER);
 
 async function handle(event: unknown) {
   $SupplierApiLetterEvent.parse(event);
 }
 
+function buildValidator(status: string, includeReason = false) {
+  return {
+    data: {
+      origin: {
+        subject: MatchersV3.regex(
+          /^client\/[^/]+\/letter-request\/[^/]+$/,
+          LetterAcceptedEvent.data.origin.subject,
+        ),
+      },
+      specificationId: MatchersV3.string(
+        LetterAcceptedEvent.data.specificationId,
+      ),
+      status,
+      supplierId: MatchersV3.string(LetterAcceptedEvent.data.supplierId),
+      ...(includeReason && {
+        reasonCode: MatchersV3.string(LetterFailedEvent.data.reasonCode),
+        reasonText: MatchersV3.string(LetterFailedEvent.data.reasonText),
+      }),
+    },
+    time: MatchersV3.timestamp(
+      "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+      LetterAcceptedEvent.time,
+    ),
+  };
+}
+
 describe('Pact message consumer - Supplier API events', () => {
   const messagePact = new MessageConsumerPact({
     consumer: PACT_CONSUMER,
-    provider: 'supplier-api',
+    provider: PACT_SUPPLIER_API_PROVIDER,
     dir: PACT_DIRECTORY,
     logLevel: 'error',
     pactfileWriteMode: 'update',
@@ -37,25 +66,7 @@ describe('Pact message consumer - Supplier API events', () => {
     await expect(
       messagePact
         .expectsToReceive('SupplierApiEvent-letter_accepted')
-        .withContent({
-          data: {
-            origin: {
-              subject: MatchersV3.regex(
-                /^client\/[^/]+\/letter-request\/[^/]+$/,
-                LetterAcceptedEvent.data.origin.subject,
-              ),
-            },
-            specificationId: MatchersV3.string(
-              LetterAcceptedEvent.data.specificationId,
-            ),
-            status: LetterAcceptedEvent.data.status,
-            supplierId: MatchersV3.string(LetterAcceptedEvent.data.supplierId),
-          },
-          time: MatchersV3.timestamp(
-            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-            LetterAcceptedEvent.time,
-          ),
-        })
+        .withContent(buildValidator(LetterAcceptedEvent.data.status))
         .verify(asynchronousBodyHandler(handle)),
     ).resolves.not.toThrow();
   });
@@ -64,27 +75,7 @@ describe('Pact message consumer - Supplier API events', () => {
     await expect(
       messagePact
         .expectsToReceive('SupplierApiEvent-letter_returned')
-        .withContent({
-          data: {
-            origin: {
-              subject: MatchersV3.regex(
-                /^client\/[^/]+\/letter-request\/[^/]+$/,
-                LetterReturnedEvent.data.origin.subject,
-              ),
-            },
-            reasonCode: MatchersV3.string(LetterReturnedEvent.data.reasonCode),
-            reasonText: MatchersV3.string(LetterReturnedEvent.data.reasonText),
-            specificationId: MatchersV3.string(
-              LetterReturnedEvent.data.specificationId,
-            ),
-            status: LetterReturnedEvent.data.status,
-            supplierId: MatchersV3.string(LetterReturnedEvent.data.supplierId),
-          },
-          time: MatchersV3.timestamp(
-            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-            LetterReturnedEvent.time,
-          ),
-        })
+        .withContent(buildValidator(LetterReturnedEvent.data.status, true))
         .verify(asynchronousBodyHandler(handle)),
     ).resolves.not.toThrow();
   });
@@ -93,27 +84,7 @@ describe('Pact message consumer - Supplier API events', () => {
     await expect(
       messagePact
         .expectsToReceive('SupplierApiEvent-letter_failed')
-        .withContent({
-          data: {
-            origin: {
-              subject: MatchersV3.regex(
-                /^client\/[^/]+\/letter-request\/[^/]+$/,
-                LetterFailedEvent.data.origin.subject,
-              ),
-            },
-            reasonCode: MatchersV3.string(LetterFailedEvent.data.reasonCode),
-            reasonText: MatchersV3.string(LetterFailedEvent.data.reasonText),
-            specificationId: MatchersV3.string(
-              LetterFailedEvent.data.specificationId,
-            ),
-            status: LetterFailedEvent.data.status,
-            supplierId: MatchersV3.string(LetterFailedEvent.data.supplierId),
-          },
-          time: MatchersV3.timestamp(
-            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-            LetterFailedEvent.time,
-          ),
-        })
+        .withContent(buildValidator(LetterFailedEvent.data.status, true))
         .verify(asynchronousBodyHandler(handle)),
     ).resolves.not.toThrow();
   });
@@ -122,27 +93,7 @@ describe('Pact message consumer - Supplier API events', () => {
     await expect(
       messagePact
         .expectsToReceive('SupplierApiEvent-letter_dispatched')
-        .withContent({
-          data: {
-            origin: {
-              subject: MatchersV3.regex(
-                /^client\/[^/]+\/letter-request\/[^/]+$/,
-                LetterDispatchedEvent.data.origin.subject,
-              ),
-            },
-            specificationId: MatchersV3.string(
-              LetterDispatchedEvent.data.specificationId,
-            ),
-            status: LetterDispatchedEvent.data.status,
-            supplierId: MatchersV3.string(
-              LetterDispatchedEvent.data.supplierId,
-            ),
-          },
-          time: MatchersV3.timestamp(
-            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-            LetterDispatchedEvent.time,
-          ),
-        })
+        .withContent(buildValidator(LetterDispatchedEvent.data.status))
         .verify(asynchronousBodyHandler(handle)),
     ).resolves.not.toThrow();
   });
@@ -151,25 +102,7 @@ describe('Pact message consumer - Supplier API events', () => {
     await expect(
       messagePact
         .expectsToReceive('SupplierApiEvent-letter_printed')
-        .withContent({
-          data: {
-            origin: {
-              subject: MatchersV3.regex(
-                /^client\/[^/]+\/letter-request\/[^/]+$/,
-                LetterPrintedEvent.data.origin.subject,
-              ),
-            },
-            specificationId: MatchersV3.string(
-              LetterPrintedEvent.data.specificationId,
-            ),
-            status: LetterPrintedEvent.data.status,
-            supplierId: MatchersV3.string(LetterPrintedEvent.data.supplierId),
-          },
-          time: MatchersV3.timestamp(
-            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-            LetterPrintedEvent.time,
-          ),
-        })
+        .withContent(buildValidator(LetterPrintedEvent.data.status))
         .verify(asynchronousBodyHandler(handle)),
     ).resolves.not.toThrow();
   });
@@ -178,27 +111,7 @@ describe('Pact message consumer - Supplier API events', () => {
     await expect(
       messagePact
         .expectsToReceive('SupplierApiEvent-letter_rejected')
-        .withContent({
-          data: {
-            origin: {
-              subject: MatchersV3.regex(
-                /^client\/[^/]+\/letter-request\/[^/]+$/,
-                LetterRejectedEvent.data.origin.subject,
-              ),
-            },
-            reasonCode: MatchersV3.string(LetterRejectedEvent.data.reasonCode),
-            reasonText: MatchersV3.string(LetterRejectedEvent.data.reasonText),
-            specificationId: MatchersV3.string(
-              LetterRejectedEvent.data.specificationId,
-            ),
-            status: LetterRejectedEvent.data.status,
-            supplierId: MatchersV3.string(LetterRejectedEvent.data.supplierId),
-          },
-          time: MatchersV3.timestamp(
-            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-            LetterRejectedEvent.time,
-          ),
-        })
+        .withContent(buildValidator(LetterRejectedEvent.data.status))
         .verify(asynchronousBodyHandler(handle)),
     ).resolves.not.toThrow();
   });
@@ -207,27 +120,7 @@ describe('Pact message consumer - Supplier API events', () => {
     await expect(
       messagePact
         .expectsToReceive('SupplierApiEvent-letter_cancelled')
-        .withContent({
-          data: {
-            origin: {
-              subject: MatchersV3.regex(
-                /^client\/[^/]+\/letter-request\/[^/]+$/,
-                LetterCancelledEvent.data.origin.subject,
-              ),
-            },
-            reasonCode: MatchersV3.string(LetterCancelledEvent.data.reasonCode),
-            reasonText: MatchersV3.string(LetterCancelledEvent.data.reasonText),
-            specificationId: MatchersV3.string(
-              LetterCancelledEvent.data.specificationId,
-            ),
-            status: LetterCancelledEvent.data.status,
-            supplierId: MatchersV3.string(LetterCancelledEvent.data.supplierId),
-          },
-          time: MatchersV3.timestamp(
-            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-            LetterCancelledEvent.time,
-          ),
-        })
+        .withContent(buildValidator(LetterCancelledEvent.data.status))
         .verify(asynchronousBodyHandler(handle)),
     ).resolves.not.toThrow();
   });
@@ -236,25 +129,7 @@ describe('Pact message consumer - Supplier API events', () => {
     await expect(
       messagePact
         .expectsToReceive('SupplierApiEvent-letter_delivered')
-        .withContent({
-          data: {
-            origin: {
-              subject: MatchersV3.regex(
-                /^client\/[^/]+\/letter-request\/[^/]+$/,
-                LetterDeliveredEvent.data.origin.subject,
-              ),
-            },
-            specificationId: MatchersV3.string(
-              LetterDeliveredEvent.data.specificationId,
-            ),
-            status: LetterDeliveredEvent.data.status,
-            supplierId: MatchersV3.string(LetterDeliveredEvent.data.supplierId),
-          },
-          time: MatchersV3.timestamp(
-            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-            LetterDeliveredEvent.time,
-          ),
-        })
+        .withContent(buildValidator(LetterDeliveredEvent.data.status))
         .verify(asynchronousBodyHandler(handle)),
     ).resolves.not.toThrow();
   });
@@ -263,25 +138,7 @@ describe('Pact message consumer - Supplier API events', () => {
     await expect(
       messagePact
         .expectsToReceive('SupplierApiEvent-letter_enclosed')
-        .withContent({
-          data: {
-            origin: {
-              subject: MatchersV3.regex(
-                /^client\/[^/]+\/letter-request\/[^/]+$/,
-                LetterEnclosedEvent.data.origin.subject,
-              ),
-            },
-            specificationId: MatchersV3.string(
-              LetterEnclosedEvent.data.specificationId,
-            ),
-            status: LetterEnclosedEvent.data.status,
-            supplierId: MatchersV3.string(LetterEnclosedEvent.data.supplierId),
-          },
-          time: MatchersV3.timestamp(
-            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-            LetterEnclosedEvent.time,
-          ),
-        })
+        .withContent(buildValidator(LetterEnclosedEvent.data.status))
         .verify(asynchronousBodyHandler(handle)),
     ).resolves.not.toThrow();
   });
@@ -290,27 +147,7 @@ describe('Pact message consumer - Supplier API events', () => {
     await expect(
       messagePact
         .expectsToReceive('SupplierApiEvent-letter_forwarded')
-        .withContent({
-          data: {
-            origin: {
-              subject: MatchersV3.regex(
-                /^client\/[^/]+\/letter-request\/[^/]+$/,
-                LetterForwardedEvent.data.origin.subject,
-              ),
-            },
-            reasonCode: MatchersV3.string(LetterForwardedEvent.data.reasonCode),
-            reasonText: MatchersV3.string(LetterForwardedEvent.data.reasonText),
-            specificationId: MatchersV3.string(
-              LetterForwardedEvent.data.specificationId,
-            ),
-            status: LetterForwardedEvent.data.status,
-            supplierId: MatchersV3.string(LetterForwardedEvent.data.supplierId),
-          },
-          time: MatchersV3.timestamp(
-            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-            LetterForwardedEvent.time,
-          ),
-        })
+        .withContent(buildValidator(LetterForwardedEvent.data.status))
         .verify(asynchronousBodyHandler(handle)),
     ).resolves.not.toThrow();
   });
@@ -319,25 +156,7 @@ describe('Pact message consumer - Supplier API events', () => {
     await expect(
       messagePact
         .expectsToReceive('SupplierApiEvent-letter_pending')
-        .withContent({
-          data: {
-            origin: {
-              subject: MatchersV3.regex(
-                /^client\/[^/]+\/letter-request\/[^/]+$/,
-                LetterPendingEvent.data.origin.subject,
-              ),
-            },
-            specificationId: MatchersV3.string(
-              LetterPendingEvent.data.specificationId,
-            ),
-            status: LetterPendingEvent.data.status,
-            supplierId: MatchersV3.string(LetterPendingEvent.data.supplierId),
-          },
-          time: MatchersV3.timestamp(
-            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-            LetterPendingEvent.time,
-          ),
-        })
+        .withContent(buildValidator(LetterPendingEvent.data.status))
         .verify(asynchronousBodyHandler(handle)),
     ).resolves.not.toThrow();
   });

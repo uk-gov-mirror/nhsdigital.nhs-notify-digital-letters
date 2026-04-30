@@ -7,20 +7,22 @@ import {
 import { $ChannelStatusPublishedEvent } from 'utils';
 import {
   PACT_CONSUMER,
-  PACT_DIRECTORY,
   PACT_MESSAGE_DESCRIPTION,
-  PACT_PROVIDER,
+  PACT_STATUS_PUBLISHED_PROVIDER,
 } from '../utils/pact-config';
+import { getPathFromProvider } from '../utils/path-utils';
 
 async function handle(event: unknown) {
   // The schema used by the nhsapp-status-handler to validate the event.
   $ChannelStatusPublishedEvent.parse(event);
 }
 
+const PACT_DIRECTORY = getPathFromProvider(PACT_STATUS_PUBLISHED_PROVIDER);
+
 describe('Pact message consumer - ChannelStatusPublished event', () => {
   const messagePact = new MessageConsumerPact({
     consumer: PACT_CONSUMER,
-    provider: PACT_PROVIDER,
+    provider: PACT_STATUS_PUBLISHED_PROVIDER,
     dir: PACT_DIRECTORY,
     logLevel: 'error',
     pactfileWriteMode: 'update',
