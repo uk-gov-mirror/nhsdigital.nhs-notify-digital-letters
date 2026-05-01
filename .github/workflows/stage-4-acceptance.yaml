@@ -90,7 +90,7 @@ jobs:
             --targetAccountGroup "$TARGET_ACCOUNT_GROUP" \
             --targetComponent "dl" \
             --internalRef "${{ inputs.internal_ref || 'main' }}" \
-            --shardCount "8"
+            --shardCount "6"
   test-accessibility:
     name: "Accessibility test"
     runs-on: ubuntu-latest
