@@ -80,28 +80,4 @@ data "aws_iam_policy_document" "s3bucket_pii_data" {
       ]
     }
   }
-
-  # dynamic "statement" {
-  #   for_each = var.restrict_pii_data_access ? [1] : []
-  #   content {
-  #     effect = "Deny"
-  #     actions = [
-  #       "s3:GetObject",
-  #       "s3:GetObjectVersion",
-  #       "s3:PutObject",
-  #       "s3:DeleteObject"
-  #     ]
-  #     resources = [
-  #       module.s3bucket_pii_data.arn,
-  #       "${module.s3bucket_pii_data.arn}/*",
-  #     ]
-
-  #     principals {
-  #       type = "AWS"
-  #       identifiers = [
-  #         local.bc_restricted_dev_role
-  #       ]
-  #     }
-  #   }
-  # }
 }
