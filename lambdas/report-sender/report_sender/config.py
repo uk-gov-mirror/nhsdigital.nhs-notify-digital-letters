@@ -11,7 +11,7 @@ _REQUIRED_ENV_VAR_MAP = {
     "event_publisher_event_bus_arn": "EVENT_PUBLISHER_EVENT_BUS_ARN",
     "event_publisher_dlq_url": "EVENT_PUBLISHER_DLQ_URL",
     "send_metric_name": "REPORT_SENDER_METRIC_NAME",
-    "send_metric_namespace": "REPORT_SENDER_METRIC_NAMESPACE"
+    "dl_metrics_namespace": "DL_METRICS_NAMESPACE"
 }
 
 
@@ -41,6 +41,6 @@ class Config(BaseMeshConfig):
         """
         return Metric(
             name=self.send_metric_name,
-            namespace=self.send_metric_namespace,
+            namespace=self.dl_metrics_namespace,
             dimensions={"Environment": self.environment}
         )

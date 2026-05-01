@@ -36,6 +36,7 @@ def handler(event, context):
             event_publisher = EventPublisher(
                 event_bus_arn=config.event_publisher_event_bus_arn,
                 dlq_url=config.event_publisher_dlq_url,
+                event_metric=config.event_publisher_metric,
                 logger=log
             )
 

@@ -11,12 +11,14 @@ class Metric:  # pylint: disable=too-few-public-methods
     """
 
     def __init__(self, **kwargs):
-        self.name = kwargs['name']
+        self.name = kwargs.get('name', None)
         self.namespace = kwargs['namespace']
         self.dimensions = kwargs.get("dimensions", {})
         self.unit = kwargs.get("unit", 'Count')
 
-    def record(self, value):
+    def record(self, value, **kwargs):
+
+        metric_name = kwargs.get('name', self.name)
         """
         method for  reporting metric
         """
@@ -30,12 +32,12 @@ class Metric:  # pylint: disable=too-few-public-methods
                     ],
                     "Metrics": [
                         {
-                            "Name": self.name,
+                            "Name": metric_name,
                             "Unit": self.unit,
                         }
                     ]
                 }],
             },
             **self.dimensions,
-            self.name: value,
+            metric_name: value,
         }))

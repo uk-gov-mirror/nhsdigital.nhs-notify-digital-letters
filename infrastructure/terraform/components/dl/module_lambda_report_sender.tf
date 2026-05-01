@@ -35,17 +35,16 @@ module "report_sender" {
   log_subscription_role_arn = local.acct.log_subscription_role_arn
 
   lambda_env_vars = {
-    REPORT_SENDER_METRIC_NAME      = "report-sender-successful-sends"
-    REPORT_SENDER_METRIC_NAMESPACE = "dl-report-sender"
-    DLQ_URL                        = module.sqs_report_sender.sqs_dlq_url
-    ENVIRONMENT                    = var.environment
-    EVENT_PUBLISHER_DLQ_URL        = module.sqs_event_publisher_errors.sqs_queue_url
-    EVENT_PUBLISHER_EVENT_BUS_ARN  = aws_cloudwatch_event_bus.main.arn
-    MOCK_MESH_BUCKET               = module.s3bucket_non_pii_data.bucket
-    SSM_MESH_PREFIX                = local.ssm_mesh_prefix
-    SSM_SENDERS_PREFIX             = local.ssm_senders_prefix
-    USE_MESH_MOCK                  = var.enable_mock_mesh ? "true" : "false"
-    DL_METRICS_NAMESPACE           = local.metrics_namespace_name
+    REPORT_SENDER_METRIC_NAME     = "report-sender-successful-sends"
+    DLQ_URL                       = module.sqs_report_sender.sqs_dlq_url
+    ENVIRONMENT                   = var.environment
+    EVENT_PUBLISHER_DLQ_URL       = module.sqs_event_publisher_errors.sqs_queue_url
+    EVENT_PUBLISHER_EVENT_BUS_ARN = aws_cloudwatch_event_bus.main.arn
+    MOCK_MESH_BUCKET              = module.s3bucket_non_pii_data.bucket
+    SSM_MESH_PREFIX               = local.ssm_mesh_prefix
+    SSM_SENDERS_PREFIX            = local.ssm_senders_prefix
+    USE_MESH_MOCK                 = var.enable_mock_mesh ? "true" : "false"
+    DL_METRICS_NAMESPACE          = local.metrics_namespace_name
   }
 
 }

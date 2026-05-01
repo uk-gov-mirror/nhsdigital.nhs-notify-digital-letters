@@ -79,7 +79,7 @@ describe('Event Publishing', () => {
     expect(eventBridgeMock.calls()).toHaveLength(1);
     expect(sqsMock.calls()).toHaveLength(0);
     expect(metricHandlerMock.addMetrics).toHaveBeenCalledWith([
-      'uk.nhs.notify.digital.letters.sent.v1_batchSuccess',
+      'uk.nhs.notify.digital.letters.sent.v1_success',
       'Count',
       2,
     ]);
@@ -165,12 +165,12 @@ describe('Event Publishing', () => {
     expect(sqsInput.Entries).toHaveLength(1);
     expect(sqsInput.Entries[0].MessageBody).toBe(JSON.stringify(event));
     expect(metricHandlerMock.addMetrics).toHaveBeenNthCalledWith(1, [
-      'uk.nhs.notify.digital.letters.sent.v1_batchSuccess',
+      'uk.nhs.notify.digital.letters.sent.v1_success',
       'Count',
       1,
     ]);
     expect(metricHandlerMock.addMetrics).toHaveBeenNthCalledWith(2, [
-      'uk.nhs.notify.digital.letters.sent.v1_batchFailure',
+      'uk.nhs.notify.digital.letters.sent.v1_failure',
       'Count',
       1,
     ]);

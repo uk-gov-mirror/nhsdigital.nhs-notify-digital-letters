@@ -27,10 +27,16 @@ def mock_sqs_client():
 
 
 @pytest.fixture
-def test_config(mock_logger, mock_events_client, mock_sqs_client):
+def mock_event_metric():
+    return Mock()
+
+
+@pytest.fixture
+def test_config(mock_logger, mock_events_client, mock_sqs_client, mock_event_metric):
     return {
         'event_bus_arn': 'arn:aws:events:us-east-1:123456789012:event-bus/test-bus',
         'dlq_url': 'https://sqs.us-east-1.amazonaws.com/123456789012/test-dlq',
+        'event_metric': mock_event_metric,
         'logger': mock_logger,
         'events_client': mock_events_client,
         'sqs_client': mock_sqs_client,
@@ -520,3 +526,77 @@ class TestRetryBehaviour:
         dlq_call_args = mock_sqs_client.send_message_batch.call_args[1]
         assert dlq_call_args['Entries'][0]['MessageBody'] == json.dumps(valid_cloud_event)
         assert dlq_call_args['Entries'][0]['MessageAttributes']['DlqReason']['StringValue'] == 'EVENTBRIDGE_FAILURE'
+
+
+class TestEventMetricRecording:
+    """Tests for CloudWatch metric recording on EventBridge publish."""
+
+    def test_records_success_metric_when_events_sent_successfully(
+            self, test_config, mock_events_client, mock_sqs_client,
+            mock_event_metric, valid_cloud_event, mock_validator):
+        """Records a success metric using the event type as the metric name."""
+        mock_events_client.put_events.return_value = {
+            'FailedEntryCount': 0,
+            'Entries': [{'EventId': 'event-1'}]
+        }
+
+        publisher = EventPublisher(**test_config)
+        publisher.send_events([valid_cloud_event], validator=mock_validator)
+
+        event_type = valid_cloud_event['type']
+        mock_event_metric.record.assert_called_once_with(1, name=f"{event_type}_success")
+
+    def test_records_failure_metric_when_eventbridge_rejects_event(
+            self, test_config, mock_events_client, mock_sqs_client,
+            mock_event_metric, valid_cloud_event, mock_validator):
+        """Records a failure metric when EventBridge permanently rejects an event."""
+        mock_events_client.put_events.return_value = {
+            'FailedEntryCount': 1,
+            'Entries': [{'ErrorCode': 'AccessDenied', 'ErrorMessage': 'Access denied'}]
+        }
+        mock_sqs_client.send_message_batch.return_value = {'Successful': []}
+
+        publisher = EventPublisher(**test_config)
+        publisher.send_events([valid_cloud_event], validator=mock_validator)
+
+        event_type = valid_cloud_event['type']
+        mock_event_metric.record.assert_called_once_with(1, name=f"{event_type}_failure")
+
+    def test_records_both_success_and_failure_metrics_for_mixed_batch(
+            self, test_config, mock_events_client, mock_sqs_client,
+            mock_event_metric, valid_cloud_event, valid_cloud_event2, mock_validator):
+        """Records separate success and failure metrics for a batch with mixed outcomes."""
+        mock_events_client.put_events.return_value = {
+            'FailedEntryCount': 1,
+            'Entries': [
+                {'ErrorCode': 'AccessDenied', 'ErrorMessage': 'Access denied'},
+                {'EventId': 'event-2'},
+            ]
+        }
+        mock_sqs_client.send_message_batch.return_value = {'Successful': []}
+
+        publisher = EventPublisher(**test_config)
+        publisher.send_events([valid_cloud_event, valid_cloud_event2], validator=mock_validator)
+
+        event_type = valid_cloud_event['type']
+        mock_event_metric.record.assert_any_call(1, name=f"{event_type}_success")
+        mock_event_metric.record.assert_any_call(1, name=f"{event_type}_failure")
+
+    def test_does_not_record_metric_when_event_metric_is_none(
+            self, mock_logger, mock_events_client, mock_sqs_client,
+            valid_cloud_event, mock_validator):
+        """When no event_metric is provided, no metric is recorded."""
+        mock_events_client.put_events.return_value = {
+            'FailedEntryCount': 0,
+            'Entries': [{'EventId': 'event-1'}]
+        }
+
+        publisher = EventPublisher(
+            event_bus_arn='arn:aws:events:us-east-1:123456789012:event-bus/test-bus',
+            dlq_url='https://sqs.us-east-1.amazonaws.com/123456789012/test-dlq',
+            logger=mock_logger,
+            events_client=mock_events_client,
+            sqs_client=mock_sqs_client,
+        )
+        # Should not raise
+        publisher.send_events([valid_cloud_event], validator=mock_validator)

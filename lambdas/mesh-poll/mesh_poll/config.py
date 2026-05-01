@@ -13,9 +13,7 @@ _REQUIRED_ENV_VAR_MAP = {
     "event_bus_arn": "EVENT_PUBLISHER_EVENT_BUS_ARN",
     "event_publisher_dlq_url": "EVENT_PUBLISHER_DLQ_URL",
     "certificate_expiry_metric_name": "CERTIFICATE_EXPIRY_METRIC_NAME",
-    "certificate_expiry_metric_namespace": "CERTIFICATE_EXPIRY_METRIC_NAMESPACE",
     "polling_metric_name": "POLLING_METRIC_NAME",
-    "polling_metric_namespace": "POLLING_METRIC_NAMESPACE",
     "dl_metrics_namespace": "DL_METRICS_NAMESPACE",
 }
 
@@ -34,6 +32,7 @@ class Config(BaseMeshConfig):
         self.polling_metric = None
         self.remaining_mesh_messages_metric = None
         self.unfinished_reading_mesh_metric = None
+        self.event_publisher_metric = None
 
     def __enter__(self):
         super().__enter__()
@@ -42,6 +41,7 @@ class Config(BaseMeshConfig):
         self.polling_metric = self.build_polling_metric()
         self.remaining_mesh_messages_metric = self.build_remaining_mesh_messages_metric()
         self.unfinished_reading_mesh_metric = self.build_unfinished_reading_mesh_metric()
+        self.event_publisher_metric = self.build_event_publisher_metric()
 
         return self
 
@@ -51,7 +51,16 @@ class Config(BaseMeshConfig):
         """
         return Metric(
             name=self.polling_metric_name,
-            namespace=self.polling_metric_namespace,
+            namespace=self.dl_metrics_namespace,
+            dimensions={"Environment": self.environment}
+        )
+
+    def build_event_publisher_metric(self):
+        """
+        Returns a custom metric to record event published by the EventPublisher class
+        """
+        return Metric(
+            namespace=self.dl_metrics_namespace,
             dimensions={"Environment": self.environment}
         )
 

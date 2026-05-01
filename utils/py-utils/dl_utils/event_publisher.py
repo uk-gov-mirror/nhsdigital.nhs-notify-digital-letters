@@ -13,6 +13,7 @@ from uuid import uuid4
 import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError
+from .metric_client import Metric
 
 
 DlqReason = Literal['INVALID_EVENT', 'EVENTBRIDGE_FAILURE']
@@ -41,6 +42,7 @@ class EventPublisher:
         self,
         event_bus_arn: str,
         dlq_url: str,
+        event_metric: Optional[Metric] = None,
         logger: Optional[logging.Logger] = None,
         events_client: Optional[Any] = None,
         sqs_client: Optional[Any] = None
@@ -55,6 +57,7 @@ class EventPublisher:
 
         self.event_bus_arn = event_bus_arn
         self.dlq_url = dlq_url
+        self.event_metric = event_metric
         self.logger = logger or logging.getLogger(__name__)
         self.events_client = events_client or boto3.client(
             'events',
@@ -209,6 +212,15 @@ class EventPublisher:
             )
 
             batch_failures = self._send_batch_with_retry(batch)
+
+            if self.event_metric is not None and batch:
+                event_type = batch[0].get('type', 'unknown')
+                success_count = len(batch) - len(batch_failures)
+                failure_count = len(batch_failures)
+                if success_count > 0:
+                    self.event_metric.record(success_count, name=f"{event_type}_success")
+                if failure_count > 0:
+                    self.event_metric.record(failure_count, name=f"{event_type}_failure")
 
             if batch_failures:
                 for event in batch_failures:

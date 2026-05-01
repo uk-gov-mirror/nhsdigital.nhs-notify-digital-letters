@@ -29,6 +29,7 @@ class MeshMessageProcessor:  # pylint: disable=too-many-instance-attributes
         self.__polling_metric = kwargs['polling_metric']
         self.__remaining_mesh_messages_metric = kwargs['remaining_mesh_messages_metric']
         self.__unfinished_reading_mesh_metric = kwargs['unfinished_reading_mesh_metric']
+        self.__event_publisher_metric = kwargs['event_publisher_metric']
 
         environment = 'development'
         deployment = 'primary'
@@ -41,6 +42,7 @@ class MeshMessageProcessor:  # pylint: disable=too-many-instance-attributes
         self.__event_publisher = EventPublisher(
             event_bus_arn=self.__config.event_bus_arn,
             dlq_url=self.__config.event_publisher_dlq_url,
+            event_metric=self.__event_publisher_metric,
             logger=self.__log
         )
 

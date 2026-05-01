@@ -143,6 +143,7 @@ class TestHandler:
         event_publisher_cls.assert_called_once_with(
             event_bus_arn=config.event_publisher_event_bus_arn,
             dlq_url=config.event_publisher_dlq_url,
+            event_metric=config.event_publisher_metric,
             logger=log,
         )
         acknowledger_cls.assert_called_once_with(

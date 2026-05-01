@@ -38,13 +38,11 @@ module "mesh_poll" {
 
   lambda_env_vars = {
     CERTIFICATE_EXPIRY_METRIC_NAME      = "mesh-poll-client-certificate-near-expiry"
-    CERTIFICATE_EXPIRY_METRIC_NAMESPACE = "dl-mesh-poll"
     ENVIRONMENT                         = var.environment
     EVENT_PUBLISHER_DLQ_URL             = module.sqs_event_publisher_errors.sqs_queue_url
     EVENT_PUBLISHER_EVENT_BUS_ARN       = aws_cloudwatch_event_bus.main.arn
     LAMBDA_TIMEOUT_BUFFER_MILLISECONDS  = "60000" # 1 minute, to leave time for mesh-download to acknowledge the message before we run again.
     POLLING_METRIC_NAME                 = "mesh-poll-successful-polls"
-    POLLING_METRIC_NAMESPACE            = "dl-mesh-poll"
     SSM_MESH_PREFIX                     = local.ssm_mesh_prefix
     SSM_SENDERS_PREFIX                  = local.ssm_senders_prefix
     USE_MESH_MOCK                       = var.enable_mock_mesh ? "true" : "false"

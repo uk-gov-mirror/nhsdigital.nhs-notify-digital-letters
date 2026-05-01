@@ -17,6 +17,7 @@ def handler(_, context):
             log=log,
             polling_metric=config.polling_metric,
             remaining_mesh_messages_metric=config.remaining_mesh_messages_metric,
-            unfinished_reading_mesh_metric=config.unfinished_reading_mesh_metric)
+            unfinished_reading_mesh_metric=config.unfinished_reading_mesh_metric,
+            event_publisher_metric=config.event_publisher_metric)
 
         processor.process_messages()

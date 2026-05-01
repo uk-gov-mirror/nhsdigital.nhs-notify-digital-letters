@@ -28,6 +28,7 @@ def setup_mocks():
     polling_metric = Mock()
     remaining_mesh_messages_metric = Mock()
     unfinished_reading_mesh_metric = Mock()
+    event_publisher_metric = Mock()
 
     return (
         config,
@@ -36,7 +37,8 @@ def setup_mocks():
         log,
         polling_metric,
         remaining_mesh_messages_metric,
-        unfinished_reading_mesh_metric
+        unfinished_reading_mesh_metric,
+        event_publisher_metric
     )
 
 
@@ -72,7 +74,7 @@ class TestMeshMessageProcessor:
 
     def test_process_messages_iterates_through_inbox(self, mock_event_publisher_class):
         """Test that processor iterates through all messages in MESH inbox"""
-        (config, sender_lookup, mesh_client, log, polling_metric, remaining_mesh_messages_metric, unfinished_reading_mesh_metric) = setup_mocks()
+        (config, sender_lookup, mesh_client, log, polling_metric, remaining_mesh_messages_metric, unfinished_reading_mesh_metric, event_publisher_metric) = setup_mocks()
         message1 = setup_message_data("1")
         message2 = setup_message_data("2")
 
@@ -84,7 +86,8 @@ class TestMeshMessageProcessor:
             log=log,
             polling_metric=polling_metric,
             remaining_mesh_messages_metric=remaining_mesh_messages_metric,
-            unfinished_reading_mesh_metric=unfinished_reading_mesh_metric
+            unfinished_reading_mesh_metric=unfinished_reading_mesh_metric,
+            event_publisher_metric=event_publisher_metric
         )
 
         mesh_client.iterate_all_messages.return_value = [message1, message2]
@@ -102,7 +105,7 @@ class TestMeshMessageProcessor:
 
     def test_process_messages_stops_near_timeout(self, mock_event_publisher_class):
         """Test that processor stops processing when near timeout"""
-        (config, sender_lookup, mesh_client, log, polling_metric, remaining_mesh_messages_metric, unfinished_reading_mesh_metric) = setup_mocks()
+        (config, sender_lookup, mesh_client, log, polling_metric, remaining_mesh_messages_metric, unfinished_reading_mesh_metric, event_publisher_metric) = setup_mocks()
         message1 = setup_message_data("1")
 
         mock_event_publisher = Mock()
@@ -116,7 +119,8 @@ class TestMeshMessageProcessor:
             log=log,
             polling_metric=polling_metric,
             remaining_mesh_messages_metric=remaining_mesh_messages_metric,
-            unfinished_reading_mesh_metric=unfinished_reading_mesh_metric
+            unfinished_reading_mesh_metric=unfinished_reading_mesh_metric,
+            event_publisher_metric=event_publisher_metric
         )
 
         mesh_client.iterate_all_messages.return_value = [message1]
@@ -132,7 +136,7 @@ class TestMeshMessageProcessor:
 
     def test_process_message_with_valid_sender(self, mock_event_publisher_class):
         """Test processing a single message from valid sender"""
-        (config, sender_lookup, mesh_client, log, polling_metric, remaining_mesh_messages_metric, unfinished_reading_mesh_metric) = setup_mocks()
+        (config, sender_lookup, mesh_client, log, polling_metric, remaining_mesh_messages_metric, unfinished_reading_mesh_metric, event_publisher_metric) = setup_mocks()
         message = setup_message_data("1")
 
         mock_event_publisher = Mock()
@@ -147,7 +151,8 @@ class TestMeshMessageProcessor:
             log=log,
             polling_metric=polling_metric,
             remaining_mesh_messages_metric=remaining_mesh_messages_metric,
-            unfinished_reading_mesh_metric=unfinished_reading_mesh_metric
+            unfinished_reading_mesh_metric=unfinished_reading_mesh_metric,
+            event_publisher_metric=event_publisher_metric
         )
 
         mesh_client.list_messages.return_value = ["messageId1"]
@@ -163,7 +168,7 @@ class TestMeshMessageProcessor:
 
     def test_process_message_with_unknown_sender(self, mock_event_publisher_class):
         """Test that messages from unknown senders are rejected silently"""
-        (config, sender_lookup, mesh_client, log, polling_metric, remaining_mesh_messages_metric, unfinished_reading_mesh_metric) = setup_mocks()
+        (config, sender_lookup, mesh_client, log, polling_metric, remaining_mesh_messages_metric, unfinished_reading_mesh_metric, event_publisher_metric) = setup_mocks()
         message = setup_message_data("1")
 
         mock_event_publisher = Mock()
@@ -181,7 +186,8 @@ class TestMeshMessageProcessor:
             log=log,
             polling_metric=polling_metric,
             remaining_mesh_messages_metric=remaining_mesh_messages_metric,
-            unfinished_reading_mesh_metric=unfinished_reading_mesh_metric
+            unfinished_reading_mesh_metric=unfinished_reading_mesh_metric,
+            event_publisher_metric=event_publisher_metric
         )
 
         processor.process_message(message)
@@ -195,7 +201,7 @@ class TestMeshMessageProcessor:
         Test that processor logs error when event publishing fails
         and does not acknowledge message
         """
-        (config, sender_lookup, mesh_client, log, polling_metric, remaining_mesh_messages_metric, unfinished_reading_mesh_metric) = setup_mocks()
+        (config, sender_lookup, mesh_client, log, polling_metric, remaining_mesh_messages_metric, unfinished_reading_mesh_metric, event_publisher_metric) = setup_mocks()
         message = setup_message_data("1")
 
         mock_event_publisher = Mock()
@@ -214,7 +220,8 @@ class TestMeshMessageProcessor:
             log=log,
             polling_metric=polling_metric,
             remaining_mesh_messages_metric=remaining_mesh_messages_metric,
-            unfinished_reading_mesh_metric=unfinished_reading_mesh_metric
+            unfinished_reading_mesh_metric=unfinished_reading_mesh_metric,
+            event_publisher_metric=event_publisher_metric
         )
 
         processor.process_message(message)
@@ -226,7 +233,7 @@ class TestMeshMessageProcessor:
 
     def test_all_messages_are_processed_in_a_single_iteration(self, mock_event_publisher_class):
         """Test that processor processes all messages in a single iteration"""
-        (config, sender_lookup, mesh_client, log, polling_metric, remaining_mesh_messages_metric, unfinished_reading_mesh_metric) = setup_mocks()
+        (config, sender_lookup, mesh_client, log, polling_metric, remaining_mesh_messages_metric, unfinished_reading_mesh_metric, event_publisher_metric) = setup_mocks()
         message1 = setup_message_data("1")
         message2 = setup_message_data("2")
         message3 = setup_message_data("3")
@@ -244,7 +251,8 @@ class TestMeshMessageProcessor:
             log=log,
             polling_metric=polling_metric,
             remaining_mesh_messages_metric=remaining_mesh_messages_metric,
-            unfinished_reading_mesh_metric=unfinished_reading_mesh_metric
+            unfinished_reading_mesh_metric=unfinished_reading_mesh_metric,
+            event_publisher_metric=event_publisher_metric
         )
 
         mesh_client.iterate_all_messages.return_value = [message1, message2, message3]
@@ -263,7 +271,7 @@ class TestMeshMessageProcessor:
 
     def test_process_message_rejects_missing_local_id(self, mock_event_publisher_class):
         """Test that processor publishes MESHInboxMessageInvalid event for missing local_id"""
-        (config, sender_lookup, mesh_client, log, polling_metric, remaining_mesh_messages_metric, unfinished_reading_mesh_metric) = setup_mocks()
+        (config, sender_lookup, mesh_client, log, polling_metric, remaining_mesh_messages_metric, unfinished_reading_mesh_metric, event_publisher_metric) = setup_mocks()
         message = setup_message_data("1")
         message.local_id = None
 
@@ -282,7 +290,8 @@ class TestMeshMessageProcessor:
             log=log,
             polling_metric=polling_metric,
             remaining_mesh_messages_metric=remaining_mesh_messages_metric,
-            unfinished_reading_mesh_metric=unfinished_reading_mesh_metric
+            unfinished_reading_mesh_metric=unfinished_reading_mesh_metric,
+            event_publisher_metric=event_publisher_metric
         )
 
         processor.process_message(message)
@@ -292,7 +301,7 @@ class TestMeshMessageProcessor:
 
     def test_process_message_rejects_empty_local_id(self, mock_event_publisher_class):
         """Test that processor publishes MESHInboxMessageInvalid event for empty local_id"""
-        (config, sender_lookup, mesh_client, log, polling_metric, remaining_mesh_messages_metric, unfinished_reading_mesh_metric) = setup_mocks()
+        (config, sender_lookup, mesh_client, log, polling_metric, remaining_mesh_messages_metric, unfinished_reading_mesh_metric, event_publisher_metric) = setup_mocks()
         message = setup_message_data("1")
         message.local_id = ""
 
@@ -311,7 +320,8 @@ class TestMeshMessageProcessor:
             log=log,
             polling_metric=polling_metric,
             remaining_mesh_messages_metric=remaining_mesh_messages_metric,
-            unfinished_reading_mesh_metric=unfinished_reading_mesh_metric
+            unfinished_reading_mesh_metric=unfinished_reading_mesh_metric,
+            event_publisher_metric=event_publisher_metric
         )
 
         processor.process_message(message)
@@ -324,7 +334,7 @@ class TestMeshMessageProcessor:
         Test that processor publishes MESHInboxMessageInvalid event
         for whitespace-only local_id
         """
-        (config, sender_lookup, mesh_client, log, polling_metric, remaining_mesh_messages_metric, unfinished_reading_mesh_metric) = setup_mocks()
+        (config, sender_lookup, mesh_client, log, polling_metric, remaining_mesh_messages_metric, unfinished_reading_mesh_metric, event_publisher_metric) = setup_mocks()
         message = setup_message_data("1")
         message.local_id = "   "
 
@@ -343,7 +353,8 @@ class TestMeshMessageProcessor:
             log=log,
             polling_metric=polling_metric,
             remaining_mesh_messages_metric=remaining_mesh_messages_metric,
-            unfinished_reading_mesh_metric=unfinished_reading_mesh_metric
+            unfinished_reading_mesh_metric=unfinished_reading_mesh_metric,
+            event_publisher_metric=event_publisher_metric
         )
 
         processor.process_message(message)

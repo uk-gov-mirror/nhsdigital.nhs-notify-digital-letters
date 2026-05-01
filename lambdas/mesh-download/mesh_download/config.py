@@ -11,7 +11,7 @@ _REQUIRED_ENV_VAR_MAP = {
     "download_metric_name": "DOWNLOAD_METRIC_NAME",
     "internal_duplicate_download_metric_name": "INTERNAL_DUPLICATE_DOWNLOAD_METRIC_NAME",
     "trust_duplicate_download_metric_name": "TRUST_DUPLICATE_DOWNLOAD_METRIC_NAME",
-    "download_metric_namespace": "DOWNLOAD_METRIC_NAMESPACE",
+    "dl_metrics_namespace": "DL_METRICS_NAMESPACE",
     "event_publisher_event_bus_arn": "EVENT_PUBLISHER_EVENT_BUS_ARN",
     "event_publisher_dlq_url": "EVENT_PUBLISHER_DLQ_URL",
     "pii_bucket": "PII_BUCKET"
@@ -32,6 +32,7 @@ class Config(BaseMeshConfig):
         self.download_metric = None
         self.internal_duplicate_download_metric = None
         self.trust_duplicate_download_metric = None
+        self.event_publisher_metric = None
 
     def __enter__(self):
         super().__enter__()
@@ -40,6 +41,7 @@ class Config(BaseMeshConfig):
         self.download_metric = self.build_download_metric()
         self.internal_duplicate_download_metric = self.build_internal_duplicate_download_metric()
         self.trust_duplicate_download_metric = self.build_trust_duplicate_download_metric()
+        self.event_publisher_metric = self.build_event_publisher_metric()
 
         return self
 
@@ -49,7 +51,7 @@ class Config(BaseMeshConfig):
         """
         return Metric(
             name=self.download_metric_name,
-            namespace=self.download_metric_namespace,
+            namespace=self.dl_metrics_namespace,
             dimensions={"Environment": self.environment}
         )
 
@@ -59,7 +61,7 @@ class Config(BaseMeshConfig):
         """
         return Metric(
             name=self.internal_duplicate_download_metric_name,
-            namespace=self.download_metric_namespace,
+            namespace=self.dl_metrics_namespace,
             dimensions={"Environment": self.environment}
         )
 
@@ -69,7 +71,16 @@ class Config(BaseMeshConfig):
         """
         return Metric(
             name=self.trust_duplicate_download_metric_name,
-            namespace=self.download_metric_namespace,
+            namespace=self.dl_metrics_namespace,
+            dimensions={"Environment": self.environment}
+        )
+
+    def build_event_publisher_metric(self):
+        """
+        Returns a custom metric to record events published by the EventPublisher class
+        """
+        return Metric(
+            namespace=self.dl_metrics_namespace,
             dimensions={"Environment": self.environment}
         )
 
