@@ -18,7 +18,7 @@ echo "Completed."
 # terraform output reads from S3 state backend and does not require built artefacts.
 if [[ "${ACTION:-}" == "output" ]]; then
   echo "Skipping dependency installation and build steps for 'output' action."
-  exit 0
+  return 0
 fi
 
 npm ci
