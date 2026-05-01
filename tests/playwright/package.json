@@ -16,7 +16,7 @@
     "digital-letters-events": "^0.0.1",
     "sender-management": "^0.0.1",
     "utils": "^0.0.1",
-    "uuid": "^8.3.2"
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
     "@types/uuid": "^10.0.0"
