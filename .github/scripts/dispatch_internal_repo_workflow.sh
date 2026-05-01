@@ -80,8 +80,8 @@ while [[ $# -gt 0 ]]; do
       overrideRoleName="$2"
       shift 2
       ;;
-    --enableSharding) # Enable test sharding across 4 parallel jobs (optional)
-      enableSharding="$2"
+    --shardCount) # Number of parallel shards to split tests across (optional)
+      shardCount="$2"
       shift 2
       ;;
     *)
@@ -171,7 +171,7 @@ echo "  overrides:          $overrides"
 echo "  overrideProjectName: $overrideProjectName"
 echo "  overrideRoleName:   $overrideRoleName"
 echo "  targetProject:      $targetProject"
-echo "  enableSharding:     ${enableSharding:-}"
+echo "  shardCount:         ${shardCount:-}"
 
 DISPATCH_EVENT=$(jq -ncM \
   --arg infraRepoName "$infraRepoName" \
@@ -185,7 +185,7 @@ DISPATCH_EVENT=$(jq -ncM \
   --arg overrideProjectName "$overrideProjectName" \
   --arg overrideRoleName "$overrideRoleName" \
   --arg targetProject "$targetProject" \
-  --argjson enableSharding "${enableSharding:-false}" \
+  --arg shardCount "${shardCount:-}" \
   '{
     "ref": "'"$internalRef"'",
     "inputs": (
@@ -194,7 +194,7 @@ DISPATCH_EVENT=$(jq -ncM \
       (if $overrideProjectName != "" then { "overrideProjectName": $overrideProjectName } else {} end) +
       (if $overrideRoleName != "" then { "overrideRoleName": $overrideRoleName } else {} end) +
       (if $targetProject != "" then { "targetProject": $targetProject } else {} end) +
-      (if $enableSharding then { "enableSharding": $enableSharding } else {} end) +
+      (if $shardCount != "" then { "shardCount": $shardCount } else {} end) +
       {
         "releaseVersion": $releaseVersion,
         "targetEnvironment": $targetEnvironment,

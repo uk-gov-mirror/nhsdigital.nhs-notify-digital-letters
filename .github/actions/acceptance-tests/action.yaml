@@ -54,7 +54,7 @@ runs:
           src/digital-letters-events/validators/
           src/digital-letters-events/guard-functions/
           src/digital-letters-events/digital_letters_events/models/
-        key: generated-deps-${{ hashFiles('src/cloudevents/**') }}
+        key: generated-deps-${{ runner.os }}-${{ hashFiles('src/cloudevents/**', 'src/typescript-schema-generator/**', 'src/python-schema-generator/**') }}
     - name: "Generate dependencies"
       if: steps.cache-generated.outputs.cache-hit != 'true'
       shell: bash
