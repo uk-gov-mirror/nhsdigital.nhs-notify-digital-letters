@@ -76,7 +76,8 @@ test.describe('Digital Letters - Core Notify', () => {
         CORE_NOTIFIER_LAMBDA_LOG_GROUP_NAME,
         [
           '$.message.description  = "Successfully processed request and sent to Notify"',
-          `$.message.messageReference  = "${SENDER_ID_VALID_FOR_NOTIFY_SANDBOX}_${messageReference}"`,
+          `$.message.messageReference  = "${messageReference}"`,
+          `$.message.senderId  = "${SENDER_ID_VALID_FOR_NOTIFY_SANDBOX}"`,
         ],
       );
 
