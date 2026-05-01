@@ -50,6 +50,26 @@ class MockMeshClient:  # pylint: disable=too-many-arguments
                     ContinuationToken=continuation_token
                 )
 
+    def list_messages(self, max_results: Optional[int] = None, workflow_filter: Optional[str] = None) -> List[str]:
+        """
+        Lists message IDs in the inbox, with optional filtering by workflow_id and max_results
+        """
+        response = self.s3_client.list_objects_v2(
+            Bucket=self.s3_bucket,
+            Prefix=self.inbox_prefix)
+
+        message_ids = []
+
+        for s3_object in response.get('Contents', []):
+
+            message_id = s3_object['Key'].split('/')[-1]
+            message_ids.append(message_id)
+
+            if max_results and len(message_ids) >= max_results:
+                return message_ids
+
+        return message_ids
+
     def retrieve_message(self, message_id):
         """
         Retrieves a specific message by ID from the inbox

@@ -26,13 +26,17 @@ def setup_mocks():
     log = Mock()
 
     polling_metric = Mock()
+    remaining_mesh_messages_metric = Mock()
+    unfinished_reading_mesh_metric = Mock()
 
     return (
         config,
         sender_lookup,
         mesh_client,
         log,
-        polling_metric
+        polling_metric,
+        remaining_mesh_messages_metric,
+        unfinished_reading_mesh_metric
     )
 
 
@@ -68,7 +72,7 @@ class TestMeshMessageProcessor:
 
     def test_process_messages_iterates_through_inbox(self, mock_event_publisher_class):
         """Test that processor iterates through all messages in MESH inbox"""
-        (config, sender_lookup, mesh_client, log, polling_metric) = setup_mocks()
+        (config, sender_lookup, mesh_client, log, polling_metric, remaining_mesh_messages_metric, unfinished_reading_mesh_metric) = setup_mocks()
         message1 = setup_message_data("1")
         message2 = setup_message_data("2")
 
@@ -78,10 +82,13 @@ class TestMeshMessageProcessor:
             mesh_client=mesh_client,
             get_remaining_time_in_millis=get_remaining_time_in_millis,
             log=log,
-            polling_metric=polling_metric
+            polling_metric=polling_metric,
+            remaining_mesh_messages_metric=remaining_mesh_messages_metric,
+            unfinished_reading_mesh_metric=unfinished_reading_mesh_metric
         )
 
         mesh_client.iterate_all_messages.return_value = [message1, message2]
+        mesh_client.list_messages.return_value = ["messageId1", "messageId2"]
         sender_lookup.is_valid_sender.return_value = True
 
         processor.process_messages()
@@ -90,10 +97,12 @@ class TestMeshMessageProcessor:
         assert mesh_client.iterate_all_messages.call_count == 1
         assert sender_lookup.is_valid_sender.call_count == 2  # Both messages validated
         polling_metric.record.assert_called_once()
+        remaining_mesh_messages_metric.record.assert_called_once_with(2)
+        unfinished_reading_mesh_metric.record.assert_not_called()
 
     def test_process_messages_stops_near_timeout(self, mock_event_publisher_class):
         """Test that processor stops processing when near timeout"""
-        (config, sender_lookup, mesh_client, log, polling_metric) = setup_mocks()
+        (config, sender_lookup, mesh_client, log, polling_metric, remaining_mesh_messages_metric, unfinished_reading_mesh_metric) = setup_mocks()
         message1 = setup_message_data("1")
 
         mock_event_publisher = Mock()
@@ -105,20 +114,25 @@ class TestMeshMessageProcessor:
             mesh_client=mesh_client,
             get_remaining_time_in_millis=get_remaining_time_in_millis_near_timeout,
             log=log,
-            polling_metric=polling_metric
+            polling_metric=polling_metric,
+            remaining_mesh_messages_metric=remaining_mesh_messages_metric,
+            unfinished_reading_mesh_metric=unfinished_reading_mesh_metric
         )
 
         mesh_client.iterate_all_messages.return_value = [message1]
+        mesh_client.list_messages.return_value = ["messageId1"]
 
         processor.process_messages()
 
         sender_lookup.is_valid_sender.assert_not_called()
         mock_event_publisher.send_events.assert_not_called()  # No events published when timeout
         polling_metric.record.assert_called_once()
+        remaining_mesh_messages_metric.record.assert_called_once_with(1)
+        unfinished_reading_mesh_metric.record.assert_called_once()
 
     def test_process_message_with_valid_sender(self, mock_event_publisher_class):
         """Test processing a single message from valid sender"""
-        (config, sender_lookup, mesh_client, log, polling_metric) = setup_mocks()
+        (config, sender_lookup, mesh_client, log, polling_metric, remaining_mesh_messages_metric, unfinished_reading_mesh_metric) = setup_mocks()
         message = setup_message_data("1")
 
         mock_event_publisher = Mock()
@@ -131,8 +145,12 @@ class TestMeshMessageProcessor:
             mesh_client=mesh_client,
             get_remaining_time_in_millis=get_remaining_time_in_millis,
             log=log,
-            polling_metric=polling_metric
+            polling_metric=polling_metric,
+            remaining_mesh_messages_metric=remaining_mesh_messages_metric,
+            unfinished_reading_mesh_metric=unfinished_reading_mesh_metric
         )
+
+        mesh_client.list_messages.return_value = ["messageId1"]
 
         sender_lookup.is_valid_sender.return_value = True
 
@@ -145,7 +163,7 @@ class TestMeshMessageProcessor:
 
     def test_process_message_with_unknown_sender(self, mock_event_publisher_class):
         """Test that messages from unknown senders are rejected silently"""
-        (config, sender_lookup, mesh_client, log, polling_metric) = setup_mocks()
+        (config, sender_lookup, mesh_client, log, polling_metric, remaining_mesh_messages_metric, unfinished_reading_mesh_metric) = setup_mocks()
         message = setup_message_data("1")
 
         mock_event_publisher = Mock()
@@ -153,6 +171,7 @@ class TestMeshMessageProcessor:
 
         # Invalid sender
         sender_lookup.is_valid_sender.return_value = False
+        mesh_client.list_messages.return_value = ["messageId1"]
 
         processor = MeshMessageProcessor(
             config=config,
@@ -160,7 +179,9 @@ class TestMeshMessageProcessor:
             mesh_client=mesh_client,
             get_remaining_time_in_millis=get_remaining_time_in_millis,
             log=log,
-            polling_metric=polling_metric
+            polling_metric=polling_metric,
+            remaining_mesh_messages_metric=remaining_mesh_messages_metric,
+            unfinished_reading_mesh_metric=unfinished_reading_mesh_metric
         )
 
         processor.process_message(message)
@@ -174,12 +195,13 @@ class TestMeshMessageProcessor:
         Test that processor logs error when event publishing fails
         and does not acknowledge message
         """
-        (config, sender_lookup, mesh_client, log, polling_metric) = setup_mocks()
+        (config, sender_lookup, mesh_client, log, polling_metric, remaining_mesh_messages_metric, unfinished_reading_mesh_metric) = setup_mocks()
         message = setup_message_data("1")
 
         mock_event_publisher = Mock()
         mock_event_publisher.send_events.return_value = [{"id": "failed-event-1"}]
         mock_event_publisher_class.return_value = mock_event_publisher
+        mesh_client.list_messages.return_value = ["messageId1"]
 
         sender_lookup.is_valid_sender.return_value = True
         sender_lookup.get_sender_id.return_value = "test_sender_id"
@@ -190,7 +212,9 @@ class TestMeshMessageProcessor:
             mesh_client=mesh_client,
             get_remaining_time_in_millis=get_remaining_time_in_millis,
             log=log,
-            polling_metric=polling_metric
+            polling_metric=polling_metric,
+            remaining_mesh_messages_metric=remaining_mesh_messages_metric,
+            unfinished_reading_mesh_metric=unfinished_reading_mesh_metric
         )
 
         processor.process_message(message)
@@ -202,10 +226,11 @@ class TestMeshMessageProcessor:
 
     def test_all_messages_are_processed_in_a_single_iteration(self, mock_event_publisher_class):
         """Test that processor processes all messages in a single iteration"""
-        (config, sender_lookup, mesh_client, log, polling_metric) = setup_mocks()
+        (config, sender_lookup, mesh_client, log, polling_metric, remaining_mesh_messages_metric, unfinished_reading_mesh_metric) = setup_mocks()
         message1 = setup_message_data("1")
         message2 = setup_message_data("2")
         message3 = setup_message_data("3")
+        mesh_client.list_messages.return_value = ["messageId1", "messageId2", "messageId3"]
 
         mock_event_publisher = Mock()
         mock_event_publisher.send_events.return_value = []  # No failed events
@@ -217,7 +242,9 @@ class TestMeshMessageProcessor:
             mesh_client=mesh_client,
             get_remaining_time_in_millis=get_remaining_time_in_millis,
             log=log,
-            polling_metric=polling_metric
+            polling_metric=polling_metric,
+            remaining_mesh_messages_metric=remaining_mesh_messages_metric,
+            unfinished_reading_mesh_metric=unfinished_reading_mesh_metric
         )
 
         mesh_client.iterate_all_messages.return_value = [message1, message2, message3]
@@ -230,10 +257,13 @@ class TestMeshMessageProcessor:
         assert sender_lookup.is_valid_sender.call_count == 3
         assert mock_event_publisher.send_events.call_count == 3
         polling_metric.record.assert_called_once()
+        remaining_mesh_messages_metric.record.assert_called_once_with(3)
+        unfinished_reading_mesh_metric.record.assert_not_called()
+
 
     def test_process_message_rejects_missing_local_id(self, mock_event_publisher_class):
         """Test that processor publishes MESHInboxMessageInvalid event for missing local_id"""
-        (config, sender_lookup, mesh_client, log, polling_metric) = setup_mocks()
+        (config, sender_lookup, mesh_client, log, polling_metric, remaining_mesh_messages_metric, unfinished_reading_mesh_metric) = setup_mocks()
         message = setup_message_data("1")
         message.local_id = None
 
@@ -250,7 +280,9 @@ class TestMeshMessageProcessor:
             mesh_client=mesh_client,
             get_remaining_time_in_millis=get_remaining_time_in_millis,
             log=log,
-            polling_metric=polling_metric
+            polling_metric=polling_metric,
+            remaining_mesh_messages_metric=remaining_mesh_messages_metric,
+            unfinished_reading_mesh_metric=unfinished_reading_mesh_metric
         )
 
         processor.process_message(message)
@@ -260,7 +292,7 @@ class TestMeshMessageProcessor:
 
     def test_process_message_rejects_empty_local_id(self, mock_event_publisher_class):
         """Test that processor publishes MESHInboxMessageInvalid event for empty local_id"""
-        (config, sender_lookup, mesh_client, log, polling_metric) = setup_mocks()
+        (config, sender_lookup, mesh_client, log, polling_metric, remaining_mesh_messages_metric, unfinished_reading_mesh_metric) = setup_mocks()
         message = setup_message_data("1")
         message.local_id = ""
 
@@ -277,7 +309,9 @@ class TestMeshMessageProcessor:
             mesh_client=mesh_client,
             get_remaining_time_in_millis=get_remaining_time_in_millis,
             log=log,
-            polling_metric=polling_metric
+            polling_metric=polling_metric,
+            remaining_mesh_messages_metric=remaining_mesh_messages_metric,
+            unfinished_reading_mesh_metric=unfinished_reading_mesh_metric
         )
 
         processor.process_message(message)
@@ -290,7 +324,7 @@ class TestMeshMessageProcessor:
         Test that processor publishes MESHInboxMessageInvalid event
         for whitespace-only local_id
         """
-        (config, sender_lookup, mesh_client, log, polling_metric) = setup_mocks()
+        (config, sender_lookup, mesh_client, log, polling_metric, remaining_mesh_messages_metric, unfinished_reading_mesh_metric) = setup_mocks()
         message = setup_message_data("1")
         message.local_id = "   "
 
@@ -307,7 +341,9 @@ class TestMeshMessageProcessor:
             mesh_client=mesh_client,
             get_remaining_time_in_millis=get_remaining_time_in_millis,
             log=log,
-            polling_metric=polling_metric
+            polling_metric=polling_metric,
+            remaining_mesh_messages_metric=remaining_mesh_messages_metric,
+            unfinished_reading_mesh_metric=unfinished_reading_mesh_metric
         )
 
         processor.process_message(message)
