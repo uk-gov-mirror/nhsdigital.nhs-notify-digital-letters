@@ -12,7 +12,8 @@ WITH vars AS (
             OR e.type LIKE '%.pdm.resource.retries.exceeded.%'
             OR e.type LIKE '%.messages.request.rejected.%' THEN 'Digital'
             WHEN e.type LIKE '%.print.letter.transitioned.%'
-            OR e.type LIKE '%.print.file.quarantined.%' THEN 'Print' ELSE NULL
+            OR e.type LIKE '%.print.file.quarantined.%'
+            OR e.type LIKE '%.print.invalid.attachment.received.%' THEN 'Print' ELSE NULL
         END as communicationtype,
         CASE
             WHEN e.type LIKE '%.item.dequeued.%' THEN 'Unread'
@@ -21,6 +22,7 @@ WITH vars AS (
             WHEN e.type LIKE '%.pdm.resource.retries.exceeded.%' THEN 'Failed'
             WHEN e.type LIKE '%.messages.request.rejected.%' THEN 'Failed'
             WHEN e.type LIKE '%.print.file.quarantined.%' THEN 'Failed'
+            WHEN e.type LIKE '%.print.invalid.attachment.received.%' THEN 'Failed'
             WHEN e.letterstatus = 'RETURNED' THEN 'Returned'
             WHEN e.letterstatus = 'FAILED' THEN 'Failed'
             WHEN e.letterstatus = 'DISPATCHED' THEN 'Dispatched'

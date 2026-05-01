@@ -7,8 +7,10 @@ import { createHash, randomUUID } from 'node:crypto';
 import { PDFDocument } from 'pdf-lib';
 import {
   FileSafe,
+  InvalidAttachmentReceived,
   PDFAnalysed,
   validateFileSafe,
+  validateInvalidAttachmentReceived,
   validatePDFAnalysed,
 } from 'digital-letters-events';
 import { EventPublisher, Logger, getS3ObjectBufferFromUri } from 'utils';
@@ -81,6 +83,31 @@ function generateUpdatedEvent(event: FileSafe, pdfInfo: PdfInfo): PDFAnalysed {
   };
 }
 
+function generateInvalidAttachmentEvent(
+  event: FileSafe,
+): InvalidAttachmentReceived {
+  const eventTime = new Date().toISOString();
+
+  const {
+    data: { messageReference, senderId },
+  } = event;
+
+  return {
+    ...event,
+    id: randomUUID(),
+    time: eventTime,
+    recordedtime: eventTime,
+    dataschema:
+      'https://notify.nhs.uk/cloudevents/schemas/digital-letters/2025-10-draft/data/digital-letters-print-invalid-attachment-received-data.schema.json',
+    type: 'uk.nhs.notify.digital.letters.print.invalid.attachment.received.v1',
+    data: {
+      senderId,
+      messageReference,
+      reasonCode: 'DL_CLIV_002',
+    },
+  };
+}
+
 async function analysePdf(pdf: Buffer): Promise<PdfInfo> {
   const doc = await PDFDocument.load(pdf);
   const pageCount = doc.getPageCount();
@@ -97,7 +124,7 @@ export const createHandler = ({
     const receivedItemCount = sqsEvent.Records.length;
     const batchItemFailures: SQSBatchItemFailure[] = [];
     const validatedRecords: ValidatedRecord[] = [];
-    const validEvents: PDFAnalysed[] = [];
+    const validEvents: (PDFAnalysed | InvalidAttachmentReceived)[] = [];
 
     logger.info(`Received SQS Event of ${receivedItemCount} record(s)`);
 
@@ -117,19 +144,45 @@ export const createHandler = ({
           const pdfBuffer = await getS3ObjectBufferFromUri(
             event.data.letterUri,
           );
-          const pdfInfo = await analysePdf(pdfBuffer);
-          validEvents.push(generateUpdatedEvent(event, pdfInfo));
+
+          try {
+            const pdfInfo = await analysePdf(pdfBuffer);
+            validEvents.push(generateUpdatedEvent(event, pdfInfo));
+          } catch (pdfError: any) {
+            const invalidAttachmentEvent =
+              generateInvalidAttachmentEvent(event);
+            validEvents.push(invalidAttachmentEvent);
+            logger.warn({
+              err: pdfError,
+              messageReference: event.data.messageReference,
+              reasonCode: 'DL_CLIV_002',
+              description: 'Failed to analyze PDF - invalid attachment format',
+            });
+          }
         } catch (error: any) {
           logger.warn({
-            err: error.message,
+            err: error,
             description: 'Failed processing message',
           });
-          batchItemFailures.push({ itemIdentifier: validatedRecord.messageId });
+          batchItemFailures.push({
+            itemIdentifier: validatedRecord.messageId,
+          });
         }
       }),
     );
 
-    await eventPublisher.sendEvents(validEvents, validatePDFAnalysed);
+    await eventPublisher.sendEvents(validEvents, (event) => {
+      if (event.type.includes('pdf.analysed')) {
+        return validatePDFAnalysed(event as PDFAnalysed, logger);
+      }
+      if (event.type.includes('invalid.attachment.received')) {
+        return validateInvalidAttachmentReceived(
+          event as InvalidAttachmentReceived,
+          logger,
+        );
+      }
+      throw new Error(`Unknown event type: ${event.type}`);
+    });
 
     const processedItemCount = receivedItemCount - batchItemFailures.length;
     logger.info(

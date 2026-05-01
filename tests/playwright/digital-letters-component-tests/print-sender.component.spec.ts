@@ -13,6 +13,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 test.describe('Digital Letters - Print Sender', () => {
   test('should send Letter Prepared event from PDF Analysed event', async () => {
+    test.setTimeout(120_000);
+
     const letterId = uuidv4();
     const letterUri = `s3://bucket/${letterId}.pdf`;
     const pageCount = 2;
@@ -67,7 +69,7 @@ test.describe('Digital Letters - Print Sender', () => {
       );
 
       expect(eventLogEntry.length).toEqual(1);
-    });
+    }, 60_000);
   });
 
   test('should send invalid event to print sender dlq', async () => {

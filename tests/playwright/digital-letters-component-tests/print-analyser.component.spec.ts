@@ -120,4 +120,59 @@ test.describe('Print analyser', () => {
       ),
     ]);
   });
+
+  test('should create invalid.attachment.received event for non-PDF attachment', async () => {
+    test.setTimeout(160_000);
+
+    const nonPdfFilename = `${uuidv4()}.txt`;
+    const messageReference = uuidv4();
+    const senderId = 'sender1';
+
+    await putFileS3(Buffer.from('This is not a PDF file'), {
+      Bucket: FILE_SAFE_S3_BUCKET_NAME,
+      Key: nonPdfFilename,
+    });
+
+    const event: FileSafe = {
+      ...fileSafeEvent,
+      data: {
+        ...fileSafeEvent.data,
+        letterUri: `s3://${FILE_SAFE_S3_BUCKET_NAME}/${nonPdfFilename}`,
+        messageReference,
+        senderId,
+      },
+    };
+
+    await eventPublisher.sendEvents<FileSafe>([event], validateFileSafe);
+
+    await Promise.all([
+      expectToPassEventually(async () => {
+        const eventLogEntry = await getLogsFromCloudwatch(
+          `/aws/vendedlogs/events/event-bus/nhs-${ENV}-dl`,
+          [
+            '$.message_type = "EVENT_RECEIPT"',
+            '$.details.detail_type = "uk.nhs.notify.digital.letters.print.invalid.attachment.received.v1"',
+            `$.details.event_detail = "*\\"messageReference\\":\\"${messageReference}\\"*"`,
+            `$.details.event_detail = "*\\"senderId\\":\\"${senderId}\\"*"`,
+            `$.details.event_detail = "*\\"reasonCode\\":\\"DL_CLIV_002\\"*"`,
+          ],
+        );
+
+        expect(eventLogEntry.length).toEqual(1);
+      }, 150),
+
+      expectToPassEventually(async () => {
+        const eventLogEntry = await getLogsFromCloudwatch(
+          PRINT_ANALYSER_LAMBDA_LOG_GROUP_NAME,
+          [
+            '$.message.description = "Failed to analyze PDF - invalid attachment format"',
+            `$.message.messageReference = "${messageReference}"`,
+            '$.message.reasonCode = "DL_CLIV_002"',
+          ],
+        );
+
+        expect(eventLogEntry.length).toEqual(1);
+      }, 150),
+    ]);
+  });
 });

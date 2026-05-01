@@ -13,6 +13,7 @@ import {
   DigitalLetterRead,
   FileQuarantined,
   GenerateReport,
+  InvalidAttachmentReceived,
   ItemDequeued,
   MessageRequestRejected,
   MessageRequestSkipped,
@@ -22,6 +23,7 @@ import {
   validateDigitalLetterRead,
   validateFileQuarantined,
   validateGenerateReport,
+  validateInvalidAttachmentReceived,
   validateItemDequeued,
   validateMessageRequestRejected,
   validateMessageRequestSkipped,
@@ -40,6 +42,7 @@ import expectToPassEventually from 'helpers/expectations';
 import {
   buildDigitalLetterReadEvent,
   buildFileQuarantinedEvent,
+  buildInvalidAttachmentReceivedEvent,
   buildItemDequeuedEvent,
   buildMessageRequestRejectedEvent,
   buildPDMResourceRetriesExceededEvent,
@@ -67,6 +70,7 @@ export enum EventStatus {
   DigitalPDMResourceRetriesExceeded = 'PDMResourceRetriesExceeded',
   DigitalMessageRequestRejected = 'MessageRequestRejected',
   PrintFileQuarantined = 'FileQuarantined',
+  PrintInvalidAttachmentReceived = 'InvalidAttachmentReceived',
 }
 /**
  * Utility class to proof the SQL logic to determine which status should be reported for a given message reference,
@@ -218,6 +222,18 @@ export function publishEventForScenario(scenario: ReportScenario) {
               ),
             ],
             validateFileQuarantined,
+          );
+        } else if (EventStatus.PrintInvalidAttachmentReceived === status) {
+          eventPublisher.sendEvents<InvalidAttachmentReceived>(
+            [
+              buildInvalidAttachmentReceivedEvent(
+                uuidv4(),
+                scenario.time,
+                scenario.messageReference,
+                scenario.senderId,
+              ),
+            ],
+            validateInvalidAttachmentReceived,
           );
         } else {
           eventPublisher.sendEvents<PrintLetterTransitioned>(

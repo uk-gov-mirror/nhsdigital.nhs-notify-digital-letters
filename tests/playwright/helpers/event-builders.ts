@@ -1,6 +1,7 @@
 import {
   DigitalLetterRead,
   FileQuarantined,
+  InvalidAttachmentReceived,
   ItemDequeued,
   MessageRequestRejected,
   PDMResourceRetriesExceeded,
@@ -183,4 +184,25 @@ export function buildFileQuarantinedEvent(
       reasonCode: 'DL_CLIV_003',
     },
   } as FileQuarantined;
+}
+
+export function buildInvalidAttachmentReceivedEvent(
+  eventId: string,
+  time: string,
+  messageReference: string,
+  senderId: string,
+): InvalidAttachmentReceived {
+  const baseEvent = buildBaseEvent('print', time);
+  return {
+    ...baseEvent,
+    id: eventId,
+    type: 'uk.nhs.notify.digital.letters.print.invalid.attachment.received.v1',
+    dataschema:
+      'https://notify.nhs.uk/cloudevents/schemas/digital-letters/2025-10-draft/data/digital-letters-print-invalid-attachment-received-data.schema.json',
+    data: {
+      messageReference,
+      senderId,
+      reasonCode: 'DL_CLIV_002',
+    },
+  } as InvalidAttachmentReceived;
 }

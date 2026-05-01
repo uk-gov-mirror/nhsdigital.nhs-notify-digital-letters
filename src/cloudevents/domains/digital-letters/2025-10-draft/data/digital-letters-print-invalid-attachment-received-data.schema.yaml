@@ -8,9 +8,9 @@ properties:
     $ref: ../defs/requests.schema.yaml#/properties/messageReference
   senderId:
     $ref: ../defs/requests.schema.yaml#/properties/senderId
-  failureCode:
-    $ref: ../defs/requests.schema.yaml#/properties/failureCode
+  reasonCode:
+    $ref: ../defs/print.schema.yaml#/properties/reasonCode
 required:
   - messageReference
   - senderId
-  - failureCode
+  - reasonCode

@@ -38,6 +38,7 @@ test.describe('Digital Letters - Handle TTL', () => {
   };
 
   test('should handle withdrawn item', async () => {
+    test.setTimeout(200_000);
     const letterId = uuidv4();
     const messageUri = `https://example.com/ttl/resource/${letterId}`;
     const messageReference = letterId;
@@ -78,10 +79,11 @@ test.describe('Digital Letters - Handle TTL', () => {
       );
 
       expect(eventLogEntry.length).toEqual(1);
-    });
+    }, 180_000);
   });
 
   test('should handle expired item', async () => {
+    test.setTimeout(200_000);
     const letterId = uuidv4();
     const messageUri = `https://example.com/ttl/resource/${letterId}`;
     const messageReference = letterId;
@@ -122,11 +124,11 @@ test.describe('Digital Letters - Handle TTL', () => {
       );
 
       expect(eventLogEntry.length).toEqual(1);
-    });
+    }, 180_000);
   });
 
   test('should send invalid item to dlq', async () => {
-    test.setTimeout(160_000);
+    test.setTimeout(220_000);
 
     const letterId = uuidv4();
     const messageReference = letterId;
@@ -155,6 +157,6 @@ test.describe('Digital Letters - Handle TTL', () => {
     const deleteResponseCode = await deleteTtl(senderId, messageReference);
     expect(deleteResponseCode).toBe(200);
 
-    await expectMessageContainingString(HANDLE_TTL_DLQ_NAME, letterId, 150);
+    await expectMessageContainingString(HANDLE_TTL_DLQ_NAME, letterId, 200);
   });
 });

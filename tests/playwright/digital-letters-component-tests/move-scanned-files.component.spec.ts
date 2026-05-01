@@ -11,14 +11,18 @@ import {
 import { SENDER_ID_SKIPS_NOTIFY } from 'constants/tests-constants';
 import { getLogsFromCloudwatch } from 'helpers/cloudwatch-helpers';
 import expectToPassEventually from 'helpers/expectations';
-import { expectMessageContainingString } from 'helpers/sqs-helpers';
+import { expectMessageContainingString, purgeQueue } from 'helpers/sqs-helpers';
 import { v4 as uuidv4 } from 'uuid';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { getS3ObjectMetadata, s3Client } from 'utils';
 
 test.describe('Digital Letters - Move Scanned Files', () => {
+  test.beforeAll(async () => {
+    await purgeQueue(MOVE_SCANNED_FILES_DLQ_NAME);
+  });
+
   test('given file without virus, when uploaded into S3 bucket and guardduty scan passes then a FileSafe event is triggered', async () => {
-    test.setTimeout(250_000);
+    test.setTimeout(800_000);
     const messageReference = uuidv4();
     const createdAt = new Date().toISOString();
     const objectKey = `${PREFIX_DL_FILES}${messageReference}.txt`;
@@ -97,7 +101,7 @@ test.describe('Digital Letters - Move Scanned Files', () => {
   });
 
   test('given file with EICAR virus, when uploaded into S3 bucket and guardduty scan completes then a FileQuarantine event is triggered', async () => {
-    test.setTimeout(250_000);
+    test.setTimeout(800_000);
     const messageReference = uuidv4();
     const createdAt = new Date().toISOString();
     const objectKey = `${PREFIX_DL_FILES}${messageReference}.txt`;

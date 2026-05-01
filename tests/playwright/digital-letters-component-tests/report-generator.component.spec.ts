@@ -124,6 +124,16 @@ const scenarios = [
     'DL_CLIV_003',
     'Attachment contains a virus',
   ),
+  // Scenario for new Print failure event: InvalidAttachmentReceived
+  new ReportScenario(
+    'component-test-invalid-attachment-received',
+    CommunicationType.Print,
+    [EventStatus.PrintInvalidAttachmentReceived],
+    'Failed',
+    senderId,
+    'DL_CLIV_002',
+    'Invalid attachment received',
+  ),
   // multiple events for the same message reference, should take the one with highest priority status (returned > failed > dispatched > rejected)
   new ReportScenario(
     'component-test-rejected-pending',

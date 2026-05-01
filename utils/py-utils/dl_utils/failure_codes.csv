@@ -1,8 +1,10 @@
 code,description
-DL_PDMV_001,Letter rejected by PDM
-DL_PDMV_002,Timeout waiting for letter storage
+DL_CLIV_001,Local ID not provided
+DL_CLIV_002,Invalid attachment received
 DL_CLIV_003,Attachment contains a virus
 DL_CLIV_004,Duplicate request
 DL_CLIV_005,Invalid FHIR resource
 DL_CLIV_006,Missing message reference
 DL_INTE_001,Request rejected by Core API
+DL_PDMV_001,Letter rejected by PDM
+DL_PDMV_002,Timeout waiting for letter storage
