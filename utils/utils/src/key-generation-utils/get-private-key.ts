@@ -1,5 +1,5 @@
-import { JWK } from 'node-jose';
 import { format, isValid, parse } from 'date-fns';
+import { asKey } from './jwk';
 import { newCache } from '../cache';
 import { logger } from '../logger';
 import {
@@ -7,8 +7,6 @@ import {
   nonNullParameterFilter,
   parameterStore,
 } from '../ssm-utils';
-
-import { KeyJson } from './types';
 
 const validateParamName = (name: string) => {
   // private key params are <ssmPath>/privatekey_<date>_<kid>.pem
@@ -82,8 +80,10 @@ export const privateKeyFetcher = (pemSSMPath: string) => {
       const param = await getValidPrivateKey(pemSSMPath);
       const keyPem = param.Value;
 
-      const key = await JWK.asKey(keyPem, 'pem');
-      const { kid } = key.toJSON() as KeyJson;
+      await asKey(keyPem, 'pem');
+      const privateKeyRegex = /privatekey_(\d{8})_(.+)\.pem/;
+      // eslint-disable-next-line sonarjs/prefer-regexp-exec
+      const kid = (param.Name.match(privateKeyRegex) ?? [])[2];
       return {
         key: keyPem,
         kid,

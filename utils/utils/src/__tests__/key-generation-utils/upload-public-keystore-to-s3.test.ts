@@ -1,4 +1,4 @@
-import { JWK } from 'node-jose';
+import { asKeyStore } from '../../key-generation-utils/jwk';
 import { logger } from '../../logger';
 import { uploadPublicKeystoreToS3 } from '../../key-generation-utils';
 import { putDataS3 } from '../../s3-utils';
@@ -30,7 +30,7 @@ const setup = async () => {
   const mockPutDataS3 = jest.fn();
   (putDataS3 as jest.Mock).mockImplementation(mockPutDataS3);
 
-  const keystore = await JWK.asKeyStore(mockKeystore);
+  const keystore = await asKeyStore(mockKeystore);
 
   return { mockPutDataS3, keystore };
 };

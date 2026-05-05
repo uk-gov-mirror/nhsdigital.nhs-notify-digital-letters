@@ -1,4 +1,4 @@
-import { JWK } from 'node-jose';
+import { KeyStore } from '../../key-generation-utils/jwk';
 import { logger } from '../../logger';
 import { parameterStore } from '../../ssm-utils';
 import { generateNewKey } from '../../key-generation-utils';
@@ -19,7 +19,7 @@ describe('generateNewKey', () => {
   });
 
   it('generate key on SSM', async () => {
-    const keystore = JWK.createKeyStore();
+    const keystore = new KeyStore();
 
     await generateNewKey({
       keystore,
@@ -38,7 +38,7 @@ describe('generateNewKey', () => {
   });
 
   it('generate key without specifying kid', async () => {
-    const keystore = JWK.createKeyStore();
+    const keystore = new KeyStore();
 
     await generateNewKey({
       keystore,

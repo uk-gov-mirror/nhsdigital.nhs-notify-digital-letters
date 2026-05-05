@@ -1,5 +1,5 @@
-import { JWK } from 'node-jose';
 import { isBefore, parse } from 'date-fns';
+import { Key, asKey } from './jwk';
 
 type ValidatePrivateKeyParams = {
   Name: string;
@@ -14,7 +14,7 @@ export type ValidateKeyResult =
       deleteReason: string;
       warn?: boolean;
     }
-  | { valid: true; keyJwk: JWK.Key; keyDate: Date };
+  | { valid: true; keyJwk: Key; keyDate: Date };
 
 // private key param names are /riskstrat/<env>/emailauth/privatekey_<date>_<kid>.pem
 const privateKeyRegex = /privatekey_(\d{8})_(.+)\.pem/;
@@ -55,7 +55,7 @@ export const validatePrivateKey = async ({
   }
 
   try {
-    const keyJwk = await JWK.asKey(Value, 'pem');
+    const keyJwk = await asKey(Value, 'pem');
     return { valid: true, keyJwk, keyDate };
   } catch (error) {
     return {

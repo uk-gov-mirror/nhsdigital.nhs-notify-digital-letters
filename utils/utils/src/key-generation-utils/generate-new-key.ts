@@ -1,11 +1,11 @@
-import { JWK } from 'node-jose';
 import { format } from 'date-fns';
 import { logger } from '../logger';
 import { parameterStore } from '../ssm-utils';
+import { KeyStore } from './jwk';
 import { KeyJson } from './types';
 
 type GenerateNewKeyParams = {
-  keystore: JWK.KeyStore;
+  keystore: KeyStore;
   ssmPath: string;
   now: Date;
   keyGenerationOptions?: Record<string, string>;
@@ -21,7 +21,7 @@ export const generateNewKey = async ({
   logger.info({ description: 'Generating new key' });
   const key = await keystore.generate('RSA', 4096, keyGenerationOptions);
   const { kid } = key.toJSON() as KeyJson;
-  const keyPem = key.toPEM(true);
+  const keyPem = key.toPEM();
   const Name = `${ssmPath}/privatekey_${format(now, 'yyyyMMdd')}_${kid}.pem`;
 
   await parameterStore.addParameter(Name, keyPem);

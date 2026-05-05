@@ -1,5 +1,6 @@
-import { JWK } from 'node-jose';
 import {
+  Key,
+  createKeyStore,
   deleteKey,
   generateNewKey,
   logger,
@@ -10,7 +11,6 @@ import {
 import { cleanAndRefreshKeystores } from 'refresh-keystores';
 import { loadConfig } from 'config';
 
-jest.mock('node-jose');
 jest.mock('utils', () => {
   const originalModule = jest.requireActual('utils');
 
@@ -19,6 +19,7 @@ jest.mock('utils', () => {
     parameterStore: {
       getAllParameters: jest.fn(),
     },
+    createKeyStore: jest.fn(),
     deleteKey: jest.fn(),
     generateNewKey: jest.fn(),
     uploadPublicKeystoreToS3: jest.fn(),
@@ -30,10 +31,10 @@ jest.mock('config');
 const setupMocks = (preExistingKeys?: string[]) => {
   const mockKeyStore = {
     add: jest.fn(),
-    all: jest.fn().mockReturnValue(['']),
+    all: jest.fn().mockReturnValue([{ toJSON: () => ({ kid: 'mock-kid' }) }]),
   };
 
-  (JWK.createKeyStore as jest.Mock).mockImplementation(() => mockKeyStore);
+  (createKeyStore as jest.Mock).mockImplementation(() => mockKeyStore);
 
   (loadConfig as jest.Mock).mockReturnValue({
     environment: 'env',
@@ -94,7 +95,7 @@ describe('cleanAndRefreshKeystores', () => {
 
     mockValidatePrivateKey.mockResolvedValue({
       valid: true,
-      keyJwk: {} as JWK.Key,
+      keyJwk: {} as unknown as Key,
       keyDate: new Date('2021-02-24'),
     });
 
@@ -127,7 +128,7 @@ describe('cleanAndRefreshKeystores', () => {
 
     mockValidatePrivateKey.mockResolvedValue({
       valid: false,
-      keyJwk: {} as JWK.Key,
+      keyJwk: {} as unknown as Key,
       keyDate: new Date('2021-02-24'),
     });
 
@@ -160,7 +161,7 @@ describe('cleanAndRefreshKeystores', () => {
 
     mockValidatePrivateKey.mockResolvedValue({
       valid: true,
-      keyJwk: {} as JWK.Key,
+      keyJwk: {} as unknown as Key,
       keyDate: new Date('2021-02-23'),
     });
 
@@ -195,7 +196,7 @@ describe('cleanAndRefreshKeystores', () => {
 
     mockValidatePrivateKey.mockResolvedValue({
       valid: true,
-      keyJwk: {} as JWK.Key,
+      keyJwk: {} as unknown as Key,
       keyDate: new Date('2024-07-27'),
     });
 
@@ -236,7 +237,7 @@ describe('cleanAndRefreshKeystores', () => {
 
     mockValidatePrivateKey.mockResolvedValue({
       valid: true,
-      keyJwk: {} as JWK.Key,
+      keyJwk: {} as unknown as Key,
       keyDate: new Date('2024-06-30'),
     });
 
@@ -279,12 +280,12 @@ describe('cleanAndRefreshKeystores', () => {
     mockValidatePrivateKey
       .mockResolvedValueOnce({
         valid: false,
-        keyJwk: {} as JWK.Key,
+        keyJwk: {} as unknown as Key,
         keyDate: new Date('2024-07-30'),
       })
       .mockResolvedValueOnce({
         valid: true,
-        keyJwk: {} as JWK.Key,
+        keyJwk: {} as unknown as Key,
         keyDate: new Date('2024-08-27'),
       });
 
@@ -332,7 +333,7 @@ describe('cleanAndRefreshKeystores', () => {
 
     mockValidatePrivateKey.mockResolvedValue({
       valid: true,
-      keyJwk: { kid: 'key-1' } as JWK.Key,
+      keyJwk: { kid: 'key-1' } as unknown as Key,
       keyDate: new Date('2024-09-01'), // 24 days old < 28 days threshold
     });
 
@@ -361,12 +362,12 @@ describe('cleanAndRefreshKeystores', () => {
     mockValidatePrivateKey
       .mockResolvedValueOnce({
         valid: true,
-        keyJwk: { kid: 'key1' } as JWK.Key,
+        keyJwk: { kid: 'key1' } as unknown as Key,
         keyDate: new Date('2024-07-15'), // newer key first
       })
       .mockResolvedValueOnce({
         valid: true,
-        keyJwk: { kid: 'key2' } as JWK.Key,
+        keyJwk: { kid: 'key2' } as unknown as Key,
         keyDate: new Date('2024-06-01'), // older key second — should not update youngestKeyDate
       });
 
@@ -390,12 +391,12 @@ describe('cleanAndRefreshKeystores', () => {
     mockValidatePrivateKey
       .mockResolvedValueOnce({
         valid: true,
-        keyJwk: { kid: 'key1' } as JWK.Key,
+        keyJwk: { kid: 'key1' } as unknown as Key,
         keyDate: new Date('2024-06-01'),
       })
       .mockResolvedValueOnce({
         valid: true,
-        keyJwk: { kid: 'key2' } as JWK.Key,
+        keyJwk: { kid: 'key2' } as unknown as Key,
         keyDate: new Date('2024-07-15'), // later
       });
 
@@ -415,7 +416,7 @@ describe('cleanAndRefreshKeystores', () => {
 
     mockValidatePrivateKey.mockResolvedValue({
       valid: false,
-      keyJwk: { kid: 'ignored' } as JWK.Key,
+      keyJwk: { kid: 'ignored' } as unknown as Key,
       keyDate: new Date('2000-01-01'),
     });
 

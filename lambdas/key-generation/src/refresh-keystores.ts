@@ -1,7 +1,7 @@
-import { JWK } from 'node-jose';
 import { isBefore, subDays } from 'date-fns';
 import {
   NonNullSSMParam,
+  createKeyStore,
   deleteKey,
   generateNewKey,
   logger,
@@ -23,7 +23,7 @@ const deleteInvalidKeysAndCreateKeystore = async ({
   now,
   ssmPath,
 }: DeleteInvalidKeysAndCreateKeystoreParams) => {
-  const keystore = JWK.createKeyStore();
+  const keystore = createKeyStore();
   let youngestKeyDate: Date | null = null;
 
   const allParams = await parameterStore.getAllParameters(ssmPath);
@@ -104,6 +104,6 @@ export const cleanAndRefreshKeystores = async ({
   logger.info({
     description: `Email auth keygen refresh complete: current key IDs: ${keystore
       .all()
-      .map((key) => key.kid)}`,
+      .map((key) => key.toJSON().kid)}`,
   });
 };

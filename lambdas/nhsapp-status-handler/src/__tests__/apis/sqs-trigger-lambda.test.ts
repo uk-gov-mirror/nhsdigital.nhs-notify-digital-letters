@@ -8,6 +8,7 @@ import {
 import { randomUUID } from 'node:crypto';
 
 jest.mock('node:crypto', () => ({
+  ...jest.requireActual('node:crypto'),
   randomUUID: jest.fn(),
 }));
 

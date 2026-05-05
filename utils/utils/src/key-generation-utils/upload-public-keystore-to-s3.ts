@@ -1,10 +1,10 @@
-import { JWK } from 'node-jose';
 import { logger } from '../logger';
 import { putDataS3 } from '../s3-utils';
+import { KeyStore } from './jwk';
 import { KeyStoreJson } from './types';
 
 type UploadPublicKeystoreToS3Params = {
-  keystore: JWK.KeyStore;
+  keystore: KeyStore;
   staticAssetBucket: string;
   jwksFileName: string;
 };

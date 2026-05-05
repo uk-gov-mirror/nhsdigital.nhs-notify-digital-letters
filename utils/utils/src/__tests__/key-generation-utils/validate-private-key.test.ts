@@ -1,5 +1,4 @@
-/* eslint-disable sonarjs/hardcoded-secret-signatures */
-import { JWK } from 'node-jose';
+import { asKey } from '../../key-generation-utils/jwk';
 import {
   ValidateKeyResult,
   validatePrivateKey,
@@ -105,7 +104,7 @@ describe('validatePrivateKey', () => {
   });
 
   it('accepts valid key', async () => {
-    const testPrivateKeyJwk = await JWK.asKey(testPrivateKey, 'pem');
+    const testPrivateKeyJwk = await asKey(testPrivateKey, 'pem');
 
     const testOutput = await validatePrivateKey({
       Name: 'privatekey_20201120_123.pem',
