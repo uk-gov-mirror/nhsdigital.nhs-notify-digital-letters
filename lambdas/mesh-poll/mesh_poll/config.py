@@ -30,8 +30,8 @@ class Config(BaseMeshConfig):
         super().__init__(ssm=ssm)
 
         self.polling_metric = None
-        self.remaining_mesh_messages_metric = None
-        self.unfinished_reading_mesh_metric = None
+        self.messages_in_mailbox_metric = None
+        self.finished_before_reading_all_messages_metric = None
         self.event_publisher_metric = None
 
     def __enter__(self):
@@ -39,15 +39,15 @@ class Config(BaseMeshConfig):
 
         # Build polling metric
         self.polling_metric = self.build_polling_metric()
-        self.remaining_mesh_messages_metric = self.build_remaining_mesh_messages_metric()
-        self.unfinished_reading_mesh_metric = self.build_unfinished_reading_mesh_metric()
+        self.messages_in_mailbox_metric = self.build_messages_in_mailbox_metric()
+        self.finished_before_reading_all_messages_metric = self.build_finished_before_reading_all_messages_metric()
         self.event_publisher_metric = self.build_event_publisher_metric()
 
         return self
 
     def build_polling_metric(self):
         """
-        Returns a custom metric to record messages found in the MESH inbox during polling
+        Returns a custom metric to record the poller finished succesfully.
         """
         return Metric(
             name=self.polling_metric_name,
@@ -64,22 +64,22 @@ class Config(BaseMeshConfig):
             dimensions={"Environment": self.environment}
         )
 
-    def build_remaining_mesh_messages_metric(self):
+    def build_messages_in_mailbox_metric(self):
         """
-        Returns a custom metric to record remaining messages in the MESH inbox after polling
+        Returns a custom metric to record number of messages in the MESH mailbox
         """
         return Metric(
-            name="RemainingMeshMessages",
+            name="mesh-poll-messages-in-mailbox",
             namespace=self.dl_metrics_namespace,
             dimensions={"Environment": self.environment}
         )
 
-    def build_unfinished_reading_mesh_metric(self):
+    def build_finished_before_reading_all_messages_metric(self):
         """
         Returns a custom metric to record that the poll lambda is exiting before processing all messages in the MESH inbox due to time constraints
         """
         return Metric(
-            name="UnfinishedReadingMeshMessages",
+            name="mesh-poll-finished-before-reading-all-messages",
             namespace=self.dl_metrics_namespace,
             dimensions={"Environment": self.environment}
         )

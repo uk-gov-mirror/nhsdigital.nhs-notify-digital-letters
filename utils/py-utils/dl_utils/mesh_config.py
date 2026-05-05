@@ -52,9 +52,7 @@ class BaseMeshConfig:  # pylint: disable=too-many-instance-attributes
         self.ssm_mesh_prefix = None
         self.environment = None
         self.certificate_expiry_metric_name = None
-        self.certificate_expiry_metric_namespace = None
         self.polling_metric_name = None
-        self.polling_metric_namespace = None
         self.use_mesh_mock = False
 
         self._load_required_env_vars()
@@ -156,7 +154,7 @@ class BaseMeshConfig:  # pylint: disable=too-many-instance-attributes
             )
 
         # Use real MESH client
-        if self.certificate_expiry_metric_name and getattr(self, 'dl_metrics_namespace', None):
+        if self.certificate_expiry_metric_name:
             report_expiry_time(
                 self.client_cert,
                 self.certificate_expiry_metric_name,

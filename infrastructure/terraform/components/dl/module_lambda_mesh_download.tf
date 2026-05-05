@@ -38,8 +38,8 @@ module "mesh_download" {
 
   lambda_env_vars = {
     DOWNLOAD_METRIC_NAME                    = "mesh-download-successful-downloads"
-    INTERNAL_DUPLICATE_DOWNLOAD_METRIC_NAME = "mesh-internal-duplicate-downloads"
-    TRUST_DUPLICATE_DOWNLOAD_METRIC_NAME    = "mesh-trust-duplicate-downloads"
+    INTERNAL_DUPLICATE_DOWNLOAD_METRIC_NAME = "mesh-download-internal-duplicate-downloads"
+    TRUST_DUPLICATE_DOWNLOAD_METRIC_NAME    = "mesh-download-trust-duplicate-downloads"
     ENVIRONMENT                             = var.environment
     EVENT_PUBLISHER_DLQ_URL                 = module.sqs_event_publisher_errors.sqs_queue_url
     EVENT_PUBLISHER_EVENT_BUS_ARN           = aws_cloudwatch_event_bus.main.arn

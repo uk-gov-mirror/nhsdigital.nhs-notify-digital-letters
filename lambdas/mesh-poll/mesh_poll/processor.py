@@ -27,8 +27,8 @@ class MeshMessageProcessor:  # pylint: disable=too-many-instance-attributes
         self.__get_remaining_time_in_millis = kwargs['get_remaining_time_in_millis']
         self.__mesh_client.handshake()
         self.__polling_metric = kwargs['polling_metric']
-        self.__remaining_mesh_messages_metric = kwargs['remaining_mesh_messages_metric']
-        self.__unfinished_reading_mesh_metric = kwargs['unfinished_reading_mesh_metric']
+        self.__messages_in_mailbox_metric = kwargs['messages_in_mailbox_metric']
+        self.__finished_before_reading_all_messages_metric = kwargs['finished_before_reading_all_messages_metric']
         self.__event_publisher_metric = kwargs['event_publisher_metric']
 
         environment = 'development'
@@ -63,7 +63,7 @@ class MeshMessageProcessor:  # pylint: disable=too-many-instance-attributes
 
         # Record how many messages are in the mailbox
         remaining_messages = self.__mesh_client.list_messages()
-        self.__remaining_mesh_messages_metric.record(len(remaining_messages))
+        self.__messages_in_mailbox_metric.record(len(remaining_messages))
 
         # Process all messages in the inbox
         message_count = 0
@@ -73,14 +73,14 @@ class MeshMessageProcessor:  # pylint: disable=too-many-instance-attributes
                 self.__log.info(
                     'Not enough time to process more files. Exiting')
                 self.__polling_metric.record(1)
-                self.__unfinished_reading_mesh_metric.record(1)
+                self.__finished_before_reading_all_messages_metric.record(1)
                 return
 
             self.process_message(message)
 
         if message_count == 0:
             self.__log.info('No messages found in inbox')
-            self.__remaining_mesh_messages_metric.record(0)
+            self.__messages_in_mailbox_metric.record(0)
         else:
             self.__log.info(f'Processed {message_count} message(s)')
 

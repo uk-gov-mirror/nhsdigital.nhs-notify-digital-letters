@@ -16,8 +16,8 @@ def handler(_, context):
             get_remaining_time_in_millis=context.get_remaining_time_in_millis,
             log=log,
             polling_metric=config.polling_metric,
-            remaining_mesh_messages_metric=config.remaining_mesh_messages_metric,
-            unfinished_reading_mesh_metric=config.unfinished_reading_mesh_metric,
+            messages_in_mailbox_metric=config.messages_in_mailbox_metric,
+            finished_before_reading_all_messages_metric=config.finished_before_reading_all_messages_metric,
             event_publisher_metric=config.event_publisher_metric)
 
         processor.process_messages()
