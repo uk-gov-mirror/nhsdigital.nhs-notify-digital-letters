@@ -253,7 +253,7 @@ jobs:
           name: python-coverage-reports
           path: .
       - name: "Perform static analysis"
-        uses: ./.github/actions/perform-static-analysis
+        uses: NHSDigital/nhs-notify-shared-modules/.github/actions/perform-static-analysis@3.0.0
         with:
           sonar_organisation_key: "${{ vars.SONAR_ORGANISATION_KEY }}"
           sonar_project_key: "${{ vars.SONAR_PROJECT_KEY }}"
