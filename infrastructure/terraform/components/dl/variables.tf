@@ -322,12 +322,12 @@ variable "event_anomaly_band_width" {
 
 variable "firehose_destination_buffer_interval" {
   type        = number
-  description = "The Firehose destination buffer interval in seconds. Lower values reduce latency for tests but increase costs. Minimum is 60, default (Terraform) is 300."
+  description = "The Firehose destination buffer interval in seconds."
   default     = 300
 }
 
 variable "firehose_processor_buffer_interval" {
   type        = number
-  description = "The Firehose Lambda processor buffer interval in seconds. Should be greater than firehose_destination_buffer_interval. Minimum is 61, default is 301."
-  default     = 301
+  description = "The Firehose Lambda processor buffer interval in seconds."
+  default     = 300
 }

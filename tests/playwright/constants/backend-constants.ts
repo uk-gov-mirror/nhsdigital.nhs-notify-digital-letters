@@ -82,10 +82,6 @@ export const NHSAPP_STATUS_HANDLER_LAMBDA_LOG_GROUP_NAME = `/aws/lambda/${CSI}-n
 
 // Data Firehose
 export const FIREHOSE_STREAM_NAME = `${CSI}-to-s3-reporting`;
-export const TERRAFORM_DESTINATION_BUFFER_INTERVAL = 300;
-export const TERRAFORM_PROCESSOR_BUFFER_INTERVAL = 301;
-export const MINIMUM_DESTINATION_BUFFER_INTERVAL = 60;
-export const MINIMUM_PROCESSOR_BUFFER_INTERVAL = 0;
 
 // Athena
 export const ATHENA_WORKGROUP_NAME = CSI;
