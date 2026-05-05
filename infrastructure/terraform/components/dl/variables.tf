@@ -320,7 +320,7 @@ variable "event_anomaly_band_width" {
   }
 }
 
-variable "restrict_pii_data_access" {
+variable "restrict_pid_data_access" {
   type        = bool
   description = "Whether to restrict access to PII data in the bucket using a bucket policy"
   default     = true

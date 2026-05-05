@@ -10,7 +10,7 @@ module "s3bucket_file_safe" {
   component      = local.component
 
   kms_key_arn = module.kms.key_arn
-  enable_abac = var.restrict_pii_data_access ? true : false
+  enable_abac = var.restrict_pid_data_access ? true : false
 
   policy_documents = [data.aws_iam_policy_document.s3bucket_file_safe.json]
 
@@ -43,7 +43,7 @@ module "s3bucket_file_safe" {
 
   default_tags = {
     NHSE-Enable-S3-Backup-Acct = "True",
-    NHSE-PII-Data              = "True"
+    NHSE-RESTRICTED-PID        = "True"
   }
 }
 

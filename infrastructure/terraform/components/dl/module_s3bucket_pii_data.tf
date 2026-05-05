@@ -10,7 +10,7 @@ module "s3bucket_pii_data" {
   component      = local.component
 
   kms_key_arn      = module.kms.key_arn
-  enable_abac      = var.restrict_pii_data_access ? true : false
+  enable_abac      = var.restrict_pid_data_access ? true : false
   policy_documents = [data.aws_iam_policy_document.s3bucket_pii_data.json]
 
   force_destroy = var.force_destroy
@@ -35,7 +35,7 @@ module "s3bucket_pii_data" {
 
   default_tags = {
     NHSE-Enable-S3-Backup-Acct = "True",
-    NHSE-PII-Data              = "True",
+    NHSE-RESTRICTED-PID        = "True",
   }
 }
 
