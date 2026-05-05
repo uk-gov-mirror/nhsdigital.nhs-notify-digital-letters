@@ -63,6 +63,7 @@ export enum EventStatus {
   Rejected = 'REJECTED',
   Printed = 'PRINTED',
   Dispatched = 'DISPATCHED',
+  Delivered = 'DELIVERED',
   Failed = 'FAILED',
   Returned = 'RETURNED',
   Pending = 'PENDING',

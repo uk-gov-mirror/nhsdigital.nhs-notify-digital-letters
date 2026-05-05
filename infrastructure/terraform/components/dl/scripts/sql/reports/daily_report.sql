@@ -25,7 +25,7 @@ WITH vars AS (
             WHEN e.type LIKE '%.print.invalid.attachment.received.%' THEN 'Failed'
             WHEN e.letterstatus = 'RETURNED' THEN 'Returned'
             WHEN e.letterstatus = 'FAILED' THEN 'Failed'
-            WHEN e.letterstatus = 'DISPATCHED' THEN 'Dispatched'
+            WHEN e.letterstatus = 'DELIVERED' THEN 'Delivered'
             WHEN e.letterstatus = 'REJECTED' THEN 'Rejected' ELSE NULL
         END as status,
         e.reasoncode,
@@ -55,7 +55,7 @@ WITH vars AS (
                     -- Print Priority Order
                     WHEN te.status = 'Returned' THEN 4
                     WHEN te.communicationtype = 'Print' AND te.status = 'Failed' THEN 3
-                    WHEN te.status = 'Dispatched' THEN 2
+                    WHEN te.status = 'Delivered' THEN 2
                     WHEN te.status = 'Rejected' THEN 1 ELSE 0
                 END DESC
         ) AS "row_number",

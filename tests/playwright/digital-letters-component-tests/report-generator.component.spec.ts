@@ -108,10 +108,10 @@ const scenarios = [
     'The letter was returned',
   ),
   new ReportScenario(
-    'component-test-dispatched',
+    'component-test-delivered',
     CommunicationType.Print,
-    [EventStatus.Dispatched],
-    'Dispatched',
+    [EventStatus.Delivered],
+    'Delivered',
     senderId,
   ),
   // Scenario for new Print failure event: FileQuarantined
@@ -134,7 +134,7 @@ const scenarios = [
     'DL_CLIV_002',
     'Invalid attachment received',
   ),
-  // multiple events for the same message reference, should take the one with highest priority status (returned > failed > dispatched > rejected)
+  // multiple events for the same message reference, should take the one with highest priority status (returned > failed > delivered > rejected)
   new ReportScenario(
     'component-test-rejected-pending',
     CommunicationType.Print,
@@ -145,27 +145,27 @@ const scenarios = [
     'The letter was rejected.',
   ), // pending is ignored.
   new ReportScenario(
-    'component-test-rejected-dispatched',
+    'component-test-rejected-delivered',
     CommunicationType.Print,
-    [EventStatus.Rejected, EventStatus.Dispatched],
-    'Dispatched',
+    [EventStatus.Rejected, EventStatus.Delivered],
+    'Delivered',
     senderId,
   ),
   new ReportScenario(
-    'component-test-rejected-dispatched-failed',
+    'component-test-rejected-delivered-failed',
     CommunicationType.Print,
-    [EventStatus.Rejected, EventStatus.Dispatched, EventStatus.Failed],
+    [EventStatus.Rejected, EventStatus.Delivered, EventStatus.Failed],
     'Failed',
     senderId,
     'API_CODE_002',
     'Letter processing failed',
   ),
   new ReportScenario(
-    'component-test-rejected-dispatched-failed-returned',
+    'component-test-rejected-delivered-failed-returned',
     CommunicationType.Print,
     [
       EventStatus.Rejected,
-      EventStatus.Dispatched,
+      EventStatus.Delivered,
       EventStatus.Failed,
       EventStatus.Returned,
     ],
