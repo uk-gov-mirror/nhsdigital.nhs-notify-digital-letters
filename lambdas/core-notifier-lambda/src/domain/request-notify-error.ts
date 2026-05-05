@@ -9,11 +9,19 @@ export class RequestNotifyError extends Error {
 
   readonly errorCode: string;
 
-  constructor(cause: Error, correlationId: string, errorCode: string) {
+  readonly failureReason: string;
+
+  constructor(
+    cause: Error,
+    correlationId: string,
+    errorCode: string,
+    failureReason: string,
+  ) {
     super('Error received from Core Notify API');
 
     this.cause = cause;
     this.correlationId = correlationId;
     this.errorCode = errorCode;
+    this.failureReason = failureReason;
   }
 }

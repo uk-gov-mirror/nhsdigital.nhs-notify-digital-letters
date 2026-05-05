@@ -23,7 +23,10 @@ const createMockSQSRecord = (
       id: event.id || mockUuid,
       source:
         event.source ||
-        '/nhs/england/notify/development/primary/data-plane/digitalletters/reporting',
+        '/nhs/england/notify/development/primary/digitalletters/reporting',
+      plane: 'data',
+      dataschemaversion: '1.0.0',
+      datacontenttype: 'application/json',
       specversion: event.specversion || '1.0',
       type:
         event.type ||
@@ -200,7 +203,7 @@ describe('sqs-trigger-lambda', () => {
       expect(response.batchItemFailures).toEqual([{ itemIdentifier: 'msg-1' }]);
       expect(mockLogger.error).toHaveBeenCalledWith(
         expect.objectContaining({
-          description: 'Error parsing queue entry',
+          description: 'Error parsing GenerateReport event',
         }),
       );
       expect(mockReportGenerator.generate).not.toHaveBeenCalled();

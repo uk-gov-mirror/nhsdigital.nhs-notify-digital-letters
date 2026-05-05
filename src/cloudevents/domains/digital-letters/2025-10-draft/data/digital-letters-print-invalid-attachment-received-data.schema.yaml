@@ -1,0 +1,16 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+title: InvalidAttachmentReceived Data
+description: Data payload of the InvalidAttachmentReceived event
+type: object
+additionalProperties: false
+properties:
+  messageReference:
+    $ref: ../defs/requests.schema.yaml#/properties/messageReference
+  senderId:
+    $ref: ../defs/requests.schema.yaml#/properties/senderId
+  reasonCode:
+    $ref: ../defs/print.schema.yaml#/properties/reasonCode
+required:
+  - messageReference
+  - senderId
+  - reasonCode

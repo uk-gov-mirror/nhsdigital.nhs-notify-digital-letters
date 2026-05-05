@@ -13,7 +13,7 @@ class MeshReportsSender:
 
         self.__mesh_client.handshake()
 
-    def send_report(self, reporting_mailbox: str, report_bytes: bytes, report_date: str, report_reference: str):
+    def send_report(self, reporting_mailbox: str, report_bytes: bytes, report_date: str, report_reference: str) -> str:
         """
         Sends a report to a specified MESH mailbox.
 
@@ -23,11 +23,14 @@ class MeshReportsSender:
             report_date (str): The date of the report, used in the message subject.
             report_reference (str): The reference for the report, used in the message subject.
 
+        Returns:
+            str: The MESH message ID assigned to the sent message.
+
         Raises:
             Exception: If sending the report fails.
         """
         try:
-            self.__mesh_client.send_message(
+            mesh_message_id = self.__mesh_client.send_message(
                 reporting_mailbox,
                 report_bytes,
                 workflow_id=MESH_MESSAGE_WORKFLOW_ID,
@@ -39,6 +42,7 @@ class MeshReportsSender:
                 reporting_mailbox=reporting_mailbox,
                 report_date=report_date
             )
+            return mesh_message_id
         except Exception as e:
             self.__log.error(
                 f"Failed to send report to MESH mailbox, error:{str(e)}",

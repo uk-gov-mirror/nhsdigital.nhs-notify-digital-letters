@@ -9,9 +9,12 @@ import type {
   ReportGeneratorOutcome,
   ReportGeneratorResult,
 } from 'app/report-generator';
-import generateReportValidator from 'digital-letters-events/GenerateReport.js';
-import reportGeneratedValidator from 'digital-letters-events/ReportGenerated.js';
-import { GenerateReport, ReportGenerated } from 'digital-letters-events';
+import {
+  GenerateReport,
+  ReportGenerated,
+  validateGenerateReport,
+  validateReportGenerated,
+} from 'digital-letters-events';
 import { EventPublisher, Logger } from 'utils';
 
 interface ProcessingResult {
@@ -38,14 +41,7 @@ function validateRecord(
     const sqsEventBody = JSON.parse(body);
     const sqsEventDetail = sqsEventBody.detail;
 
-    const isEventValid = generateReportValidator(sqsEventDetail);
-    if (!isEventValid) {
-      logger.error({
-        err: generateReportValidator.errors,
-        description: 'Error parsing queue entry',
-      });
-      return null;
-    }
+    validateGenerateReport(sqsEventDetail, logger);
 
     return { messageId, event: sqsEventDetail };
   } catch (error) {
@@ -149,7 +145,7 @@ async function publishSuccessfulEvents(
   const submittedFailedEvents =
     await eventPublisher.sendEvents<ReportGenerated>(
       reportGeneratedEvents,
-      reportGeneratedValidator,
+      validateReportGenerated,
     );
 
   return submittedFailedEvents;

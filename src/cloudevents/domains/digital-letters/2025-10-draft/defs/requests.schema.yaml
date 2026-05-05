@@ -36,4 +36,4 @@ properties:
     type: string
     description: The failure code indicating the reason for the message being invalid
     examples:
-      - "LOCALID_HEADER_MISSING"
+      - "DL_CLIV_001"

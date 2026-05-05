@@ -6,16 +6,28 @@ This module provides a Python equivalent of the TypeScript EventPublisher class.
 
 import json
 import logging
+import random
+import time
 from typing import List, Dict, Any, Optional, Literal, Callable
 from uuid import uuid4
 import boto3
+from botocore.config import Config
 from botocore.exceptions import ClientError
-from pydantic import ValidationError
 from .trace_context import create_traceparent, derive_child_traceparent
 
 
 DlqReason = Literal['INVALID_EVENT', 'EVENTBRIDGE_FAILURE']
 MAX_BATCH_SIZE = 10
+MAX_PUBLISHER_RETRIES = 3
+TRANSIENT_ERROR_CODES = {
+    'ThrottlingException',
+    'TooManyRequestsException',
+    'RequestLimitExceeded',
+    'ProvisionedThroughputExceededException',
+    'InternalFailure',
+    'InternalError',
+    'ServiceUnavailable',
+}
 
 
 class EventPublisher:
@@ -45,7 +57,10 @@ class EventPublisher:
         self.event_bus_arn = event_bus_arn
         self.dlq_url = dlq_url
         self.logger = logger or logging.getLogger(__name__)
-        self.events_client = events_client or boto3.client('events')
+        self.events_client = events_client or boto3.client(
+            'events',
+            config=Config(retries={'max_attempts': 3, 'mode': 'standard'})
+        )
         self.sqs_client = sqs_client or boto3.client('sqs')
 
     def _validate_cloud_event(self, event: Dict[str, Any], validator: Callable[..., Any]) -> tuple[bool, Optional[str]]:
@@ -57,6 +72,117 @@ class EventPublisher:
             return (True, None)
         except Exception as e:
             return (False, str(e))
+
+    def _classify_failed_entries(
+        self,
+        response: Dict[str, Any],
+        events: List[Dict[str, Any]]
+    ) -> tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+        transient = []
+        permanent = []
+
+        for entry, event in zip(response.get("Entries", []), events):
+            error_code = entry.get("ErrorCode")
+            if not error_code:
+                continue
+
+            if error_code in TRANSIENT_ERROR_CODES:
+                transient.append(event)
+            else:
+                permanent.append(event)
+
+        return transient, permanent
+
+    def _send_batch_with_retry(
+        self, batch: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """
+        Send a single batch to EventBridge with retries for transient errors.
+        Returns a list of events that permanently failed.
+        """
+        events_to_retry = batch
+        permanent_failures = []
+
+        for attempt in range(MAX_PUBLISHER_RETRIES):
+            entries = [
+                {
+                    "Source": event["source"],
+                    "DetailType": event["type"],
+                    "Detail": json.dumps(event),
+                    "EventBusName": self.event_bus_arn,
+                }
+                for event in events_to_retry
+            ]
+
+            try:
+                response = self.events_client.put_events(Entries=entries)
+
+                transient, permanent = self._classify_failed_entries(
+                    response, events_to_retry
+                )
+
+                permanent_failures.extend(permanent)
+
+                if not transient:
+                    if permanent_failures:
+                        self.logger.warning(
+                            'Batch completed with failures',
+                            extra={'permanent_failure_count': len(permanent_failures)}
+                        )
+                    else:
+                        self.logger.info('Batch completed successfully')
+                    return permanent_failures
+
+                if attempt == MAX_PUBLISHER_RETRIES - 1:
+                    self.logger.warning(
+                        'Retries exhausted, treating remaining transient failures as permanent',
+                        extra={
+                            'attempt': attempt + 1,
+                            'max_retries': MAX_PUBLISHER_RETRIES,
+                            'transient_failure_count': len(transient),
+                            'permanent_failure_count': len(permanent_failures),
+                        }
+                    )
+                    return permanent_failures + transient
+
+                self.logger.info(
+                    'Retrying transient failures',
+                    extra={
+                        'attempt': attempt + 1,
+                        'max_retries': MAX_PUBLISHER_RETRIES,
+                        'retry_count': len(transient),
+                        'permanent_failure_count': len(permanent_failures),
+                    }
+                )
+                events_to_retry = transient
+                time.sleep((2 ** attempt) + random.uniform(0, 1))
+
+            except ClientError as e:
+                error_code = e.response.get("Error", {}).get("Code")
+
+                if error_code in TRANSIENT_ERROR_CODES and attempt < MAX_PUBLISHER_RETRIES - 1:
+                    self.logger.info(
+                        'Retrying batch after transient ClientError',
+                        extra={
+                            'attempt': attempt + 1,
+                            'max_retries': MAX_PUBLISHER_RETRIES,
+                            'error_code': error_code,
+                            'retry_count': len(events_to_retry),
+                        }
+                    )
+                    time.sleep((2 ** attempt) + random.uniform(0, 1))
+                    continue
+
+                self.logger.warning(
+                    'ClientError sending batch to EventBridge, failing entire batch',
+                    extra={
+                        'error_code': error_code,
+                        'batch_size': len(events_to_retry),
+                    }
+                )
+                return permanent_failures + events_to_retry
+
+        return permanent_failures + events_to_retry
 
     def _send_to_event_bridge(self, events: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
@@ -83,56 +209,62 @@ class EventPublisher:
                 }
             )
 
-            try:
-                entries = [
-                    {
-                        'Source': event['source'],
-                        'DetailType': event['type'],
-                        'Detail': json.dumps(event),
-                        'EventBusName': self.event_bus_arn
-                    }
-                    for event in batch
-                ]
+            batch_failures = self._send_batch_with_retry(batch)
 
-                response = self.events_client.put_events(Entries=entries)
-
-                failed_count = response.get('FailedEntryCount', 0)
-                success_count = len(batch) - failed_count
-
-                self.logger.info(
-                    'EventBridge batch sent',
-                    extra={
-                        'batch_size': len(batch),
-                        'failed_entry_count': failed_count,
-                        'successful_count': success_count
-                    }
-                )
-
-                # Track failed entries
-                if failed_count > 0 and 'Entries' in response:
-                    for idx, entry in enumerate(response['Entries']):
-                        if 'ErrorCode' in entry:
-                            self.logger.warning(
-                                'Event failed to send to EventBridge',
-                                extra={
-                                    'error_code': entry.get('ErrorCode'),
-                                    'error_message': entry.get('ErrorMessage'),
-                                    'event_id': batch[idx].get('id')
-                                }
-                            )
-                            failed_events.append(batch[idx])
-
-            except ClientError as error:
-                self.logger.warning(
-                    'EventBridge send error',
-                    extra={
-                        'error': str(error),
-                        'batch_size': len(batch)
-                    }
-                )
-                failed_events.extend(batch)
+            if batch_failures:
+                for event in batch_failures:
+                    self.logger.warning(
+                        'Event failed to send to EventBridge',
+                        extra={'event_id': event.get('id')}
+                    )
+                failed_events.extend(batch_failures)
 
         return failed_events
+
+    def _build_dlq_entries(
+        self,
+        events: List[Dict[str, Any]],
+        reason: DlqReason
+    ) -> tuple[List[Dict[str, Any]], Dict[str, Any]]:
+        """Build SQS batch entries for the DLQ and a mapping of entry IDs to events"""
+        id_to_event_map = {}
+        entries = []
+        for event in events:
+            entry_id = str(uuid4())
+            id_to_event_map[entry_id] = event
+            entries.append({
+                'Id': entry_id,
+                'MessageBody': json.dumps(event),
+                'MessageAttributes': {
+                    'DlqReason': {
+                        'DataType': 'String',
+                        'StringValue': reason
+                    }
+                }
+            })
+        return entries, id_to_event_map
+
+    def _extract_failed_dlq_events(
+        self,
+        response: Dict[str, Any],
+        id_to_event_map: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
+        """Extract events that failed to send to the DLQ from a send_message_batch response."""
+        failed = []
+        for failed_entry in response.get('Failed', []):
+            entry_id = failed_entry.get('Id')
+            if entry_id and entry_id in id_to_event_map:
+                failed_event = id_to_event_map[entry_id]
+                self.logger.warning(
+                    'Event failed to send to DLQ',
+                    extra={
+                        'error_code': failed_entry.get('Code'),
+                        'error_message': failed_entry.get('Message'),
+                        'event_id': failed_event.get('id')
+                    }
+                )
+                failed.append(failed_event)
+        return failed
 
     def _send_to_dlq(
         self,
@@ -155,44 +287,14 @@ class EventPublisher:
 
         for i in range(0, len(events), MAX_BATCH_SIZE):
             batch = events[i:i + MAX_BATCH_SIZE]
-            id_to_event_map = {}
-
-            entries = []
-            for event in batch:
-                entry_id = str(uuid4())
-                id_to_event_map[entry_id] = event
-                entries.append({
-                    'Id': entry_id,
-                    'MessageBody': json.dumps(event),
-                    'MessageAttributes': {
-                        'DlqReason': {
-                            'DataType': 'String',
-                            'StringValue': reason
-                        }
-                    }
-                })
+            entries, id_to_event_map = self._build_dlq_entries(batch, reason)
 
             try:
                 response = self.sqs_client.send_message_batch(
                     QueueUrl=self.dlq_url,
                     Entries=entries
                 )
-
-                # Track failed DLQ sends
-                if 'Failed' in response:
-                    for failed_entry in response['Failed']:
-                        entry_id = failed_entry.get('Id')
-                        if entry_id and entry_id in id_to_event_map:
-                            failed_event = id_to_event_map[entry_id]
-                            self.logger.warning(
-                                'Event failed to send to DLQ',
-                                extra={
-                                    'error_code': failed_entry.get('Code'),
-                                    'error_message': failed_entry.get('Message'),
-                                    'event_id': failed_event.get('id')
-                                }
-                            )
-                            failed_dlqs.append(failed_event)
+                failed_dlqs.extend(self._extract_failed_dlq_events(response, id_to_event_map))
 
             except ClientError as error:
                 self.logger.warning(

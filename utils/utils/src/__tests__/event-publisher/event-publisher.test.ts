@@ -31,13 +31,13 @@ const testConfig: EventPublisherDependencies = {
 
 const event: TestEvent = {
   id: '550e8400-e29b-41d4-a716-446655440001',
-  source: '/nhs/england/notify/production/primary/data-plane/digital-letters',
+  source: '/nhs/england/notify/production/primary/digital-letters',
   type: 'uk.nhs.notify.digital.letters.sent.v1',
 };
 
 const event2: TestEvent = {
   id: '550e8400-e29b-41d4-a716-446655440002',
-  source: '/nhs/england/notify/development/primary/data-plane/digital-letters',
+  source: '/nhs/england/notify/development/primary/digital-letters',
   type: 'uk.nhs.notify.digital.letters.sent.v2',
 };
 
@@ -101,7 +101,9 @@ describe('Event Publishing', () => {
     });
 
     const publisher = new EventPublisher(testConfig);
-    const result = await publisher.sendEvents(events, () => false);
+    const result = await publisher.sendEvents(events, () => {
+      throw new Error('Some validation error');
+    });
 
     expect(result).toEqual([]);
     expect(eventBridgeMock.calls()).toHaveLength(0);
@@ -186,7 +188,9 @@ describe('Event Publishing', () => {
     });
 
     const publisher = new EventPublisher(testConfig);
-    const result = await publisher.sendEvents(events, () => false);
+    const result = await publisher.sendEvents(events, () => {
+      throw new Error('Some validation error');
+    });
 
     expect(result).toEqual([event]);
     expect(eventBridgeMock.calls()).toHaveLength(0);
@@ -197,7 +201,9 @@ describe('Event Publishing', () => {
     sqsMock.on(SendMessageBatchCommand).rejects(new Error('DLQ error'));
 
     const publisher = new EventPublisher(testConfig);
-    const result = await publisher.sendEvents(events, () => false);
+    const result = await publisher.sendEvents(events, () => {
+      throw new Error('Some validation error');
+    });
 
     expect(result).toEqual(events);
     expect(eventBridgeMock.calls()).toHaveLength(0);
@@ -359,14 +365,14 @@ describe('Event Publishing', () => {
     });
 
     const publisher = new EventPublisher(testConfig);
-    const result = await publisher.sendEvents(
-      allEvents,
-      (e) =>
-        !(
-          e.id.includes('22222222-2222-2222-2222') ||
-          e.id.includes('33333333-3333-3333-3333')
-        ),
-    );
+    const result = await publisher.sendEvents(allEvents, (e) => {
+      if (
+        e.id.includes('22222222-2222-2222-2222') ||
+        e.id.includes('33333333-3333-3333-3333')
+      ) {
+        throw new Error('Some validation error');
+      }
+    });
 
     expect(result).toHaveLength(
       invalidAndDlqError.length + eventBridgeAndDlqError.length,

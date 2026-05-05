@@ -2,7 +2,8 @@
   "compilerOptions": {
     "allowJs": true,
     "isolatedModules": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "rootDir": "."
   },
   "exclude": [
     "node_modules"
@@ -10,6 +11,9 @@
   "extends": "@tsconfig/node22/tsconfig.json",
   "include": [
     "validators/**/*",
-    "types/**/*"
+    "types/**/*",
+    "guard-functions/**/*",
+    "index.ts",
+    "errors/**/*"
   ]
 }

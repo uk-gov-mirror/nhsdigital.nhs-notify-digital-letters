@@ -32,6 +32,7 @@
     "ts-jest": "^29.4.5",
     "ts-node": "^10.9.2",
     "tsx": "^4.20.6",
+    "turbo": "^2.9.6",
     "typescript-eslint": "^8.46.1"
   },
   "name": "nhs-notify-digital-letters",
@@ -45,19 +46,21 @@
     "react": "^19.0.0",
     "test-exclude": "^8.0.0"
   },
+  "packageManager": "npm@11.6.1",
   "scripts": {
     "build-schemas": "make -C src/cloudevents/domains/digital-letters build-no-bundle publish-bundled-json",
     "clean": "npm run clean --workspaces --if-present",
-    "generate-dependencies": "npm run build-schemas && npm run generate-dependencies --workspaces --if-present && npm run generate-python-dependencies",
+    "generate-dependencies": "npm run build-schemas && turbo run generate-dependencies && npm run generate-python-dependencies",
     "generate-python-dependencies": "make -C src/python-schema-generator generate",
-    "lint": "npm run lint --workspaces",
-    "lint:fix": "npm run lint:fix --workspaces",
-    "start": "npm run start --workspace frontend",
-    "test:unit": "npm run test:unit --workspaces",
-    "typecheck": "npm run typecheck --workspaces"
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
+    "test:contract": "turbo run test:contract",
+    "test:unit": "turbo run test:unit",
+    "typecheck": "turbo run typecheck"
   },
   "version": "0.0.1",
   "workspaces": [
+    "docs",
     "lambdas/file-scanner-lambda",
     "lambdas/key-generation",
     "lambdas/refresh-apim-access-token",
@@ -75,12 +78,16 @@
     "lambdas/report-event-transformer",
     "lambdas/move-scanned-files-lambda",
     "lambdas/report-generator",
+    "lambdas/nhsapp-status-handler",
     "utils/utils",
     "utils/sender-management",
+    "scripts",
     "src/cloudevents",
     "src/digital-letters-events",
     "src/python-schema-generator",
     "src/typescript-schema-generator",
-    "tests/playwright"
+    "scripts",
+    "tests/playwright",
+    "tests/pact-tests"
   ]
 }

@@ -10,6 +10,8 @@ properties:
     $ref: ../defs/requests.schema.yaml#/properties/senderId
   failureCode:
     $ref: ../defs/requests.schema.yaml#/properties/failureCode
+  messageReference:
+    $ref: ../defs/requests.schema.yaml#/properties/messageReference
 required:
   - meshMessageId
   - senderId

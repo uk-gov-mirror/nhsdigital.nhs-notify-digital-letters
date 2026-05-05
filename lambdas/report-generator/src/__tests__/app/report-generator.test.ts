@@ -47,6 +47,10 @@ describe('ReportGenerator', () => {
       time: '2025-01-15T10:00:00Z',
       datacontenttype: 'application/json',
       subject: 'customer/5661de82-7453-44a1-9922-e0c98e5411c1',
+      plane: 'data',
+      dataschema:
+        'https://notify.nhs.uk/cloudevents/schemas/digital-letters/2025-10-draft/data/digital-letters-reporting-generate-report-data.schema.json',
+      dataschemaversion: '1.0.0',
       traceparent: '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01',
       recordedtime: '2025-12-15T10:00:00Z',
       severitynumber: 2,

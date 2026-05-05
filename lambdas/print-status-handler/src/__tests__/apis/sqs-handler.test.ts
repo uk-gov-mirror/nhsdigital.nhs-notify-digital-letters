@@ -41,11 +41,15 @@ describe('SQS Handler', () => {
             id: '550e8400-e29b-41d4-a716-446655440001',
             time: '2023-06-20T12:00:00.250Z',
             recordedtime: '2023-06-20T12:00:00.250Z',
+            plane: 'data',
             dataschema:
               'https://notify.nhs.uk/cloudevents/schemas/digital-letters/2025-10-draft/data/digital-letters-print-letter-transitioned-data.schema.json',
             type: 'uk.nhs.notify.digital.letters.print.letter.transitioned.v1',
             source:
-              '/nhs/england/notify/production/primary/data-plane/digitalletters/print',
+              '/nhs/england/notify/production/primary/digitalletters/print',
+            subject:
+              'client/f47ac10b-58cc-4372-a567-0e02b2c3d479/letter-request/2503cbd5-6722-4e90-9fbd-5f1e96d65c22',
+            dataschemaversion: '1.0.0',
             data: {
               senderId: acceptedLetterEvent.data.origin.subject.split('/')[1],
               messageReference:
@@ -82,7 +86,10 @@ describe('SQS Handler', () => {
               'https://notify.nhs.uk/cloudevents/schemas/digital-letters/2025-10-draft/data/digital-letters-print-letter-transitioned-data.schema.json',
             type: 'uk.nhs.notify.digital.letters.print.letter.transitioned.v1',
             source:
-              '/nhs/england/notify/production/primary/data-plane/digitalletters/print',
+              '/nhs/england/notify/production/primary/digitalletters/print',
+            subject:
+              'client/f47ac10b-58cc-4372-a567-0e02b2c3d480/letter-request/2503cbd5-6722-4e90-9fbd-5f1e96d65c22',
+            dataschemaversion: '1.0.0',
             data: {
               senderId: failedLetterEvent.data.origin.subject.split('/')[1],
               messageReference:
@@ -220,7 +227,7 @@ describe('SQS Handler', () => {
           issues: expect.arrayContaining([
             expect.objectContaining({
               message:
-                'Subject must be in format: client/{senderId}/digital-letters/{messageReference}',
+                'Subject must be in format: client/{senderId}/letter-request/{messageReference}',
             }),
           ]),
         }),

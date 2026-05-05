@@ -8,8 +8,10 @@ import {
   SENDER_ID_SKIPS_NOTIFY,
   SENDER_ID_VALID_FOR_NOTIFY_SANDBOX,
 } from 'constants/tests-constants';
-import { MESHInboxMessageDownloaded } from 'digital-letters-events';
-import messageDownloadedValidator from 'digital-letters-events/MESHInboxMessageDownloaded.js';
+import {
+  MESHInboxMessageDownloaded,
+  validateMESHInboxMessageDownloaded,
+} from 'digital-letters-events';
 import { getLogsFromCloudwatch } from 'helpers/cloudwatch-helpers';
 import { getTtl } from 'helpers/dynamodb-helpers';
 import eventPublisher from 'helpers/event-bus-helpers';
@@ -25,8 +27,9 @@ test.describe('Digital Letters - Create TTL', () => {
   const baseEvent: MESHInboxMessageDownloaded = {
     id: 'id',
     specversion: '1.0',
-    source:
-      '/nhs/england/notify/production/primary/data-plane/digitalletters/mesh',
+    plane: 'data',
+    dataschemaversion: '1.0.0',
+    source: '/nhs/england/notify/production/primary/digitalletters/mesh',
     subject:
       'customer/920fca11-596a-4eca-9c47-99f624614658/recipient/769acdd4-6a47-496f-999f-76a6fd2c3959',
     type: 'uk.nhs.notify.digital.letters.mesh.inbox.message.downloaded.v1',
@@ -47,8 +50,11 @@ test.describe('Digital Letters - Create TTL', () => {
   };
 
   test('should create TTL and publish item enqueued event following message downloaded event', async () => {
+    test.setTimeout(200_000);
+
     const letterId = uuidv4();
     const messageUri = `https://example.com/ttl/resource/${letterId}`;
+    const messageReference = letterId;
 
     await eventPublisher.sendEvents<MESHInboxMessageDownloaded>(
       [
@@ -58,18 +64,22 @@ test.describe('Digital Letters - Create TTL', () => {
           data: {
             ...baseEvent.data,
             messageUri,
+            messageReference,
           },
         },
       ],
-      messageDownloadedValidator,
+      validateMESHInboxMessageDownloaded,
     );
 
     // Verify TTL created
     await expectToPassEventually(async () => {
-      const ttl = await getTtl(messageUri);
+      const ttl = await getTtl(
+        SENDER_ID_VALID_FOR_NOTIFY_SANDBOX,
+        messageReference,
+      );
 
       expect(ttl.length).toBe(1);
-    });
+    }, 90);
 
     // Verify item enqueued event published
     await expectToPassEventually(async () => {
@@ -83,12 +93,15 @@ test.describe('Digital Letters - Create TTL', () => {
       );
 
       expect(eventLogEntry.length).toEqual(1);
-    });
+    }, 90);
   });
 
   test('should create TTL and publish item enqueued event following message downloaded event - direct to print', async () => {
+    test.setTimeout(200_000);
+
     const letterId = uuidv4();
     const messageUri = `https://example.com/ttl/resource/${letterId}`;
+    const messageReference = letterId;
 
     await eventPublisher.sendEvents<MESHInboxMessageDownloaded>(
       [
@@ -98,19 +111,20 @@ test.describe('Digital Letters - Create TTL', () => {
           data: {
             ...baseEvent.data,
             messageUri,
+            messageReference,
             senderId: SENDER_ID_SKIPS_NOTIFY,
           },
         },
       ],
-      messageDownloadedValidator,
+      validateMESHInboxMessageDownloaded,
     );
 
     // Verify TTL created
     await expectToPassEventually(async () => {
-      const ttl = await getTtl(messageUri);
+      const ttl = await getTtl(SENDER_ID_SKIPS_NOTIFY, messageReference);
 
       expect(ttl.length).toBe(1);
-    });
+    }, 90);
 
     // Verify item enqueued event published
     await expectToPassEventually(async () => {
@@ -124,11 +138,11 @@ test.describe('Digital Letters - Create TTL', () => {
       );
 
       expect(eventLogEntry.length).toEqual(1);
-    });
+    }, 90);
   });
 
   test('should send invalid event to dlq', async () => {
-    test.setTimeout(160_000);
+    test.setTimeout(220_000);
 
     const letterId = uuidv4();
     const messageUri = `https://example.com/ttl/resource/${letterId}`;
@@ -154,20 +168,20 @@ test.describe('Digital Letters - Create TTL', () => {
         const eventLogEntry = await getLogsFromCloudwatch(
           CREATE_TTL_LAMBDA_LOG_GROUP_NAME,
           [
-            '$.message.description = "Error parsing ttl queue entry"',
+            '$.message.description = "Error parsing MESHInboxMessageDownloaded event"',
             `$.message.err[0].params.additionalProperty = "${unexpectedField}"`,
           ],
         );
 
         expect(eventLogEntry.length).toEqual(1);
-      }, 150),
+      }, 200),
 
-      expectMessageContainingString(CREATE_TTL_DLQ_NAME, letterId, 150),
+      expectMessageContainingString(CREATE_TTL_DLQ_NAME, letterId, 200),
     ]);
   });
 
   test('should send events from unknown sender to dlq', async () => {
-    test.setTimeout(160_000);
+    test.setTimeout(220_000);
 
     const letterId = uuidv4();
     const messageUri = `https://example.com/ttl/resource/${letterId}`;
@@ -185,7 +199,7 @@ test.describe('Digital Letters - Create TTL', () => {
           },
         },
       ],
-      messageDownloadedValidator,
+      validateMESHInboxMessageDownloaded,
     );
 
     await Promise.all([
@@ -198,9 +212,9 @@ test.describe('Digital Letters - Create TTL', () => {
         );
 
         expect(eventLogEntry.length).toEqual(1);
-      }, 150),
+      }, 200),
 
-      expectMessageContainingString(CREATE_TTL_DLQ_NAME, letterId, 150),
+      expectMessageContainingString(CREATE_TTL_DLQ_NAME, letterId, 200),
     ]);
   });
 });

@@ -167,8 +167,11 @@ export class ExampleGenerator {
         example.source = generatedSource;
       }
     }
+    // 5.  Notify events are data plane and dataschemaversion
+    example.plane = "data";
+    example.dataschemaversion = "1.0.0";
 
-    // 5. Generate subject from the most specific pattern
+    // 6. Generate subject from the most specific pattern
     const subjectSchema = dereferencedSchema.properties?.subject;
     const hasSpecificSubjectPattern =
       subjectSchema?.pattern && !subjectSchema.$ref;

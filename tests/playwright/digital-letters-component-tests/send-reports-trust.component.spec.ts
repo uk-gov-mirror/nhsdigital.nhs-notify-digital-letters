@@ -9,15 +9,19 @@ import { getLogsFromCloudwatch } from 'helpers/cloudwatch-helpers';
 import eventPublisher from 'helpers/event-bus-helpers';
 import expectToPassEventually from 'helpers/expectations';
 import { downloadFromS3, uploadToS3 } from 'helpers/s3-helpers';
-import { expectMessageContainingString } from 'helpers/sqs-helpers';
+import { expectMessageContainingString, purgeQueue } from 'helpers/sqs-helpers';
 import { v4 as uuidv4 } from 'uuid';
-import reportGenerated from 'digital-letters-events/ReportGenerated.js';
 import { SENDER_ID_SKIPS_NOTIFY } from 'constants/tests-constants';
+import { validateReportGenerated } from 'digital-letters-events';
 
 test.describe('Digital Letters - Send reports to Trust', () => {
   const senderId = SENDER_ID_SKIPS_NOTIFY;
   const trustMeshMailboxReportsId = 'test-mesh-reports-1';
   const messageContent = 'Sample content';
+
+  test.beforeAll(async () => {
+    await purgeQueue(REPORT_SENDER_DLQ_NAME);
+  });
 
   async function publishReportGeneratedEvent(reportKey: string): Promise<void> {
     await eventPublisher.sendEvents(
@@ -25,8 +29,10 @@ test.describe('Digital Letters - Send reports to Trust', () => {
         {
           id: uuidv4(),
           specversion: '1.0',
+          plane: 'data',
+          dataschemaversion: '1.0.0',
           source:
-            '/nhs/england/notify/development/dev-12345/data-plane/digitalletters/reporting',
+            '/nhs/england/notify/development/dev-12345/digitalletters/reporting',
           subject: `report/${uuidv4()}`,
           type: 'uk.nhs.notify.digital.letters.reporting.report.generated.v1',
           time: new Date().toISOString(),
@@ -44,7 +50,7 @@ test.describe('Digital Letters - Send reports to Trust', () => {
           },
         },
       ],
-      reportGenerated,
+      validateReportGenerated,
     );
   }
 
@@ -69,12 +75,12 @@ test.describe('Digital Letters - Send reports to Trust', () => {
       );
 
       for (const event of parsedEvents) {
-        const { reportReference } = event.data;
-        expect(reportReference).toBeDefined();
-        //  Mock MESH uses NON_PII_S3_BUCKET_NAME bucket, the object key starts with the local_id (i.e. the report reference).
+        const { sentMeshMessageId } = event.data;
+        expect(sentMeshMessageId).toBeTruthy();
+        //  Mock MESH uses NON_PII_S3_BUCKET_NAME bucket, the object key is the sentMeshMessageId.
         const storedMessage = await downloadFromS3(
           NON_PII_S3_BUCKET_NAME,
-          `mock-mesh/mock-mailbox/out/${trustMeshMailboxReportsId}/${reportReference}`,
+          `mock-mesh/mock-mailbox/out/${trustMeshMailboxReportsId}/${sentMeshMessageId}`,
         );
 
         expect(storedMessage.body).toContain(messageContent);

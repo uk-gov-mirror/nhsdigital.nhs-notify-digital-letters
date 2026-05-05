@@ -14,6 +14,6 @@ properties:
         pattern: ^uk\.nhs\.notify\.digital\.letters\.pdm\.[a-z0-9]+(?:\.[a-z0-9]+)*\.v[0-9]+$
   source:
     type: string
-    pattern: ^/nhs/england/notify/(production|staging|development|uat)/(primary|secondary|dev-[0-9]+)/(data-plane|control-plane)/digitalletters/pdm
-    minLength: 40
+    pattern: ^/nhs/england/notify/(production|staging|development|uat)/(primary|secondary|dev-[0-9]+)/digitalletters/pdm
+    minLength: 30
     format: uri-reference

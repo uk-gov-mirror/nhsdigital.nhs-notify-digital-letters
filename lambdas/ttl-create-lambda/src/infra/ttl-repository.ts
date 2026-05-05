@@ -32,7 +32,7 @@ export class TtlRepository {
 
     this.logger.info({
       description: 'Inserting item into TTL table',
-      PK: item.data.messageUri,
+      PK: `${item.data.senderId}_${item.data.messageReference}`,
       ttlTime,
     });
 
@@ -60,7 +60,7 @@ export class TtlRepository {
       new PutCommand({
         TableName: this.tableName,
         Item: {
-          PK: event.data.messageUri,
+          PK: `${event.data.senderId}_${event.data.messageReference}`,
           SK: 'TTL',
           ttl: ttlTime,
           dateOfExpiry: ttlGsiPk,

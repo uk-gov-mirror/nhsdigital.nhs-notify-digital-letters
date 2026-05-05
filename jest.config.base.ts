@@ -55,4 +55,7 @@ export const baseJestConfig: Config = {
   testEnvironment: 'node',
 
   moduleDirectories: ['node_modules', 'src'],
+
+  // Turbo now handles parallel running
+  maxWorkers: 1,
 };

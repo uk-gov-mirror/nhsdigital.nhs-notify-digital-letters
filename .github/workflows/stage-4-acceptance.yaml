@@ -22,26 +22,13 @@ on:
         type: string
 
 jobs:
-  test-contract:
-    name: "Contract test"
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: "Checkout code"
-        uses: actions/checkout@v5
-      - name: "Run contract test"
-        run: |
-          make test-contract
-      - name: "Save result"
-        run: |
-          echo "Nothing to save"
   test-security:
     name: "Security test"
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - name: "Checkout code"
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
       - name: "Run security test"
         run: |
           make test-security
@@ -54,7 +41,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: "Checkout code"
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
       - name: "Run UI test"
         run: |
           make test-ui
@@ -67,7 +54,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: "Checkout code"
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
       - name: "Run UI performance test"
         run: |
           make test-ui-performance
@@ -78,7 +65,7 @@ jobs:
     name: "Integration test"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5.0.0
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       # Calls out to the nhs-notify-internal repo.
       # The nhs-notify-internal repo will run the tests
       # setup in ./.github/actions/acceptance-tests/action.yaml
@@ -104,7 +91,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: "Checkout code"
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
       - name: "Run accessibility test"
         run: |
           make test-accessibility
@@ -117,7 +104,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: "Checkout code"
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
       - name: "Run load tests"
         run: |
           make test-load

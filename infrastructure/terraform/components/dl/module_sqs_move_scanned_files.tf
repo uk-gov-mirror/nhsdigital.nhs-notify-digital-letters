@@ -8,7 +8,7 @@ module "sqs_move_scanned_files" {
   region                     = var.region
   name                       = "move-scanned-files"
   sqs_kms_key_arn            = module.kms.key_arn
-  visibility_timeout_seconds = 60
+  visibility_timeout_seconds = var.sqs_visibility_timeout_seconds
   create_dlq                 = true
   max_receive_count          = var.sqs_max_receive_count
   sqs_policy_overload        = data.aws_iam_policy_document.sqs_move_scanned_files.json

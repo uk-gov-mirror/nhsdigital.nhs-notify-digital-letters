@@ -12,12 +12,13 @@ import { TtlDynamodbRecord } from 'utils';
 
 const dynamoDbClient = new DynamoDBClient({ region: REGION });
 
-export async function getTtl(messageUri: string) {
+export async function getTtl(senderId: string, messageReference: string) {
+  const pk = `${senderId}_${messageReference}`;
   const params = {
     TableName: TTL_TABLE_NAME,
-    KeyConditionExpression: `PK = :messageUri`,
+    KeyConditionExpression: `PK = :pk`,
     ExpressionAttributeValues: {
-      ':messageUri': messageUri,
+      ':pk': pk,
     },
   };
   const request = new QueryCommand(params);
@@ -37,12 +38,13 @@ export async function putTtl(ttlItem: TtlDynamodbRecord) {
   return output.$metadata.httpStatusCode;
 }
 
-export async function deleteTtl(messageUri: string) {
+export async function deleteTtl(senderId: string, messageReference: string) {
+  const pk = `${senderId}_${messageReference}`;
   const params = {
     TableName: TTL_TABLE_NAME,
     Key: {
       PK: {
-        S: messageUri,
+        S: pk,
       },
       SK: {
         S: 'TTL',

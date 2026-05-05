@@ -3,8 +3,9 @@ import { MESHInboxMessageDownloaded } from 'digital-letters-events';
 export const mockEvent: MESHInboxMessageDownloaded = {
   id: 'a449d419-e683-4ab4-9291-a0451b5cef8e',
   specversion: '1.0',
-  source:
-    '/nhs/england/notify/production/primary/data-plane/digitalletters/mesh',
+  source: '/nhs/england/notify/production/primary/digitalletters/mesh',
+  plane: 'data',
+  dataschemaversion: '1.0.0',
   subject:
     'customer/920fca11-596a-4eca-9c47-99f624614658/recipient/769acdd4-6a47-496f-999f-76a6fd2c3959',
   type: 'uk.nhs.notify.digital.letters.mesh.inbox.message.downloaded.v1',

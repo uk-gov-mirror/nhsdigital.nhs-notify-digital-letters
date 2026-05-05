@@ -24,8 +24,7 @@ class ReportSenderProcessor:  # pylint: disable=too-many-instance-attributes
 
         environment = 'development'
         deployment = 'primary'
-        plane = 'data-plane'
-        self.__cloud_event_source = f'/nhs/england/notify/{environment}/{deployment}/{plane}/digitalletters/reporting'
+        self.__cloud_event_source = f'/nhs/england/notify/{environment}/{deployment}/digitalletters/reporting'
 
     def _parse_and_validate_event(self, sqs_record) -> ReportGenerated:
         """Extract report generated data from SQS record"""
@@ -71,7 +70,7 @@ class ReportSenderProcessor:  # pylint: disable=too-many-instance-attributes
 
         self.__log.info(f'Sending MESH message to the sender: {sender_id} using mailbox: {reporting_mailbox} for date: {report_date} with reference: {report_reference}')
 
-        self.__mesh_report_sender.send_report(
+        sent_mesh_message_id = self.__mesh_report_sender.send_report(
             reporting_mailbox,
             report_bytes,
             report_date,
@@ -79,10 +78,10 @@ class ReportSenderProcessor:  # pylint: disable=too-many-instance-attributes
         )
 
         self.__log.info(f'Publishing ReportEventSent for the sender: {sender_id} using mailbox: {reporting_mailbox} for date: {report_date}')
-        self._publish_report_sent_event(sender_id, reporting_mailbox, report_reference)
+        self._publish_report_sent_event(sender_id, reporting_mailbox, report_reference, sent_mesh_message_id)
         self.__send_metric.record(1)
 
-    def _publish_report_sent_event(self, sender_id, mesh_mailbox_reports_id, report_reference):
+    def _publish_report_sent_event(self, sender_id, mesh_mailbox_reports_id, report_reference, sent_mesh_message_id):
         """
         Publishes a ReportSent event
         """
@@ -93,6 +92,9 @@ class ReportSenderProcessor:  # pylint: disable=too-many-instance-attributes
             'specversion': '1.0',
             'source': self.__cloud_event_source,
             'subject': f'customer/{sender_id}',
+            'plane': 'data',
+            'dataschemaversion': '1.0.0',
+            'datacontenttype': 'application/json',
             'type': 'uk.nhs.notify.digital.letters.reporting.report.sent.v1',
             'time': now,
             'recordedtime': now,
@@ -104,6 +106,7 @@ class ReportSenderProcessor:  # pylint: disable=too-many-instance-attributes
                 "senderId": sender_id,
                 "meshMailboxReportsId": mesh_mailbox_reports_id,
                 "reportReference": report_reference,
+                "sentMeshMessageId": sent_mesh_message_id,
             },
         }
 

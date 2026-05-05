@@ -9,12 +9,12 @@ import type {
   UploadToPdmOutcome,
   UploadToPdmResult,
 } from 'app/upload-to-pdm';
-import messageDownloadedValidator from 'digital-letters-events/MESHInboxMessageDownloaded.js';
-import pdmResourceSubmittedValidator from 'digital-letters-events/PDMResourceSubmitted.js';
-import pdmResourceSubmissionRejectedValidator from 'digital-letters-events/PDMResourceSubmissionRejected.js';
 import {
   MESHInboxMessageDownloaded,
   PDMResourceSubmitted,
+  validateMESHInboxMessageDownloaded,
+  validatePDMResourceSubmissionRejected,
+  validatePDMResourceSubmitted,
 } from 'digital-letters-events';
 import { EventPublisher, Logger } from 'utils';
 
@@ -42,14 +42,7 @@ function validateRecord(
     const sqsEventBody = JSON.parse(body);
     const sqsEventDetail = sqsEventBody.detail;
 
-    const isEventValid = messageDownloadedValidator(sqsEventDetail);
-    if (!isEventValid) {
-      logger.error({
-        err: messageDownloadedValidator.errors,
-        description: 'Error parsing queue entry',
-      });
-      return null;
-    }
+    validateMESHInboxMessageDownloaded(sqsEventDetail, logger);
 
     return { messageId, event: sqsEventDetail };
   } catch (error) {
@@ -157,7 +150,7 @@ async function publishSuccessfulEvents(
             resourceId,
           },
         })),
-        pdmResourceSubmittedValidator,
+        validatePDMResourceSubmitted,
       );
     if (submittedFailedEvents.length > 0) {
       logger.warn({
@@ -196,9 +189,10 @@ async function publishFailedEvents(
         data: {
           messageReference: event.data.messageReference,
           senderId: event.data.senderId,
+          reasonCode: 'DL_PDMV_001',
         },
       })),
-      pdmResourceSubmissionRejectedValidator,
+      validatePDMResourceSubmissionRejected,
     );
     if (rejectedFailedEvents.length > 0) {
       logger.warn({

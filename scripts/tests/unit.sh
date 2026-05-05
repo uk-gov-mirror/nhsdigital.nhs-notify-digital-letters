@@ -4,71 +4,102 @@ set -euo pipefail
 
 cd "$(git rev-parse --show-toplevel)"
 
-# This file is for you! Edit it to call your unit test suite. Note that the same
-# file will be called if you run it locally as if you run it on CI.
+_timer_labels=()
+_timer_seconds=()
 
-# Replace the following line with something like:
-#
-#   rails test:unit
-#   python manage.py test
-#   npm run test
-#
-# or whatever is appropriate to your project. You should *only* run your fast
-# tests from here. If you want to run other test suites, see the predefined
-# tasks in scripts/test.mk.
+run_timed() {
+  local label="$1"
+  shift
+  local start
+  start=$(date +%s)
+  local rc=0
+  "$@" || rc=$?
+  local end
+  end=$(date +%s)
+  _timer_labels+=("$label")
+  _timer_seconds+=("$((end - start))")
+  return "$rc"
+}
 
-# run tests
+print_timing_summary() {
+  echo ""
+  echo "===== Timing Summary ====="
+  local total=0
+  for i in "${!_timer_labels[@]}"; do
+    printf "  %-55s %4ds\n" "${_timer_labels[$i]}" "${_timer_seconds[$i]}"
+    total=$((total + _timer_seconds[$i]))
+  done
+  echo "  ---------------------------------------------------------"
+  printf "  %-55s %4ds\n" "TOTAL" "$total"
+  echo "=========================="
+}
 
-# TypeScript/JavaScript projects (npm workspace)
-# Note: src/cloudevents is included in workspaces, so it will be tested here
-npm ci
-npm run generate-dependencies
-npm run test:unit --workspaces
+trap print_timing_summary EXIT
 
-# Python projects - asyncapigenerator
-echo "Setting up and running asyncapigenerator tests..."
-make -C ./src/asyncapigenerator install-dev
-make -C ./src/asyncapigenerator coverage  # Run with coverage to generate coverage.xml for SonarCloud
+run_timed "Node unit tests (parallel)" npm run test:unit || jest_exit=$?
 
-# Python projects - cloudeventjekylldocs
-echo "Setting up and running cloudeventjekylldocs tests..."
-make -C ./src/cloudeventjekylldocs install-dev
-make -C ./src/cloudeventjekylldocs coverage  # Run with coverage to generate coverage.xml for SonarCloud
+# ---- Phase 1: install all Python dev dependencies (sequential) ----
+# Discover Python projects dynamically: any directory under src/, utils/, or
+# lambdas/ whose Makefile defines both an `install-dev` target (Python deps)
+# and a `coverage` target (pytest). This avoids maintaining a hardcoded list.
+echo "Installing Python dev dependencies..."
+_python_projects=()
+while IFS= read -r _proj; do
+  _python_projects+=("$_proj")
+done < <(
+  grep -rl "^install-dev:" src/ utils/ lambdas/ --include="Makefile" 2>/dev/null \
+    | xargs grep -l "^coverage:" \
+    | xargs -I{} dirname {} \
+    | sort
+)
+for proj in "${_python_projects[@]}"; do
+  run_timed "${proj}: install-dev" make -C "$proj" install-dev
+done
 
-# Python projects - eventcatalogasyncapiimporter
-echo "Setting up and running eventcatalogasyncapiimporter tests..."
-make -C ./src/eventcatalogasyncapiimporter install-dev
-make -C ./src/eventcatalogasyncapiimporter coverage  # Run with coverage to generate coverage.xml for SonarCloud
+# ---- Phase 2: run all coverage steps in parallel ----
+echo "Running Python coverage in parallel..."
 
-# Python utility packages - py-utils
-echo "Setting up and running py-utils tests..."
-make -C ./utils/py-utils install-dev
-make -C ./utils/py-utils coverage  # Run with coverage to generate coverage.xml for SonarCloud
+_py_pids=()
+_py_labels=()
+_py_logs=()
+_py_exits=()
 
-# Python projects - python-schema-generator
-echo "Setting up and running python-schema-generator tests..."
-make -C ./src/python-schema-generator install-dev
-make -C ./src/python-schema-generator coverage  # Run with coverage to generate coverage.xml for SonarCloud
+for proj in "${_python_projects[@]}"; do
+  label="${proj}: coverage"
+  logfile=$(mktemp)
+  make -C "$proj" coverage >"$logfile" 2>&1 &
+  _py_pids+=("$!")
+  _py_labels+=("$label")
+  _py_logs+=("$logfile")
+done
 
-# Python Lambda - mesh-acknowledge
-echo "Setting up and running mesh-acknowledge tests..."
-make -C ./lambdas/mesh-acknowledge install-dev
-make -C ./lambdas/mesh-acknowledge coverage  # Run with coverage to generate coverage.xml for SonarCloud
+# Collect results in launch order (preserves deterministic output)
+_py_start=$(date +%s)
+for i in "${!_py_pids[@]}"; do
+  wait "${_py_pids[$i]}"
+  _py_exits+=("$?")
+  echo ""
+  echo "--- ${_py_labels[$i]} ---"
+  cat "${_py_logs[$i]}"
+  rm -f "${_py_logs[$i]}"
+done
+_py_end=$(date +%s)
+_timer_labels+=("Python unit tests (parallel)")
+_timer_seconds+=("$((_py_end - _py_start))")
 
-# Python Lambda - mesh-poll
-echo "Setting up and running mesh-poll tests..."
-make -C ./lambdas/mesh-poll install-dev
-make -C ./lambdas/mesh-poll coverage  # Run with coverage to generate coverage.xml for SonarCloud
+# Propagate any Jest failure now that all other test suites have completed
+if [ "${jest_exit:-0}" -ne 0 ]; then
+  echo "Jest tests failed with exit code ${jest_exit}"
+  exit "${jest_exit}"
+fi
 
-# Python Lambda - mesh-download
-echo "Setting up and running mesh-download tests..."
-make -C ./lambdas/mesh-download install-dev
-make -C ./lambdas/mesh-download coverage  # Run with coverage to generate coverage.xml for SonarCloud
-
-# Python Lambda - report-sender
-echo "Setting up and running report-sender tests..."
-make -C ./lambdas/report-sender install-dev
-make -C ./lambdas/report-sender coverage  # Run with coverage to generate coverage.xml for SonarCloud
+# Propagate any Python coverage failure
+for i in "${!_py_exits[@]}"; do
+  if [ "${_py_exits[$i]}" -ne 0 ]; then
+    echo "${_py_labels[$i]} failed with exit code ${_py_exits[$i]}"
+    exit "${_py_exits[$i]}"
+  fi
+done
 
 # merge coverage reports
 mkdir -p .reports

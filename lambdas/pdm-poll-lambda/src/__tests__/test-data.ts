@@ -7,10 +7,11 @@ import {
 const baseEvent = {
   id: '550e8400-e29b-41d4-a716-446655440001',
   specversion: '1.0',
-  source:
-    '/nhs/england/notify/production/primary/data-plane/digitalletters/pdm',
+  source: '/nhs/england/notify/production/primary/digitalletters/pdm',
   subject:
     'customer/920fca11-596a-4eca-9c47-99f624614658/recipient/769acdd4-6a47-496f-999f-76a6fd2c3959',
+  plane: 'data',
+  dataschemaversion: '1.0.0',
   type: 'uk.nhs.notify.digital.letters.pdm.resource.submitted.v1',
   time: '2023-06-20T12:00:00Z',
   recordedtime: '2023-06-20T12:00:00.250Z',

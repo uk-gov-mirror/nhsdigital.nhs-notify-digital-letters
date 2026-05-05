@@ -24,8 +24,8 @@ module "report_sender" {
   function_module_name    = "report_sender"
   handler_function_name   = "handler.handler"
   runtime                 = "python3.14"
-  memory                  = 128
-  timeout                 = 5
+  memory                  = 256
+  timeout                 = var.lambda_timeout_seconds
   log_level               = var.log_level
 
   force_lambda_code_deploy = var.force_lambda_code_deploy
@@ -42,8 +42,8 @@ module "report_sender" {
     EVENT_PUBLISHER_DLQ_URL        = module.sqs_event_publisher_errors.sqs_queue_url
     EVENT_PUBLISHER_EVENT_BUS_ARN  = aws_cloudwatch_event_bus.main.arn
     MOCK_MESH_BUCKET               = module.s3bucket_non_pii_data.bucket
-    SSM_MESH_PREFIX                = "${local.ssm_mesh_prefix}"
-    SSM_SENDERS_PREFIX             = "${local.ssm_senders_prefix}"
+    SSM_MESH_PREFIX                = local.ssm_mesh_prefix
+    SSM_SENDERS_PREFIX             = local.ssm_senders_prefix
     USE_MESH_MOCK                  = var.enable_mock_mesh ? "true" : "false"
   }
 

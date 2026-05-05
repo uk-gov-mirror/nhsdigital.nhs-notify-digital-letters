@@ -39,6 +39,10 @@ module "s3bucket_file_safe" {
       }
     }
   ]
+
+  default_tags = {
+    NHSE-Enable-S3-Backup-Acct = "True"
+  }
 }
 
 data "aws_iam_policy_document" "s3bucket_file_safe" {

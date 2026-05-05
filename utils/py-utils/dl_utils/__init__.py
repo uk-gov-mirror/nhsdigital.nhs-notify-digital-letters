@@ -5,6 +5,8 @@ Utility library for Python projects.
 
 from .event_publisher import EventPublisher
 
+from .failure_codes import get_failure_code_description
+
 from .mesh_config import (
     BaseMeshConfig,
     InvalidMeshEndpointError,
@@ -29,6 +31,7 @@ from .trace_context import (
 
 __all__ = [
     'EventPublisher',
+    'get_failure_code_description',
     'BaseMeshConfig',
     'InvalidMeshEndpointError',
     'InvalidEnvironmentVariableError',

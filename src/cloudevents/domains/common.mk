@@ -56,31 +56,39 @@ build-no-bundle:
 	@echo "Building $(DOMAIN) schemas to output/..."
 	@if [ -n "$(PROFILE_NAMES)" ]; then \
 		echo "Building profile schemas..."; \
-		for schema in $(PROFILE_NAMES); do \
-			echo "  - $$schema"; \
-			cd $(CLOUD_EVENTS_DIR) && npm run build -- --root-dir $(ROOT_DIR) $(SRC_DIR)/$$schema.schema.yaml $(OUTPUT_DIR) || exit 1; \
+		_pids=""; \
+		for name in $(PROFILE_NAMES); do \
+			(cd $(CLOUD_EVENTS_DIR) && npm run build -- --root-dir $(ROOT_DIR) $(SRC_DIR)/$$name.schema.yaml $(OUTPUT_DIR)) & \
+			_pids="$$_pids $$!"; \
 		done; \
+		_rc=0; for pid in $$_pids; do wait $$pid || _rc=1; done; exit $$_rc; \
 	fi
 	@if [ -n "$(DEFS_NAMES)" ]; then \
 		echo "Building defs schemas..."; \
-		for schema in $(DEFS_NAMES); do \
-			echo "  - $$schema"; \
-			cd $(CLOUD_EVENTS_DIR) && npm run build -- --root-dir $(ROOT_DIR) $(SRC_DIR)/defs/$$schema.yaml $(OUTPUT_DIR)/defs || exit 1; \
+		_pids=""; \
+		for name in $(DEFS_NAMES); do \
+			(cd $(CLOUD_EVENTS_DIR) && npm run build -- --root-dir $(ROOT_DIR) $(SRC_DIR)/defs/$$name.yaml $(OUTPUT_DIR)/defs) & \
+			_pids="$$_pids $$!"; \
 		done; \
+		_rc=0; for pid in $$_pids; do wait $$pid || _rc=1; done; exit $$_rc; \
 	fi
 	@if [ -n "$(DATA_NAMES)" ]; then \
 		echo "Building data schemas..."; \
-		for schema in $(DATA_NAMES); do \
-			echo "  - $$schema"; \
-			cd $(CLOUD_EVENTS_DIR) && npm run build -- --root-dir $(ROOT_DIR) $(SRC_DIR)/data/$$schema.yaml $(OUTPUT_DIR)/data || exit 1; \
+		_pids=""; \
+		for name in $(DATA_NAMES); do \
+			(cd $(CLOUD_EVENTS_DIR) && npm run build -- --root-dir $(ROOT_DIR) $(SRC_DIR)/data/$$name.yaml $(OUTPUT_DIR)/data) & \
+			_pids="$$_pids $$!"; \
 		done; \
+		_rc=0; for pid in $$_pids; do wait $$pid || _rc=1; done; exit $$_rc; \
 	fi
 	@if [ -n "$(EVENT_NAMES)" ]; then \
 		echo "Building event schemas..."; \
-		for schema in $(EVENT_NAMES); do \
-			echo "  - $$schema"; \
-			cd $(CLOUD_EVENTS_DIR) && npm run build -- --root-dir $(ROOT_DIR) $(SRC_DIR)/events/$$schema.schema.yaml $(OUTPUT_DIR)/events || exit 1; \
+		_pids=""; \
+		for name in $(EVENT_NAMES); do \
+			(cd $(CLOUD_EVENTS_DIR) && npm run build -- --root-dir $(ROOT_DIR) $(SRC_DIR)/events/$$name.schema.yaml $(OUTPUT_DIR)/events) & \
+			_pids="$$_pids $$!"; \
 		done; \
+		_rc=0; for pid in $$_pids; do wait $$pid || _rc=1; done; exit $$_rc; \
 	fi
 
 publish-json:
@@ -138,11 +146,13 @@ publish-json:
 
 publish-bundled-json:
 	@if [ -n "$(EVENT_NAMES)" ]; then \
-		@echo "Flattening published event schemas..."; \
-		for schema in $(EVENT_NAMES); do \
-			echo "  - $$schema (flatten)"; \
-			cd $(CLOUD_EVENTS_DIR) && npm run bundle -- --flatten --root-dir $(ROOT_DIR) --base-url $(SCHEMA_BASE_URL) $(OUTPUT_DIR)/events/$$schema.schema.json $(SCHEMAS_DIR)/events/$$schema.flattened.schema.json || exit 1; \
+		echo "Flattening published event schemas..."; \
+		_pids=""; \
+		for name in $(EVENT_NAMES); do \
+			(cd $(CLOUD_EVENTS_DIR) && npm run bundle -- --flatten --root-dir $(ROOT_DIR) --base-url $(SCHEMA_BASE_URL) $(OUTPUT_DIR)/events/$$name.schema.json $(SCHEMAS_DIR)/events/$$name.flattened.schema.json) & \
+			_pids="$$_pids $$!"; \
 		done; \
+		_rc=0; for pid in $$_pids; do wait $$pid || _rc=1; done; exit $$_rc; \
 	fi
 
 publish-yaml:

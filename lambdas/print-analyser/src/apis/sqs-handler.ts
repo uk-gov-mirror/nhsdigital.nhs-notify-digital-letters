@@ -5,9 +5,14 @@ import type {
 } from 'aws-lambda';
 import { createHash, randomUUID } from 'node:crypto';
 import { PDFDocument } from 'pdf-lib';
-import { FileSafe, PDFAnalysed } from 'digital-letters-events';
-import fileSafeValidator from 'digital-letters-events/FileSafe.js';
-import pdfAnalysedValidator from 'digital-letters-events/PDFAnalysed.js';
+import {
+  FileSafe,
+  InvalidAttachmentReceived,
+  PDFAnalysed,
+  validateFileSafe,
+  validateInvalidAttachmentReceived,
+  validatePDFAnalysed,
+} from 'digital-letters-events';
 import { EventPublisher, Logger, getS3ObjectBufferFromUri } from 'utils';
 
 export interface HandlerDependencies {
@@ -33,17 +38,11 @@ function validateRecord(
     const sqsEventBody = JSON.parse(body);
     const sqsEventDetail = sqsEventBody.detail;
 
-    const isEventValid = fileSafeValidator(sqsEventDetail);
-    if (!isEventValid) {
-      logger.warn({
-        err: fileSafeValidator.errors,
-        description: 'Error parsing print analyser queue entry',
-        messageReference:
-          sqsEventDetail?.data?.messageReference || 'not present',
-      });
+    const messageReference =
+      sqsEventDetail?.data?.messageReference || 'not present';
+    const childLogger = logger.child({ messageReference });
 
-      return null;
-    }
+    validateFileSafe(sqsEventDetail, childLogger);
 
     return { messageId, event: sqsEventDetail };
   } catch (error) {
@@ -72,8 +71,7 @@ function generateUpdatedEvent(event: FileSafe, pdfInfo: PdfInfo): PDFAnalysed {
       'https://notify.nhs.uk/cloudevents/schemas/digital-letters/2025-10-draft/data/digital-letters-print-pdf-analysed-data.schema.json',
     type: 'uk.nhs.notify.digital.letters.print.pdf.analysed.v1',
     // NOTE: CCM-13892 Generate event digital letters source property from scratch
-    source:
-      '/nhs/england/notify/production/primary/data-plane/digitalletters/print',
+    source: '/nhs/england/notify/production/primary/digitalletters/print',
     data: {
       senderId,
       messageReference,
@@ -81,6 +79,31 @@ function generateUpdatedEvent(event: FileSafe, pdfInfo: PdfInfo): PDFAnalysed {
       pageCount: pdfInfo.pageCount,
       sha256Hash: pdfInfo.hash,
       createdAt,
+    },
+  };
+}
+
+function generateInvalidAttachmentEvent(
+  event: FileSafe,
+): InvalidAttachmentReceived {
+  const eventTime = new Date().toISOString();
+
+  const {
+    data: { messageReference, senderId },
+  } = event;
+
+  return {
+    ...event,
+    id: randomUUID(),
+    time: eventTime,
+    recordedtime: eventTime,
+    dataschema:
+      'https://notify.nhs.uk/cloudevents/schemas/digital-letters/2025-10-draft/data/digital-letters-print-invalid-attachment-received-data.schema.json',
+    type: 'uk.nhs.notify.digital.letters.print.invalid.attachment.received.v1',
+    data: {
+      senderId,
+      messageReference,
+      reasonCode: 'DL_CLIV_002',
     },
   };
 }
@@ -101,7 +124,7 @@ export const createHandler = ({
     const receivedItemCount = sqsEvent.Records.length;
     const batchItemFailures: SQSBatchItemFailure[] = [];
     const validatedRecords: ValidatedRecord[] = [];
-    const validEvents: PDFAnalysed[] = [];
+    const validEvents: (PDFAnalysed | InvalidAttachmentReceived)[] = [];
 
     logger.info(`Received SQS Event of ${receivedItemCount} record(s)`);
 
@@ -121,19 +144,45 @@ export const createHandler = ({
           const pdfBuffer = await getS3ObjectBufferFromUri(
             event.data.letterUri,
           );
-          const pdfInfo = await analysePdf(pdfBuffer);
-          validEvents.push(generateUpdatedEvent(event, pdfInfo));
+
+          try {
+            const pdfInfo = await analysePdf(pdfBuffer);
+            validEvents.push(generateUpdatedEvent(event, pdfInfo));
+          } catch (pdfError: any) {
+            const invalidAttachmentEvent =
+              generateInvalidAttachmentEvent(event);
+            validEvents.push(invalidAttachmentEvent);
+            logger.warn({
+              err: pdfError,
+              messageReference: event.data.messageReference,
+              reasonCode: 'DL_CLIV_002',
+              description: 'Failed to analyze PDF - invalid attachment format',
+            });
+          }
         } catch (error: any) {
           logger.warn({
-            err: error.message,
+            err: error,
             description: 'Failed processing message',
           });
-          batchItemFailures.push({ itemIdentifier: validatedRecord.messageId });
+          batchItemFailures.push({
+            itemIdentifier: validatedRecord.messageId,
+          });
         }
       }),
     );
 
-    await eventPublisher.sendEvents(validEvents, pdfAnalysedValidator);
+    await eventPublisher.sendEvents(validEvents, (event) => {
+      if (event.type.includes('pdf.analysed')) {
+        return validatePDFAnalysed(event as PDFAnalysed, logger);
+      }
+      if (event.type.includes('invalid.attachment.received')) {
+        return validateInvalidAttachmentReceived(
+          event as InvalidAttachmentReceived,
+          logger,
+        );
+      }
+      throw new Error(`Unknown event type: ${event.type}`);
+    });
 
     const processedItemCount = receivedItemCount - batchItemFailures.length;
     logger.info(

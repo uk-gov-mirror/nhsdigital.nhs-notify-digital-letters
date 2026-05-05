@@ -12,8 +12,15 @@ properties:
     $ref: ../defs/requests.schema.yaml#/properties/messageUri
   failureCode:
     $ref: ../defs/core.schema.yaml#/properties/failureCode
+  reasonCode:
+    $ref: ../defs/print.schema.yaml#/properties/reasonCode
+  reasonText:
+    type: string
+    description: Human-readable description of the failure reason for reporting (from Core API)
 required:
   - messageReference
   - senderId
   - messageUri
   - failureCode
+  - reasonCode
+  - reasonText

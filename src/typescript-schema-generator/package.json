@@ -18,7 +18,9 @@
   "name": "typescript-schema-generator",
   "private": true,
   "scripts": {
-    "generate-dependencies": "npm run generate-types && npm run generate-validators",
+    "clean": "rm -rf ../digital-letters-events/guard-functions ../digital-letters-events/validators ../digital-letters-events/types",
+    "generate-dependencies": "npm run clean && npm run generate-types && npm run generate-validators && npm run generate-guard-functions",
+    "generate-guard-functions": "tsx src/generate-guard-functions-cli.ts",
     "generate-types": "tsx src/generate-types-cli.ts",
     "generate-validators": "tsx src/generate-validators-cli.ts",
     "lint": "eslint src",

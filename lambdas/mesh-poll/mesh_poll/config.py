@@ -8,7 +8,7 @@ __all__ = ['Config', 'log']
 _REQUIRED_ENV_VAR_MAP = {
     "ssm_senders_prefix": "SSM_SENDERS_PREFIX",
     "ssm_mesh_prefix": "SSM_MESH_PREFIX",
-    "maximum_runtime_milliseconds": "MAXIMUM_RUNTIME_MILLISECONDS",
+    "lambda_timeout_buffer_milliseconds": "LAMBDA_TIMEOUT_BUFFER_MILLISECONDS",
     "environment": "ENVIRONMENT",
     "event_bus_arn": "EVENT_PUBLISHER_EVENT_BUS_ARN",
     "event_publisher_dlq_url": "EVENT_PUBLISHER_DLQ_URL",

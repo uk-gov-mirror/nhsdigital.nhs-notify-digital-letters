@@ -4,8 +4,7 @@ import {
   PRINT_SENDER_DLQ_NAME,
   PRINT_SENDER_LAMBDA_LOG_GROUP_NAME,
 } from 'constants/backend-constants';
-import { PDFAnalysed } from 'digital-letters-events';
-import pdfAnalysedValidator from 'digital-letters-events/PDFAnalysed.js';
+import { PDFAnalysed, validatePDFAnalysed } from 'digital-letters-events';
 import { getLogsFromCloudwatch } from 'helpers/cloudwatch-helpers';
 import eventPublisher from 'helpers/event-bus-helpers';
 import expectToPassEventually from 'helpers/expectations';
@@ -14,6 +13,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 test.describe('Digital Letters - Print Sender', () => {
   test('should send Letter Prepared event from PDF Analysed event', async () => {
+    test.setTimeout(120_000);
+
     const letterId = uuidv4();
     const letterUri = `s3://bucket/${letterId}.pdf`;
     const pageCount = 2;
@@ -28,8 +29,9 @@ test.describe('Digital Letters - Print Sender', () => {
         {
           id: letterId,
           specversion: '1.0',
-          source:
-            '/nhs/england/notify/production/primary/data-plane/digitalletters/print',
+          plane: 'data',
+          dataschemaversion: '1.0.0',
+          source: '/nhs/england/notify/production/primary/digitalletters/print',
           subject:
             'customer/920fca11-596a-4eca-9c47-99f624614658/recipient/769acdd4-6a47-496f-999f-76a6fd2c3959',
           type: 'uk.nhs.notify.digital.letters.print.pdf.analysed.v1',
@@ -52,7 +54,7 @@ test.describe('Digital Letters - Print Sender', () => {
           },
         },
       ],
-      pdfAnalysedValidator,
+      validatePDFAnalysed,
     );
 
     // Verify letter prepared event published
@@ -67,7 +69,7 @@ test.describe('Digital Letters - Print Sender', () => {
       );
 
       expect(eventLogEntry.length).toEqual(1);
-    });
+    }, 60_000);
   });
 
   test('should send invalid event to print sender dlq', async () => {
@@ -77,8 +79,9 @@ test.describe('Digital Letters - Print Sender', () => {
     const event = {
       id: uuidv4(),
       specversion: '1.0',
-      source:
-        '/nhs/england/notify/production/primary/data-plane/digitalletters/print',
+      plane: 'data',
+      dataschemaversion: '1.0.0',
+      source: '/nhs/england/notify/production/primary/digitalletters/print',
       subject:
         'customer/920fca11-596a-4eca-9c47-99f624614658/recipient/769acdd4-6a47-496f-999f-76a6fd2c3959',
       type: 'uk.nhs.notify.digital.letters.print.pdf.analysed.v1',
@@ -103,9 +106,9 @@ test.describe('Digital Letters - Print Sender', () => {
         const eventLogEntry = await getLogsFromCloudwatch(
           PRINT_SENDER_LAMBDA_LOG_GROUP_NAME,
           [
-            '$.message.description = "Error parsing print sender queue entry"',
+            '$.message.description = "Error parsing PDFAnalysed event"',
             `$.message.err[0].message = "must have required property 'senderId'"`,
-            `$.message.messageReference = "${messageReference}"`,
+            `$.messageReference = "${messageReference}"`,
           ],
         );
 

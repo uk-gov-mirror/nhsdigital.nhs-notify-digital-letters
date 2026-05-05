@@ -225,6 +225,12 @@ export default defineConfig([
     },
   },
   {
+    files: ['tests/pact-tests/**'],
+    rules: {
+      'no-relative-import-paths/no-relative-import-paths': 0,
+    },
+  },
+  {
     files: ['scripts/**'],
     rules: {
       'import-x/no-extraneous-dependencies': [

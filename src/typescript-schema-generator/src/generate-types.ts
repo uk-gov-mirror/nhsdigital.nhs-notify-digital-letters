@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
-import { createOutputDir, writeFile, writeTypesIndex } from 'file-utils';
+import { createOutputDir, writeFile } from 'file-utils';
 import { compile } from 'json-schema-to-typescript';
+import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { eventSchemasDir, listEventSchemas, loadSchema } from 'utils';
 
@@ -21,7 +22,7 @@ export async function generateTypes() {
     });
 
     // Write a .d.ts file named after the schema title or file.
-    const typeDeclarationFilename = `${typeName}.d.ts`;
+    const typeDeclarationFilename = `${typeName}.ts`;
     writeFile(outputDir, typeDeclarationFilename, eventTs);
     console.log(typeDeclarationFilename);
 
@@ -30,6 +31,6 @@ export async function generateTypes() {
   }
   console.groupEnd();
 
-  writeTypesIndex(outputDir, indexLines);
-  console.log('index.d.ts file written');
+  writeFileSync(path.join(outputDir, 'index.ts'), `${indexLines.join('\n')}\n`);
+  console.log('index.ts file written');
 }

@@ -1,6 +1,10 @@
+import {
+  validateFileQuarantined,
+  validateFileSafe,
+} from 'digital-letters-events';
 import { createFileQuarantinedEvent, createFileSafeEvent } from 'domain/mapper';
-import fileSafeValidator from 'digital-letters-events/FileSafe.js';
-import fileQuarantinedValidator from 'digital-letters-events/FileQuarantined.js';
+import { mock } from 'jest-mock-extended';
+import { Logger } from 'utils';
 
 // Mock randomUUID to make tests deterministic
 jest.mock('node:crypto', () => ({
@@ -22,6 +26,7 @@ describe('mapper', () => {
   });
 
   describe('createFileSafeEvent', () => {
+    const mockLogger = mock<Logger>();
     it('creates a FileSafe event with correct structure', () => {
       const messageReference = 'msg-ref-123';
       const senderId = 'sender-456';
@@ -38,8 +43,12 @@ describe('mapper', () => {
         specversion: '1.0',
         id: 'mocked-uuid-12345',
         subject: `customer/${senderId}/recipient/${messageReference}`,
-        source:
-          '/nhs/england/notify/production/primary/data-plane/digitalletters/print',
+        source: '/nhs/england/notify/production/primary/digitalletters/print',
+        plane: 'data',
+        dataschema:
+          'https://notify.nhs.uk/cloudevents/schemas/digital-letters/2025-10-draft/data/digital-letters-print-file-safe-data.schema.json',
+        dataschemaversion: '1.0.0',
+        datacontenttype: 'application/json',
         traceparent: '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01',
         type: 'uk.nhs.notify.digital.letters.print.file.safe.v1',
         time: '2024-01-15T10:30:00.000Z',
@@ -52,11 +61,7 @@ describe('mapper', () => {
         recordedtime: '2024-01-15T10:30:00.000Z',
         severitynumber: 2,
       });
-      const isValid = fileSafeValidator(result);
-      if (!isValid) {
-        throw new Error(JSON.stringify(fileSafeValidator.errors, null, 2));
-      }
-      expect(isValid).toBe(true);
+      expect(() => validateFileSafe(result, mockLogger)).not.toThrow();
     });
 
     it('handles different input values correctly', () => {
@@ -80,6 +85,8 @@ describe('mapper', () => {
   });
 
   describe('createFileQuarantinedEvent', () => {
+    const mockLogger = mock<Logger>();
+
     it('creates a FileQuarantined event with correct structure', () => {
       const messageReference = 'msg-ref-789';
       const senderId = 'sender-012';
@@ -96,8 +103,12 @@ describe('mapper', () => {
         specversion: '1.0',
         id: 'mocked-uuid-12345',
         subject: `customer/${senderId}/recipient/${messageReference}`,
-        source:
-          '/nhs/england/notify/production/primary/data-plane/digitalletters/print',
+        plane: 'data',
+        dataschema:
+          'https://notify.nhs.uk/cloudevents/schemas/digital-letters/2025-10-draft/data/digital-letters-print-file-quarantined-data.schema.json',
+        dataschemaversion: '1.0.0',
+        datacontenttype: 'application/json',
+        source: '/nhs/england/notify/production/primary/digitalletters/print',
         traceparent: '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01',
         type: 'uk.nhs.notify.digital.letters.print.file.quarantined.v1',
         time: '2024-01-15T10:30:00.000Z',
@@ -106,17 +117,12 @@ describe('mapper', () => {
           senderId,
           letterUri,
           createdAt,
+          reasonCode: 'DL_CLIV_003',
         },
         recordedtime: '2024-01-15T10:30:00.000Z',
         severitynumber: 2,
       });
-      const isValid = fileQuarantinedValidator(result);
-      if (!isValid) {
-        throw new Error(
-          JSON.stringify(fileQuarantinedValidator.errors, null, 2),
-        );
-      }
-      expect(isValid).toBe(true);
+      expect(() => validateFileQuarantined(result, mockLogger)).not.toThrow();
     });
   });
 });

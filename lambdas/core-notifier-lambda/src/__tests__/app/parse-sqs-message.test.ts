@@ -2,10 +2,11 @@ import type { SQSRecord } from 'aws-lambda';
 import { mock } from 'jest-mock-extended';
 import { Logger } from 'utils';
 import { parseSqsRecord } from 'app/parse-sqs-message';
-import { InvalidPdmResourceAvailableEvent } from 'domain/invalid-pdm-resource-available-event';
 import { validPdmEvent } from '__tests__/constants';
+import { InvalidEvent } from 'digital-letters-events';
 
 const mockLogger = mock<Logger>();
+const mockChildLogger = mock<Logger>();
 
 describe('parseSqsRecord', () => {
   const messageId = 'test-message-id-123';
@@ -27,6 +28,10 @@ describe('parseSqsRecord', () => {
     awsRegion: 'eu-west-2',
   });
 
+  beforeAll(() => {
+    mockLogger.child.mockReturnValue(mockChildLogger);
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -38,13 +43,12 @@ describe('parseSqsRecord', () => {
       const result = parseSqsRecord(sqsRecord, mockLogger);
 
       expect(result).toEqual(validPdmEvent);
-      expect(mockLogger.info).toHaveBeenCalledWith({
+      expect(mockLogger.child).toHaveBeenCalledWith({ messageId });
+      expect(mockChildLogger.info).toHaveBeenCalledWith({
         description: 'Parsing SQS Record',
-        messageId,
       });
-      expect(mockLogger.info).toHaveBeenCalledWith({
+      expect(mockChildLogger.info).toHaveBeenCalledWith({
         description: 'Parsed valid PDMResourceAvailable Event',
-        messageId,
         messageReference: validPdmEvent.data.messageReference,
         senderId: validPdmEvent.data.senderId,
         resourceId: validPdmEvent.data.resourceId,
@@ -53,20 +57,16 @@ describe('parseSqsRecord', () => {
   });
 
   describe('when SQS record contains an invalid PDMResourceAvailable event', () => {
-    it('logs error and throws InvalidPdmResourceAvailableEvent', () => {
+    it('logs error and throws InvalidEvent', () => {
       const invalidEvent = { ...validPdmEvent, data: {} };
       const sqsRecord = createSqsRecord(invalidEvent);
 
-      expect(() => parseSqsRecord(sqsRecord, mockLogger)).toThrow(
-        InvalidPdmResourceAvailableEvent,
-      );
-
-      expect(mockLogger.error).toHaveBeenCalledWith(
+      expect(() => parseSqsRecord(sqsRecord, mockLogger)).toThrow(InvalidEvent);
+      expect(mockLogger.child).toHaveBeenCalledWith({ messageId });
+      expect(mockChildLogger.error).toHaveBeenCalledWith(
         expect.objectContaining({
-          description:
-            'The SQS message does not contain a valid PDMResourceAvailable event',
-          messageId,
-          error: expect.any(Array),
+          description: 'Error parsing PDMResourceAvailable event',
+          err: expect.any(Array),
         }),
       );
     });
@@ -92,9 +92,8 @@ describe('parseSqsRecord', () => {
       };
 
       expect(() => parseSqsRecord(sqsRecord, mockLogger)).toThrow(SyntaxError);
-      expect(mockLogger.info).toHaveBeenCalledWith({
+      expect(mockChildLogger.info).toHaveBeenCalledWith({
         description: 'Parsing SQS Record',
-        messageId,
       });
     });
   });

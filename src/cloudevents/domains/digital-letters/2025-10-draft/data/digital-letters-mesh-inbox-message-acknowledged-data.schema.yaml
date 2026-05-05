@@ -10,7 +10,20 @@ properties:
     $ref: ../defs/requests.schema.yaml#/properties/senderId
   meshMailboxId:
     $ref: ../defs/mesh.schema.yaml#/properties/meshMailboxId
+  receivedMeshMessageId:
+    $ref: ../defs/mesh.schema.yaml#/properties/meshMessageId
+  sentMeshMessageId:
+    $ref: ../defs/mesh.schema.yaml#/properties/meshMessageId
+  statusCode:
+    type: integer
+    description: HTTP status code indicating the result of the acknowledgement (202 for success, 400 for failure)
+    enum: [202, 400]
+  failureCode:
+    type: string
+    description: Failure code indicating the reason for a negative acknowledgement
 required:
-  - messageReference
   - senderId
   - meshMailboxId
+  - receivedMeshMessageId
+  - sentMeshMessageId
+  - statusCode

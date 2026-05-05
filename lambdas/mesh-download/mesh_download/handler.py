@@ -21,6 +21,7 @@ def handler(event, context):
     processed = {
         'retrieved': 0,
         'downloaded': 0,
+        'skipped': 0,
         'failed': 0
     }
 
@@ -43,6 +44,8 @@ def handler(event, context):
                 log=log,
                 mesh_client=config.mesh_client,
                 download_metric=config.download_metric,
+                internal_duplicate_download_metric=config.internal_duplicate_download_metric,
+                trust_duplicate_download_metric=config.trust_duplicate_download_metric,
                 document_store=document_store,
                 event_publisher=event_publisher
             )
@@ -57,8 +60,8 @@ def handler(event, context):
                     continue
 
                 try:
-                    processor.process_sqs_message(record)
-                    processed['downloaded'] += 1
+                    outcome = processor.process_sqs_message(record)
+                    processed[outcome] += 1
 
                 except Exception as exc:
                     processed['failed'] += 1
@@ -70,6 +73,7 @@ def handler(event, context):
         log.info("Processed SQS event",
                 retrieved=processed['retrieved'],
                 downloaded=processed['downloaded'],
+                skipped=processed['skipped'],
                 failed=processed['failed'])
 
         return {"batchItemFailures": batch_item_failures}

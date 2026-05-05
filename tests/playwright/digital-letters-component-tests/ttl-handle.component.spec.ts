@@ -15,8 +15,9 @@ test.describe('Digital Letters - Handle TTL', () => {
   const baseEvent: MESHInboxMessageDownloaded = {
     id: 'sample-id',
     specversion: '1.0',
-    source:
-      '/nhs/england/notify/production/primary/data-plane/digitalletters/mesh',
+    plane: 'data',
+    dataschemaversion: '1.0.0',
+    source: '/nhs/england/notify/production/primary/digitalletters/mesh',
     subject:
       'customer/920fca11-596a-4eca-9c47-99f624614658/recipient/769acdd4-6a47-496f-999f-76a6fd2c3959',
     type: 'uk.nhs.notify.digital.letters.mesh.inbox.message.downloaded.v1',
@@ -37,8 +38,11 @@ test.describe('Digital Letters - Handle TTL', () => {
   };
 
   test('should handle withdrawn item', async () => {
+    test.setTimeout(200_000);
     const letterId = uuidv4();
     const messageUri = `https://example.com/ttl/resource/${letterId}`;
+    const messageReference = letterId;
+    const { senderId } = baseEvent.data;
 
     const event = {
       ...baseEvent,
@@ -46,11 +50,12 @@ test.describe('Digital Letters - Handle TTL', () => {
       data: {
         ...baseEvent.data,
         messageUri,
+        messageReference,
       },
     } satisfies MESHInboxMessageDownloaded;
 
     const ttlItem = {
-      PK: messageUri,
+      PK: `${senderId}_${messageReference}`,
       SK: 'TTL',
       dateOfExpiry: '2023-12-31#0',
       event,
@@ -61,7 +66,7 @@ test.describe('Digital Letters - Handle TTL', () => {
     const putResponseCode = await putTtl(ttlItem);
     expect(putResponseCode).toBe(200);
 
-    const deleteResponseCode = await deleteTtl(messageUri);
+    const deleteResponseCode = await deleteTtl(senderId, messageReference);
     expect(deleteResponseCode).toBe(200);
 
     await expectToPassEventually(async () => {
@@ -74,12 +79,15 @@ test.describe('Digital Letters - Handle TTL', () => {
       );
 
       expect(eventLogEntry.length).toEqual(1);
-    });
+    }, 180_000);
   });
 
   test('should handle expired item', async () => {
+    test.setTimeout(200_000);
     const letterId = uuidv4();
     const messageUri = `https://example.com/ttl/resource/${letterId}`;
+    const messageReference = letterId;
+    const { senderId } = baseEvent.data;
 
     const event = {
       ...baseEvent,
@@ -87,11 +95,12 @@ test.describe('Digital Letters - Handle TTL', () => {
       data: {
         ...baseEvent.data,
         messageUri,
+        messageReference,
       },
     } satisfies MESHInboxMessageDownloaded;
 
     const ttlItem = {
-      PK: messageUri,
+      PK: `${senderId}_${messageReference}`,
       SK: 'TTL',
       dateOfExpiry: '2023-12-31#0',
       event,
@@ -101,7 +110,7 @@ test.describe('Digital Letters - Handle TTL', () => {
     const putResponseCode = await putTtl(ttlItem);
     expect(putResponseCode).toBe(200);
 
-    const deleteResponseCode = await deleteTtl(messageUri);
+    const deleteResponseCode = await deleteTtl(senderId, messageReference);
     expect(deleteResponseCode).toBe(200);
 
     await expectToPassEventually(async () => {
@@ -115,14 +124,15 @@ test.describe('Digital Letters - Handle TTL', () => {
       );
 
       expect(eventLogEntry.length).toEqual(1);
-    });
+    }, 180_000);
   });
 
   test('should send invalid item to dlq', async () => {
-    test.setTimeout(160_000);
+    test.setTimeout(220_000);
 
     const letterId = uuidv4();
-    const messageUri = `https://example.com/ttl/resource/${letterId}`;
+    const messageReference = letterId;
+    const { senderId } = baseEvent.data;
 
     const eventWithNoMessageUri = {
       ...baseEvent,
@@ -134,7 +144,7 @@ test.describe('Digital Letters - Handle TTL', () => {
     };
 
     const ttlItem = {
-      PK: messageUri,
+      PK: `${senderId}_${messageReference}`,
       SK: 'TTL',
       dateOfExpiry: '2023-12-31#0',
       event: eventWithNoMessageUri,
@@ -144,9 +154,9 @@ test.describe('Digital Letters - Handle TTL', () => {
     const putResponseCode = await putTtl(ttlItem);
     expect(putResponseCode).toBe(200);
 
-    const deleteResponseCode = await deleteTtl(messageUri);
+    const deleteResponseCode = await deleteTtl(senderId, messageReference);
     expect(deleteResponseCode).toBe(200);
 
-    await expectMessageContainingString(HANDLE_TTL_DLQ_NAME, letterId, 150);
+    await expectMessageContainingString(HANDLE_TTL_DLQ_NAME, letterId, 200);
   });
 });

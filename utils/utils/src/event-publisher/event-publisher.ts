@@ -24,7 +24,7 @@ export interface EventPublisherDependencies {
 
 type PublishableEvent = { id: string; source: string; type: string };
 
-type EventValidationFunction<T> = { (event: T): boolean; errors?: any[] };
+type EventValidationFunction<T> = (event: T, logger: Logger) => void;
 
 export class EventPublisher {
   private readonly eventBridge: EventBridgeClient;
@@ -215,16 +215,11 @@ export class EventPublisher {
     const invalidEvents: T[] = [];
 
     for (const event of events) {
-      const isEventValid = eventValidator(event);
-      if (isEventValid) {
+      try {
+        eventValidator(event, this.logger);
         validEvents.push(event);
-      } else {
+      } catch {
         invalidEvents.push(event);
-
-        this.logger.info({
-          description: 'Error parsing event',
-          error: eventValidator.errors,
-        });
       }
     }
 

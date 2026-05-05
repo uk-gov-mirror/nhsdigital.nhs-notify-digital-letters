@@ -29,8 +29,10 @@ import { PDMResourceSubmitted } from 'digital-letters-events';
 
 const pdmResourceSubmittedEvent: PDMResourceSubmitted = {
     type: 'uk.nhs.notify.digital.letters.pdm.resource.submitted.v1',
+    plane : 'data',
+    dataschemaversion: '1.0.0',
     source:
-      '/nhs/england/notify/staging/dev-647563337/data-plane/digitalletters/pdm',
+      '/nhs/england/notify/staging/dev-647563337/digitalletters/pdm',
     dataschema:
       'https://notify.nhs.uk/cloudevents/schemas/digital-letters/2025-10-draft/data/digital-letters-pdm-resource-submitted-data.schema.json',
     specversion: '1.0',
@@ -96,7 +98,9 @@ try:
     # Validate and parse an event
     event_data = {
         "type": "uk.nhs.notify.digital.letters.pdm.resource.submitted.v1",
-        "source": "/nhs/england/notify/staging/dev-647563337/data-plane/digitalletters/pdm",
+        "plane": "data",
+        "dataschemaversion": '1.0',
+        "source": "/nhs/england/notify/staging/dev-647563337/digitalletters/pdm",
         "dataschema": "https://notify.nhs.uk/cloudevents/schemas/digital-letters/2025-10-draft/data/digital-letters-pdm-resource-submitted-data.schema.json",
         "specversion": "1.0",
         "id": "0249e529-f947-4012-819e-b634eb71be79",

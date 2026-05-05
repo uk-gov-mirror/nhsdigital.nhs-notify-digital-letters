@@ -10,7 +10,10 @@ properties:
     $ref: ../defs/mesh.schema.yaml#/properties/meshMailboxReportsId
   reportReference:
     $ref: ../defs/mesh.schema.yaml#/properties/reportReference
+  sentMeshMessageId:
+    $ref: ../defs/mesh.schema.yaml#/properties/meshMessageId
 required:
   - senderId
   - meshMailboxReportsId
   - reportReference
+  - sentMeshMessageId

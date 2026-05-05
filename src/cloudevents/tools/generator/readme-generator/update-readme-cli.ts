@@ -6,6 +6,8 @@
  * 2. Render README.md from the index
  */
 
+import { realpathSync } from "fs";
+import { dirname, resolve } from "path";
 import { handleCli as generateIndexCli } from "./generate-readme-index-cli.ts";
 import { handleCli as renderReadmeCli } from "./render-readme-cli.ts";
 
@@ -59,30 +61,20 @@ export async function handleCli(
   }
 }
 
-// Execute CLI if this module is run directly
-// Note: This uses eval to prevent Jest/CommonJS from parsing import.meta
+// Execute CLI if this module is run directly.
 // istanbul ignore next - CLI entry point, difficult to test in Jest
-// @ts-ignore
-try {
-  const importMeta = eval('import.meta');
-  if (importMeta && importMeta.url === `file://${process.argv[1]}`) {
-    // Get the root directory (3 levels up from this file: tools/generator/readme-generator)
-    const rootDir = new URL("../../../", importMeta.url).pathname;
-    const args = process.argv.slice(2);
+if (process.argv[1]?.endsWith("update-readme-cli.ts")) {
+  // Derive rootDir from process.argv[1] (3 levels up: tools/generator/readme-generator)
+  const mainPath = realpathSync(process.argv[1]);
+  const rootDir = resolve(dirname(mainPath), "../../..");
+  const args = process.argv.slice(2);
 
-    handleCli(args, rootDir)
-      .then((result) => {
-        process.exit(result.exitCode);
-      })
-      .catch((err) => {
-        console.error("Unexpected error:", err);
-        process.exit(1);
-      });
-  }
-} catch {
-  // Intentionally ignoring exception: import.meta not available in CommonJS/Jest environments.
-  // This is expected when the module is imported rather than executed directly.
-  if (process.env.DEBUG) {
-    console.debug("Module loaded in CommonJS/Jest environment (import.meta not available)");
-  }
+  handleCli(args, rootDir)
+    .then((result) => {
+      process.exit(result.exitCode);
+    })
+    .catch((err) => {
+      console.error("Unexpected error:", err);
+      process.exit(1);
+    });
 }

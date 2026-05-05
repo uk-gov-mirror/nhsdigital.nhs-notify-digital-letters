@@ -10,7 +10,7 @@ properties:
     description: Concrete versioned event type string for this event (.vN suffix).
   source:
     type: string
-    pattern: ^/nhs/england/notify/(production|staging|development|uat)/(primary|secondary|dev-[0-9]+)/data-plane/digitalletters/reporting
+    pattern: ^/nhs/england/notify/(production|staging|development|uat)/(primary|secondary|dev-[0-9]+)/digitalletters/reporting
     description: Event source for digital letters.
 
   dataschema:

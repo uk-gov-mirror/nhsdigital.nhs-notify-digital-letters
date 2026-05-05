@@ -28,8 +28,10 @@ const createValidEvent = (overrides = {}): PDFAnalysed => ({
   type: 'uk.nhs.notify.digital.letters.print.pdf.analysed.v1',
   dataschema:
     'https://notify.nhs.uk/cloudevents/schemas/digital-letters/2025-10-draft/data/digital-letters-print-pdf-analysed-data.schema.json',
-  source:
-    '/nhs/england/notify/production/primary/data-plane/digitalletters/print',
+  plane: 'data',
+  dataschemaversion: '1.0.0',
+  datacontenttype: 'application/json',
+  source: '/nhs/england/notify/production/primary/digitalletters/print',
   specversion: '1.0',
   traceparent: '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01',
   severitynumber: 2,
@@ -49,6 +51,7 @@ const createValidEvent = (overrides = {}): PDFAnalysed => ({
 describe('sqs-trigger-lambda', () => {
   let mockPrintSender: jest.Mocked<PrintSender>;
   let mockLogger: jest.Mocked<Logger>;
+  let mockChildLogger: jest.Mocked<Logger>;
   let handler: any;
 
   beforeEach(() => {
@@ -56,10 +59,17 @@ describe('sqs-trigger-lambda', () => {
       send: jest.fn(),
     } as unknown as jest.Mocked<PrintSender>;
 
+    mockChildLogger = {
+      info: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn(),
+    } as unknown as jest.Mocked<Logger>;
+
     mockLogger = {
       info: jest.fn(),
       error: jest.fn(),
       warn: jest.fn(),
+      child: jest.fn().mockReturnValue(mockChildLogger),
     } as unknown as jest.Mocked<Logger>;
 
     handler = createHandler({
@@ -110,10 +120,9 @@ describe('sqs-trigger-lambda', () => {
     const result = await handler(sqsEvent);
 
     expect(result.batchItemFailures).toEqual([{ itemIdentifier: 'message-1' }]);
-    expect(mockLogger.error).toHaveBeenCalledWith(
+    expect(mockChildLogger.error).toHaveBeenCalledWith(
       expect.objectContaining({
-        description: 'Error parsing print sender queue entry',
-        messageReference: 'not present',
+        description: 'Error parsing PDFAnalysed event',
       }),
     );
     expect(mockPrintSender.send).not.toHaveBeenCalled();

@@ -211,8 +211,11 @@ describe('sendRequest', () => {
           mockRequest1.data.attributes.messageReference,
         ),
       ).rejects.toMatchObject({
-        errorCode: 'CM_MISSING_ROUTING_PLAN_TEMPLATE',
+        cause: error,
         correlationId: 'request-item-id_request-item-plan-id',
+        errorCode: 'CM_MISSING_ROUTING_PLAN_TEMPLATE',
+        failureReason:
+          'The templates required to use the routing plan were not found.',
       });
     },
   );

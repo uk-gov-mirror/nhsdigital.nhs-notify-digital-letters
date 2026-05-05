@@ -46,6 +46,7 @@ export type SingleMessageErrorResponse = {
     {
       id: string;
       code: string;
+      detail: string;
     },
   ];
 };

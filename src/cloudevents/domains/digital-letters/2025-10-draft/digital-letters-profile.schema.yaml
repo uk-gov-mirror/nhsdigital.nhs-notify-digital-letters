@@ -3,7 +3,7 @@ title: Digital Letters Profile
 description: NHS Notify Digital Letters profile for CloudEvents 1.0 including additional governance and tracing attributes.
 type: object
 allOf:
-  - $ref: https://notify.nhs.uk/cloudevents/schemas/common/2025-11-draft/nhs-notify-profile.schema.json
+  - $ref: https://notify.nhs.uk/cloudevents/schemas/common/2026-04/nhs-notify-profile.schema.json
 properties:
   type:
     type: string
@@ -14,6 +14,22 @@ properties:
         pattern: ^uk\.nhs\.notify\.digital\.letters\.[a-z0-9]+(?:\.[a-z0-9]+)*\.v[0-9]+$
   source:
     type: string
-    pattern: ^/nhs/england/notify/(production|staging|development|uat)/(primary|secondary|dev-[0-9]+)/(data-plane|control-plane)/digitalletters
-    minLength: 40
+    pattern: ^/nhs/england/notify/(production|staging|development|uat)/(primary|secondary|dev-[0-9]+)/digitalletters
+    minLength: 30
     format: uri-reference
+  plane:
+    type: string
+    enum:
+      - data
+  dataschemaversion:
+    type: string
+    const: "1.0.0"
+    description: Data Schema version (fixed to 1.0.0).
+    examples:
+      - "1.0.0"
+  datacontenttype:
+    type: string
+    const: "application/json"
+    description: Data Content type (fixed to application/json).
+    examples:
+      - "application/json"

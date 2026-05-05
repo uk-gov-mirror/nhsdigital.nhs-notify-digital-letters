@@ -109,6 +109,7 @@ export class NotifyClient implements INotifyClient {
             error,
             correlationId,
             errorBody?.errors[0].code,
+            errorBody?.errors[0].detail,
           );
         }
       }

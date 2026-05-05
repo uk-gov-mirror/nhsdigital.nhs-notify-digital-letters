@@ -5,12 +5,11 @@ import type {
   DynamoDBRecord,
   DynamoDBStreamEvent,
 } from 'aws-lambda';
-import type {
+import {
   ItemDequeued,
-  MESHInboxMessageDownloaded,
+  validateItemDequeued,
+  validateMESHInboxMessageDownloaded,
 } from 'digital-letters-events';
-import itemDequeuedValidator from 'digital-letters-events/ItemDequeued.js';
-import messageDownloadedValidator from 'digital-letters-events/MESHInboxMessageDownloaded.js';
 import { randomUUID } from 'node:crypto';
 import { $TtlDynamodbRecord, EventPublisher, Logger } from 'utils';
 
@@ -19,10 +18,6 @@ export type CreateHandlerDependencies = {
   eventPublisher: EventPublisher;
   logger: Logger;
 };
-
-const eventValidator = messageDownloadedValidator as (
-  d: unknown,
-) => d is MESHInboxMessageDownloaded;
 
 export const createHandler = ({
   dlq,
@@ -68,25 +63,14 @@ export const createHandler = ({
         return;
       }
 
-      let itemEvent: MESHInboxMessageDownloaded;
-      if (eventValidator(item.event)) {
-        itemEvent = item.event;
-      } else {
-        logger.warn({
-          err: messageDownloadedValidator.errors,
-          description: 'Error parsing ttl item event',
-        });
-
-        failures.push(record);
-
-        return;
-      }
+      const itemEvent = item.event;
+      validateMESHInboxMessageDownloaded(itemEvent, logger);
 
       if (item.withdrawn) {
         logger.info({
           description: 'ItemDequeued event not sent as item withdrawn',
           messageReference: itemEvent.data.messageReference,
-          messageUri: item.PK,
+          messageUri: itemEvent.data.messageUri,
           senderId: itemEvent.data.senderId,
         });
       } else {
@@ -108,7 +92,7 @@ export const createHandler = ({
               },
             },
           ],
-          itemDequeuedValidator,
+          validateItemDequeued,
         );
       }
     } catch (error) {

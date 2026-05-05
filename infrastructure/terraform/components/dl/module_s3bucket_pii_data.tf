@@ -14,6 +14,28 @@ module "s3bucket_pii_data" {
   policy_documents = [data.aws_iam_policy_document.s3bucket_pii_data.json]
 
   force_destroy = var.force_destroy
+
+  lifecycle_rules = [
+    {
+      enabled = true
+
+      expiration = {
+        days = var.pii_data_retention_policy_days
+      }
+
+      noncurrent_version_expiration = {
+        noncurrent_days = var.pii_data_retention_non_current_days
+      }
+
+      abort_incomplete_multipart_upload = {
+        days = "1"
+      }
+    }
+  ]
+
+  default_tags = {
+    NHSE-Enable-S3-Backup-Acct = "True"
+  }
 }
 
 data "aws_iam_policy_document" "s3bucket_pii_data" {

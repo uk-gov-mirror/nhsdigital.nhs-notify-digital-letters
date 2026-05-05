@@ -9,11 +9,11 @@ import {
   PDMResourceRetriesExceeded,
   PDMResourceSubmitted,
   PDMResourceUnavailable,
+  validatePDMResourceAvailable,
+  validatePDMResourceRetriesExceeded,
+  validatePDMResourceSubmitted,
+  validatePDMResourceUnavailable,
 } from 'digital-letters-events';
-import pdmResourceAvailableValidator from 'digital-letters-events/PDMResourceAvailable.js';
-import pdmResourceSubmittedValidator from 'digital-letters-events/PDMResourceSubmitted.js';
-import pdmResourceUnavailableValidator from 'digital-letters-events/PDMResourceUnavailable.js';
-import pdmResourceRetriesExceededValidator from 'digital-letters-events/PDMResourceRetriesExceeded.js';
 import { randomUUID } from 'node:crypto';
 import { EventPublisher, Logger } from 'utils';
 
@@ -43,28 +43,12 @@ function validateRecord(
       sqsEventDetail.type ===
       'uk.nhs.notify.digital.letters.pdm.resource.submitted.v1'
     ) {
-      const isEventValid = pdmResourceSubmittedValidator(sqsEventDetail);
-      if (!isEventValid) {
-        logger.warn({
-          err: pdmResourceSubmittedValidator.errors,
-          description: 'Error parsing queue entry',
-        });
-
-        return null;
-      }
+      validatePDMResourceSubmitted(sqsEventDetail, logger);
 
       return { messageId, event: sqsEventDetail };
     }
 
-    const isEventValid = pdmResourceUnavailableValidator(sqsEventDetail);
-    if (!isEventValid) {
-      logger.warn({
-        err: pdmResourceUnavailableValidator.errors,
-        description: 'Error parsing queue entry',
-      });
-
-      return null;
-    }
+    validatePDMResourceUnavailable(sqsEventDetail, logger);
 
     return { messageId, event: sqsEventDetail };
   } catch (error) {
@@ -143,6 +127,7 @@ function generateRetriesExceededEvent(
       senderId: event.data.senderId,
       resourceId: event.data.resourceId,
       retryCount: retries,
+      reasonCode: 'DL_PDMV_002',
     },
   };
 }
@@ -224,17 +209,17 @@ export const createHandler = ({
         availableEvents.length > 0 &&
           eventPublisher.sendEvents(
             availableEvents,
-            pdmResourceAvailableValidator,
+            validatePDMResourceAvailable,
           ),
         unavailableEvents.length > 0 &&
           eventPublisher.sendEvents(
             unavailableEvents,
-            pdmResourceUnavailableValidator,
+            validatePDMResourceUnavailable,
           ),
         retriesExceededEvents.length > 0 &&
           eventPublisher.sendEvents(
             retriesExceededEvents,
-            pdmResourceRetriesExceededValidator,
+            validatePDMResourceRetriesExceeded,
           ),
       ].filter(Boolean),
     );

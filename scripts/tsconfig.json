@@ -1,7 +1,23 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
-    "isolatedModules": true
+    "isolatedModules": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "paths": {
+      "destinations/*": [
+        "nft-event-generator/src/destinations/*"
+      ],
+      "generators/*": [
+        "nft-event-generator/src/generators/*"
+      ],
+      "utils": [
+        "nft-event-generator/src/utils/index.ts"
+      ],
+      "utils/*": [
+        "nft-event-generator/src/utils/*"
+      ]
+    }
   },
   "exclude": [
     "node_modules"

@@ -30,9 +30,8 @@ class MeshMessageProcessor:  # pylint: disable=too-many-instance-attributes
 
         environment = 'development'
         deployment = 'primary'
-        plane = 'data-plane'
         self.__cloud_event_source = (
-            f'/nhs/england/notify/{environment}/{deployment}/{plane}/'
+            f'/nhs/england/notify/{environment}/{deployment}/'
             'digitalletters/mesh'
         )
 
@@ -45,11 +44,11 @@ class MeshMessageProcessor:  # pylint: disable=too-many-instance-attributes
 
     def is_enough_time_to_process_message(self):
         """
-        Determines whether the lambda should continue to process messages
+        Determines whether the lambda should continue to process messages.
         """
         remaining_time_in_millis = self.__get_remaining_time_in_millis()
 
-        return int(self.__config.maximum_runtime_milliseconds) \
+        return int(self.__config.lambda_timeout_buffer_milliseconds) \
             < remaining_time_in_millis
 
     def process_messages(self):
@@ -117,7 +116,7 @@ class MeshMessageProcessor:  # pylint: disable=too-many-instance-attributes
                     "data": {
                         "meshMessageId": message_id,
                         "senderId": sender_id,
-                        "failureCode": "LID_MESH_0001"
+                        "failureCode": "DL_CLIV_006"
                     }
                 }
 
@@ -164,6 +163,8 @@ class MeshMessageProcessor:  # pylint: disable=too-many-instance-attributes
                 f'{event_detail["data"]["messageReference"]}'
             ),
             'type': 'uk.nhs.notify.digital.letters.mesh.inbox.message.received.v1',
+            'plane': 'data',
+            'dataschemaversion': '1.0.0',
             'time': now,
             'recordedtime': now,
             'severitynumber': 2,
@@ -201,6 +202,8 @@ class MeshMessageProcessor:  # pylint: disable=too-many-instance-attributes
             'source': self.__cloud_event_source,
             'subject': f'customer/{event_detail["data"]["senderId"]}',
             'type': 'uk.nhs.notify.digital.letters.mesh.inbox.message.invalid.v1',
+            'plane': 'data',
+            'dataschemaversion': '1.0.0',
             'time': now,
             'recordedtime': now,
             'severitynumber': 3,

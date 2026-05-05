@@ -15,7 +15,7 @@ def setup_mocks():
     mock_config.mesh_client = Mock()
 
     mock_processor = Mock()
-    mock_processor.process_sqs_message = Mock()
+    mock_processor.process_sqs_message = Mock(return_value='downloaded')
 
     return (
         mock_context,
@@ -149,9 +149,9 @@ class TestHandler:
 
         # Make second message fail
         mock_processor.process_sqs_message.side_effect = [
-            None,
+            'downloaded',
             Exception("Test error"),
-            None
+            'downloaded'
         ]
 
         event = create_sqs_event(num_records=3)

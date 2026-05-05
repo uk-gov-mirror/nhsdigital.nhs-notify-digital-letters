@@ -9,8 +9,10 @@ import {
   $LetterEvent,
   LetterEvent,
 } from '@nhsdigital/nhs-notify-event-schemas-supplier-api/src/events/letter-events';
-import { PrintLetterTransitioned } from 'digital-letters-events';
-import printLetterTransitionedValidator from 'digital-letters-events/PrintLetterTransitioned.js';
+import {
+  PrintLetterTransitioned,
+  validatePrintLetterTransitioned,
+} from 'digital-letters-events';
 import { EventPublisher, Logger } from 'utils';
 
 export interface HandlerDependencies {
@@ -26,8 +28,8 @@ type ValidatedRecord = {
 const originSubjectSchema = z
   .string()
   .regex(
-    /^client\/[^/]+\/digital-letters\/[^/]+$/,
-    'Subject must be in format: client/{senderId}/digital-letters/{messageReference}',
+    /^client\/[^/]+\/letter-request\/[^/]+$/,
+    'Subject must be in format: client/{senderId}/letter-request/{messageReference}',
   );
 
 function validateRecord(
@@ -66,6 +68,12 @@ function validateRecord(
       return null;
     }
 
+    logger.info({
+      description: 'Successfully validated SQS record',
+      messageId,
+      subject: item.data.origin.subject,
+    });
+
     return { messageId, event: item };
   } catch (error) {
     logger.warn({
@@ -100,12 +108,14 @@ function generateUpdatedEvent(event: LetterEvent): PrintLetterTransitioned {
     id: randomUUID(),
     time: eventTime,
     recordedtime: eventTime,
+    subject: `client/${senderId}/letter-request/${messageReference}`,
     dataschema:
       'https://notify.nhs.uk/cloudevents/schemas/digital-letters/2025-10-draft/data/digital-letters-print-letter-transitioned-data.schema.json',
     type: 'uk.nhs.notify.digital.letters.print.letter.transitioned.v1',
     // NOTE: CCM-13892 Generate event digital letters source property from scratch
-    source:
-      '/nhs/england/notify/production/primary/data-plane/digitalletters/print',
+    source: '/nhs/england/notify/production/primary/digitalletters/print',
+    plane: 'data',
+    dataschemaversion: '1.0.0',
     data: {
       senderId,
       messageReference,
@@ -157,7 +167,7 @@ export const createHandler = ({
 
     await eventPublisher.sendEvents(
       validEvents,
-      printLetterTransitionedValidator,
+      validatePrintLetterTransitioned,
     );
 
     const processedItemCount = receivedItemCount - batchItemFailures.length;

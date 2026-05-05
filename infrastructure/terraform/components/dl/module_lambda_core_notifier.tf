@@ -24,8 +24,8 @@ module "core_notifier" {
   function_include_common = true
   handler_function_name   = "handler"
   runtime                 = "nodejs22.x"
-  memory                  = 128
-  timeout                 = 60
+  memory                  = 256
+  timeout                 = var.lambda_timeout_seconds
   log_level               = var.log_level
 
   force_lambda_code_deploy = var.force_lambda_code_deploy
@@ -40,6 +40,7 @@ module "core_notifier" {
     "EVENT_PUBLISHER_EVENT_BUS_ARN"        = aws_cloudwatch_event_bus.main.arn
     "EVENT_PUBLISHER_DLQ_URL"              = module.sqs_event_publisher_errors.sqs_queue_url
     "ENVIRONMENT"                          = var.environment
+    "NHS_APP_BASE_URL"                     = var.nhs_app_base_url
   }
 }
 

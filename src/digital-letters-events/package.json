@@ -10,7 +10,7 @@
   },
   "exports": {
     ".": {
-      "types": "./types/index.d.ts"
+      "default": "./index.ts"
     },
     "./*.js": {
       "default": "./validators/*.js",

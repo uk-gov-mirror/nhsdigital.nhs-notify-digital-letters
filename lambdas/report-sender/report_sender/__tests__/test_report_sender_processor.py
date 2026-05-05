@@ -92,9 +92,11 @@ def create_valid_sqs_record(sender_id=SENDER_ID, report_uri=REPORT_URI):
             'detail': {
                 'id': '6f1c2a53-3d54-4a0a-9a0b-0e9ae2d4c111',
                 'specversion': '1.0',
-                'source': '/nhs/england/notify/development/primary/data-plane/digitalletters/reporting',
+                'source': '/nhs/england/notify/development/primary/digitalletters/reporting',
                 'subject': 'customer/920fca11-596a-4eca-9c47-99f624614658',
                 'type': 'uk.nhs.notify.digital.letters.reporting.report.generated.v1',
+                'plane': 'data',
+                'dataschemaversion': '1.0.0',
                 'time': '2026-02-03T10:00:00Z',
                 'datacontenttype': 'application/json',
                 'dataschema': 'https://notify.nhs.uk/cloudevents/schemas/digital-letters/2025-10-draft/data/digital-letters-reporting-report-generated-data.schema.json',
@@ -133,6 +135,8 @@ class TestReportSenderProcessor:
                     'specversion': '1.0',
                     'source': '/test/source',
                     'type': 'uk.nhs.notify.digital.letters.reporting.report.generated.v1',
+                    'plane': 'data',
+                    'dataschemaversion': '1.0.0',
                     'time': '2026-02-03T10:00:00Z',
                     'data': {
                         # Missing required fields
@@ -226,8 +230,9 @@ class TestReportSenderProcessor:
         """Test successful publishing of ReportSent event"""
         mesh_mailbox_reports_id = "MAILBOX001"
         report_reference = "report-reference-123"
+        sent_mesh_message_id = "mesh-msg-id-abc123"
 
-        processor._publish_report_sent_event(SENDER_ID, mesh_mailbox_reports_id, report_reference)
+        processor._publish_report_sent_event(SENDER_ID, mesh_mailbox_reports_id, report_reference, sent_mesh_message_id)
 
         # Verify event was published
         mock_event_publisher.send_events.assert_called_once()
@@ -240,7 +245,11 @@ class TestReportSenderProcessor:
         assert event['subject'] == f'customer/{SENDER_ID}'
         assert event['data']['senderId'] == SENDER_ID
         assert event['data']['meshMailboxReportsId'] == mesh_mailbox_reports_id
+        assert event['data']['sentMeshMessageId'] == sent_mesh_message_id
         assert event['specversion'] == '1.0'
+        assert event['plane'] == 'data'
+        assert event['dataschemaversion'] == '1.0.0'
+        assert event['datacontenttype'] == 'application/json'
         assert 'id' in event
         assert 'time' in event
         assert 'recordedtime' in event
@@ -258,9 +267,10 @@ class TestReportSenderProcessor:
         mesh_mailbox_reports_id = "MAILBOX001"
         mock_event_publisher.send_events.return_value = [{'id': 'failed-event'}]
         report_reference = "report-reference-123"
+        sent_mesh_message_id = "mesh-msg-id-abc123"
 
         with pytest.raises(RuntimeError) as exc_info:
-            processor._publish_report_sent_event(SENDER_ID, mesh_mailbox_reports_id, report_reference)
+            processor._publish_report_sent_event(SENDER_ID, mesh_mailbox_reports_id, report_reference, sent_mesh_message_id)
 
         assert "Failed to publish ReportingReportSent event" in str(exc_info.value)
         mock_logger.error.assert_called()

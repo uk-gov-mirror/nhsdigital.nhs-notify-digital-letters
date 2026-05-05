@@ -4,6 +4,12 @@ export const ENV = process.env.ENVIRONMENT || 'main';
 export const REGION = process.env.AWS_REGION || 'eu-west-2';
 export const { AWS_ACCOUNT_ID } = process.env;
 
+if (!AWS_ACCOUNT_ID) {
+  throw new Error('AWS_ACCOUNT_ID environment variable is not set');
+}
+
+export const AWS_ACCOUNT_ID_SAFE: string = AWS_ACCOUNT_ID;
+
 // Compound Scope Indicator
 export const CSI = `nhs-${ENV}-dl`;
 
@@ -32,6 +38,7 @@ export const PRINT_SENDER_DLQ_NAME = `${CSI}-print-sender-dlq`;
 export const MOVE_SCANNED_FILES_NAME = `${CSI}-move-scanned-files-queue`;
 export const MOVE_SCANNED_FILES_DLQ_NAME = `${CSI}-move-scanned-files-dlq`;
 export const REPORT_SENDER_DLQ_NAME = `${CSI}-report-sender-dlq`;
+export const NHSAPP_STATUS_HANDLER_DLQ_NAME = `${CSI}-nhsapp-status-handler-dlq`;
 
 // Queue Url Prefix
 export const SQS_URL_PREFIX = `https://sqs.${REGION}.amazonaws.com/${AWS_ACCOUNT_ID}/`;
@@ -69,6 +76,9 @@ export const PRINT_STATUS_HANDLER_LAMBDA_LOG_GROUP_NAME = `/aws/lambda/${CSI}-pr
 export const PRINT_ANALYSER_LAMBDA_LOG_GROUP_NAME = `/aws/lambda/${CSI}-print-analyser`;
 export const PRINT_SENDER_LAMBDA_LOG_GROUP_NAME = `/aws/lambda/${CSI}-print-sender`;
 export const MOVE_SCANNED_FILES_LAMBDA_LOG_GROUP_NAME = `/aws/lambda/${CSI}-move-scanned-files`;
+export const MESH_DOWNLOAD_LAMBDA_LOG_GROUP_NAME = `/aws/lambda/${CSI}-mesh-download`;
+export const CREATE_TTL_LAMBDA_LOG_GROUP_NAME = `/aws/lambda/${CSI}-ttl-create`;
+export const NHSAPP_STATUS_HANDLER_LAMBDA_LOG_GROUP_NAME = `/aws/lambda/${CSI}-nhsapp-status-handler`;
 
 // Data Firehose
 export const FIREHOSE_STREAM_NAME = `${CSI}-to-s3-reporting`;
@@ -79,4 +89,3 @@ export const MINIMUM_PROCESSOR_BUFFER_INTERVAL = 0;
 
 // Athena
 export const ATHENA_WORKGROUP_NAME = CSI;
-export const CREATE_TTL_LAMBDA_LOG_GROUP_NAME = `/aws/lambda/${CSI}-ttl-create`;

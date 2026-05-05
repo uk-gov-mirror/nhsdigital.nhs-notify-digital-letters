@@ -46,12 +46,7 @@ describe('generate-types', () => {
 
     expect(typeDeclarationFiles.length).toBe(4);
     expect(typeDeclarationFiles).toEqual(
-      expect.arrayContaining([
-        'index.d.ts',
-        'One.d.ts',
-        'Two.d.ts',
-        'Three.d.ts',
-      ]),
+      expect.arrayContaining(['index.ts', 'One.ts', 'Two.ts', 'Three.ts']),
     );
   });
 
@@ -59,7 +54,7 @@ describe('generate-types', () => {
     await generateTypes();
 
     const indexFileContents = readFileSync(
-      path.join(outputDir, 'index.d.ts'),
+      path.join(outputDir, 'index.ts'),
       'utf8',
     );
     expect(indexFileContents).toContain("export * from './One';");

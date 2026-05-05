@@ -4,8 +4,7 @@ import type {
   SQSBatchResponse,
   SQSEvent,
 } from 'aws-lambda';
-import { ItemDequeued } from 'digital-letters-events';
-import itemDequeuedValidator from 'digital-letters-events/ItemDequeued.js';
+import { ItemDequeued, validateItemDequeued } from 'digital-letters-events';
 import { EventPublisher, Logger } from 'utils';
 
 export interface HandlerDependencies {
@@ -27,15 +26,7 @@ function validateRecord(
     const sqsEventBody = JSON.parse(body);
     const sqsEventDetail = sqsEventBody.detail;
 
-    const isEventValid = itemDequeuedValidator(sqsEventDetail);
-    if (!isEventValid) {
-      logger.warn({
-        err: itemDequeuedValidator.errors,
-        description: 'Error parsing queue entry',
-      });
-
-      return null;
-    }
+    validateItemDequeued(sqsEventDetail, logger);
 
     return { messageId, event: sqsEventDetail };
   } catch (error) {

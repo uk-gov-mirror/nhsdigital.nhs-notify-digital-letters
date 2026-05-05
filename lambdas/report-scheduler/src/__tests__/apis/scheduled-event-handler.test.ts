@@ -1,12 +1,12 @@
-import { EventPublisher, Sender } from 'utils';
+import { EventPublisher, Logger, Sender } from 'utils';
 import { ISenderManagement } from 'sender-management';
-import { GenerateReport } from 'digital-letters-events';
+import { GenerateReport, validateGenerateReport } from 'digital-letters-events';
 import { createHandler } from 'apis/scheduled-event-handler';
-import GenerateReportValidator from 'digital-letters-events/GenerateReport.js';
 
 describe('scheduled-event-handler', () => {
   let mockSenderManagement: jest.Mocked<ISenderManagement>;
   let mockEventPublisher: jest.Mocked<EventPublisher>;
+  let mockLogger: jest.Mocked<Logger>;
 
   beforeEach(() => {
     mockSenderManagement = {
@@ -16,6 +16,13 @@ describe('scheduled-event-handler', () => {
     mockEventPublisher = {
       sendEvents: jest.fn(),
     } as unknown as jest.Mocked<EventPublisher>;
+
+    mockLogger = {
+      error: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      child: jest.fn().mockReturnThis(),
+    } as unknown as jest.Mocked<Logger>;
 
     jest.useFakeTimers();
   });
@@ -91,8 +98,9 @@ describe('scheduled-event-handler', () => {
       expect(event.data.reportDate).toBe('2024-01-14');
       expect(event.specversion).toBe('1.0');
       expect(event.id).toBeDefined();
+      expect(event.plane).toBe('data');
       expect(event.source).toBe(
-        '/nhs/england/notify/production/primary/data-plane/digitalletters/reporting',
+        '/nhs/england/notify/production/primary/digitalletters/reporting',
       );
       expect(event.subject).toBe('customer/test-sender-123');
       expect(event.type).toBe(
@@ -100,10 +108,13 @@ describe('scheduled-event-handler', () => {
       );
       expect(event.time).toBe('2024-01-15T12:00:00.000Z');
       expect(event.severitynumber).toBe(2);
+      expect(event.dataschema).toBe(
+        'https://notify.nhs.uk/cloudevents/schemas/digital-letters/2025-10-draft/data/digital-letters-reporting-generate-report-data.schema.json',
+      );
+      expect(event.dataschemaversion).toBe('1.0.0');
+      expect(event.datacontenttype).toBe('application/json');
 
-      const isEventValid = GenerateReportValidator(event);
-      expect(GenerateReportValidator.errors).toBeNull();
-      expect(isEventValid).toBe(true);
+      expect(() => validateGenerateReport(event, mockLogger)).not.toThrow();
     });
 
     it('should handle empty sender list', async () => {

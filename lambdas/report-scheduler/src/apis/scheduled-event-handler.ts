@@ -1,7 +1,6 @@
 import { EventPublisher } from 'utils';
 import { ISenderManagement } from 'sender-management';
-import { GenerateReport } from 'digital-letters-events';
-import GenerateReportValidator from 'digital-letters-events/GenerateReport.js';
+import { GenerateReport, validateGenerateReport } from 'digital-letters-events';
 import { randomUUID } from 'node:crypto';
 
 export type CreateHandlerDependencies = {
@@ -28,8 +27,13 @@ export const createHandler = ({
         },
         specversion: '1.0',
         id: randomUUID(),
+        plane: 'data',
+        dataschemaversion: '1.0.0',
+        datacontenttype: 'application/json',
+        dataschema:
+          'https://notify.nhs.uk/cloudevents/schemas/digital-letters/2025-10-draft/data/digital-letters-reporting-generate-report-data.schema.json',
         source:
-          '/nhs/england/notify/production/primary/data-plane/digitalletters/reporting', // CCM-13892
+          '/nhs/england/notify/production/primary/digitalletters/reporting', // CCM-13892
         subject: `customer/${sender.senderId}`,
         type: 'uk.nhs.notify.digital.letters.reporting.generate.report.v1',
         time: new Date().toISOString(),
@@ -37,7 +41,7 @@ export const createHandler = ({
         recordedtime: new Date().toISOString(),
         severitynumber: 2,
       })),
-      GenerateReportValidator,
+      validateGenerateReport,
     );
   };
 };

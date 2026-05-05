@@ -3,7 +3,7 @@
 # To regenerate, run: make update-readme
 # To customize labels and purposes, edit: readme-metadata.yaml
 
-generated: '2026-03-10T09:54:37.174Z'
+generated: '2026-04-09T13:48:22.150Z'
 common: null
 domains:
   - name: digital-letters
@@ -92,6 +92,11 @@ domains:
             source: src/digital-letters/2025-10-draft/data/digital-letters-print-file-safe-data.schema.yaml
             published: schemas/digital-letters/2025-10-draft/data/digital-letters-print-file-safe-data.schema.json
             docs: ../../docs/cloudevents/digital-letters/2025-10-draft/data/digital-letters-print-file-safe-data.schema.md
+          - type: Digital Letters Print Invalid Attachment Received Data
+            category: data
+            source: src/digital-letters/2025-10-draft/data/digital-letters-print-invalid-attachment-received-data.schema.yaml
+            published: schemas/digital-letters/2025-10-draft/data/digital-letters-print-invalid-attachment-received-data.schema.json
+            docs: ../../docs/cloudevents/digital-letters/2025-10-draft/data/digital-letters-print-invalid-attachment-received-data.schema.md
           - type: Digital Letters Print Letter Transitioned Data
             category: data
             source: src/digital-letters/2025-10-draft/data/digital-letters-print-letter-transitioned-data.schema.yaml
@@ -302,6 +307,11 @@ domains:
             source: src/digital-letters/2025-10-draft/events/uk.nhs.notify.digital.letters.print.file.safe.v1.schema.yaml
             published: schemas/digital-letters/2025-10-draft/events/uk.nhs.notify.digital.letters.print.file.safe.v1.schema.json
             docs: ../../docs/cloudevents/digital-letters/2025-10-draft/events/uk.nhs.notify.digital.letters.print.file.safe.v1.schema.md
+          - type: uk.nhs.notify.digital.letters.print.invalid.attachment.received.v1
+            category: events
+            source: src/digital-letters/2025-10-draft/events/uk.nhs.notify.digital.letters.print.invalid.attachment.received.v1.schema.yaml
+            published: schemas/digital-letters/2025-10-draft/events/uk.nhs.notify.digital.letters.print.invalid.attachment.received.v1.schema.json
+            docs: ../../docs/cloudevents/digital-letters/2025-10-draft/events/uk.nhs.notify.digital.letters.print.invalid.attachment.received.v1.schema.md
           - type: uk.nhs.notify.digital.letters.print.letter.transitioned.v1
             category: events
             source: src/digital-letters/2025-10-draft/events/uk.nhs.notify.digital.letters.print.letter.transitioned.v1.schema.yaml
@@ -355,97 +365,97 @@ domains:
         exampleEvents:
           - name: Uk.nhs.notify.digital.letters.letter.available.v1
             filename: uk.nhs.notify.digital.letters.letter.available.v1-event
-            json: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.letter.available.v1-event.json
-            markdown: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.letter.available.v1-event.md
+            json: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.letter.available.v1-event.json
+            markdown: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.letter.available.v1-event.md
           - name: Uk.nhs.notify.digital.letters.mesh.inbox.message.acknowledged.v1
             filename: uk.nhs.notify.digital.letters.mesh.inbox.message.acknowledged.v1-event
-            json: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.mesh.inbox.message.acknowledged.v1-event.json
-            markdown: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.mesh.inbox.message.acknowledged.v1-event.md
+            json: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.mesh.inbox.message.acknowledged.v1-event.json
+            markdown: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.mesh.inbox.message.acknowledged.v1-event.md
           - name: Uk.nhs.notify.digital.letters.mesh.inbox.message.downloaded.v1
             filename: uk.nhs.notify.digital.letters.mesh.inbox.message.downloaded.v1-event
-            json: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.mesh.inbox.message.downloaded.v1-event.json
-            markdown: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.mesh.inbox.message.downloaded.v1-event.md
+            json: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.mesh.inbox.message.downloaded.v1-event.json
+            markdown: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.mesh.inbox.message.downloaded.v1-event.md
           - name: Uk.nhs.notify.digital.letters.mesh.inbox.message.invalid.v1
             filename: uk.nhs.notify.digital.letters.mesh.inbox.message.invalid.v1-event
-            json: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.mesh.inbox.message.invalid.v1-event.json
-            markdown: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.mesh.inbox.message.invalid.v1-event.md
+            json: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.mesh.inbox.message.invalid.v1-event.json
+            markdown: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.mesh.inbox.message.invalid.v1-event.md
           - name: Uk.nhs.notify.digital.letters.mesh.inbox.message.received.v1
             filename: uk.nhs.notify.digital.letters.mesh.inbox.message.received.v1-event
-            json: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.mesh.inbox.message.received.v1-event.json
-            markdown: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.mesh.inbox.message.received.v1-event.md
-          - name: Uk.nhs.notify.digital.letters.mesh.report.sent.v1
-            filename: uk.nhs.notify.digital.letters.mesh.report.sent.v1-event
-            json: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.mesh.report.sent.v1-event.json
-            markdown: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.mesh.report.sent.v1-event.md
+            json: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.mesh.inbox.message.received.v1-event.json
+            markdown: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.mesh.inbox.message.received.v1-event.md
           - name: Uk.nhs.notify.digital.letters.messages.request.rejected.v1
             filename: uk.nhs.notify.digital.letters.messages.request.rejected.v1-event
-            json: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.messages.request.rejected.v1-event.json
-            markdown: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.messages.request.rejected.v1-event.md
+            json: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.messages.request.rejected.v1-event.json
+            markdown: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.messages.request.rejected.v1-event.md
           - name: Uk.nhs.notify.digital.letters.messages.request.skipped.v1
             filename: uk.nhs.notify.digital.letters.messages.request.skipped.v1-event
-            json: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.messages.request.skipped.v1-event.json
-            markdown: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.messages.request.skipped.v1-event.md
+            json: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.messages.request.skipped.v1-event.json
+            markdown: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.messages.request.skipped.v1-event.md
           - name: Uk.nhs.notify.digital.letters.messages.request.submitted.v1
             filename: uk.nhs.notify.digital.letters.messages.request.submitted.v1-event
-            json: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.messages.request.submitted.v1-event.json
-            markdown: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.messages.request.submitted.v1-event.md
+            json: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.messages.request.submitted.v1-event.json
+            markdown: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.messages.request.submitted.v1-event.md
           - name: Uk.nhs.notify.digital.letters.pdm.resource.available.v1
             filename: uk.nhs.notify.digital.letters.pdm.resource.available.v1-event
-            json: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.pdm.resource.available.v1-event.json
-            markdown: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.pdm.resource.available.v1-event.md
+            json: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.pdm.resource.available.v1-event.json
+            markdown: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.pdm.resource.available.v1-event.md
           - name: Uk.nhs.notify.digital.letters.pdm.resource.retries.exceeded.v1
             filename: uk.nhs.notify.digital.letters.pdm.resource.retries.exceeded.v1-event
-            json: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.pdm.resource.retries.exceeded.v1-event.json
-            markdown: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.pdm.resource.retries.exceeded.v1-event.md
+            json: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.pdm.resource.retries.exceeded.v1-event.json
+            markdown: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.pdm.resource.retries.exceeded.v1-event.md
           - name: Uk.nhs.notify.digital.letters.pdm.resource.submission.rejected.v1
             filename: uk.nhs.notify.digital.letters.pdm.resource.submission.rejected.v1-event
-            json: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.pdm.resource.submission.rejected.v1-event.json
-            markdown: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.pdm.resource.submission.rejected.v1-event.md
+            json: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.pdm.resource.submission.rejected.v1-event.json
+            markdown: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.pdm.resource.submission.rejected.v1-event.md
           - name: Uk.nhs.notify.digital.letters.pdm.resource.submitted.v1
             filename: uk.nhs.notify.digital.letters.pdm.resource.submitted.v1-event
-            json: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.pdm.resource.submitted.v1-event.json
-            markdown: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.pdm.resource.submitted.v1-event.md
+            json: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.pdm.resource.submitted.v1-event.json
+            markdown: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.pdm.resource.submitted.v1-event.md
           - name: Uk.nhs.notify.digital.letters.pdm.resource.unavailable.v1
             filename: uk.nhs.notify.digital.letters.pdm.resource.unavailable.v1-event
-            json: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.pdm.resource.unavailable.v1-event.json
-            markdown: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.pdm.resource.unavailable.v1-event.md
+            json: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.pdm.resource.unavailable.v1-event.json
+            markdown: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.pdm.resource.unavailable.v1-event.md
           - name: Uk.nhs.notify.digital.letters.print.file.quarantined.v1
             filename: uk.nhs.notify.digital.letters.print.file.quarantined.v1-event
-            json: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.print.file.quarantined.v1-event.json
-            markdown: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.print.file.quarantined.v1-event.md
+            json: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.print.file.quarantined.v1-event.json
+            markdown: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.print.file.quarantined.v1-event.md
           - name: Uk.nhs.notify.digital.letters.print.file.safe.v1
             filename: uk.nhs.notify.digital.letters.print.file.safe.v1-event
-            json: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.print.file.safe.v1-event.json
-            markdown: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.print.file.safe.v1-event.md
+            json: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.print.file.safe.v1-event.json
+            markdown: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.print.file.safe.v1-event.md
+          - name: Uk.nhs.notify.digital.letters.print.invalid.attachment.received.v1
+            filename: uk.nhs.notify.digital.letters.print.invalid.attachment.received.v1-event
+            json: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.print.invalid.attachment.received.v1-event.json
+            markdown: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.print.invalid.attachment.received.v1-event.md
           - name: Uk.nhs.notify.digital.letters.print.letter.transitioned.v1
             filename: uk.nhs.notify.digital.letters.print.letter.transitioned.v1-event
-            json: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.print.letter.transitioned.v1-event.json
-            markdown: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.print.letter.transitioned.v1-event.md
+            json: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.print.letter.transitioned.v1-event.json
+            markdown: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.print.letter.transitioned.v1-event.md
           - name: Uk.nhs.notify.digital.letters.print.pdf.analysed.v1
             filename: uk.nhs.notify.digital.letters.print.pdf.analysed.v1-event
-            json: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.print.pdf.analysed.v1-event.json
-            markdown: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.print.pdf.analysed.v1-event.md
+            json: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.print.pdf.analysed.v1-event.json
+            markdown: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.print.pdf.analysed.v1-event.md
+          - name: Uk.nhs.notify.digital.letters.queue.digital.letter.read.v1
+            filename: uk.nhs.notify.digital.letters.queue.digital.letter.read.v1-event
+            json: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.queue.digital.letter.read.v1-event.json
+            markdown: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.queue.digital.letter.read.v1-event.md
           - name: Uk.nhs.notify.digital.letters.queue.item.dequeued.v1
             filename: uk.nhs.notify.digital.letters.queue.item.dequeued.v1-event
-            json: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.queue.item.dequeued.v1-event.json
-            markdown: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.queue.item.dequeued.v1-event.md
+            json: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.queue.item.dequeued.v1-event.json
+            markdown: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.queue.item.dequeued.v1-event.md
           - name: Uk.nhs.notify.digital.letters.queue.item.enqueued.v1
             filename: uk.nhs.notify.digital.letters.queue.item.enqueued.v1-event
-            json: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.queue.item.enqueued.v1-event.json
-            markdown: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.queue.item.enqueued.v1-event.md
-          - name: Uk.nhs.notify.digital.letters.queue.item.removed.v1
-            filename: uk.nhs.notify.digital.letters.queue.item.removed.v1-event
-            json: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.queue.item.removed.v1-event.json
-            markdown: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.queue.item.removed.v1-event.md
+            json: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.queue.item.enqueued.v1-event.json
+            markdown: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.queue.item.enqueued.v1-event.md
           - name: Uk.nhs.notify.digital.letters.reporting.generate.report.v1
             filename: uk.nhs.notify.digital.letters.reporting.generate.report.v1-event
-            json: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.reporting.generate.report.v1-event.json
-            markdown: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.reporting.generate.report.v1-event.md
+            json: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.reporting.generate.report.v1-event.json
+            markdown: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.reporting.generate.report.v1-event.md
           - name: Uk.nhs.notify.digital.letters.reporting.report.generated.v1
             filename: uk.nhs.notify.digital.letters.reporting.report.generated.v1-event
-            json: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.reporting.report.generated.v1-event.json
-            markdown: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.reporting.report.generated.v1-event.md
+            json: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.reporting.report.generated.v1-event.json
+            markdown: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.reporting.report.generated.v1-event.md
           - name: Uk.nhs.notify.digital.letters.reporting.report.sent.v1
             filename: uk.nhs.notify.digital.letters.reporting.report.sent.v1-event
-            json: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.reporting.report.sent.v1-event.json
-            markdown: ../../output/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.reporting.report.sent.v1-event.md
+            json: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.reporting.report.sent.v1-event.json
+            markdown: ../../docs/cloudevents/digital-letters/2025-10-draft/example-events/uk.nhs.notify.digital.letters.reporting.report.sent.v1-event.md

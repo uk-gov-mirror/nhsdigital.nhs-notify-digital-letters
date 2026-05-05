@@ -5,8 +5,7 @@ import type {
 } from 'aws-lambda';
 import type { PrintSender, PrintSenderOutcome } from 'app/print-sender';
 import { Logger } from 'utils';
-import pdfAnalysedValidator from 'digital-letters-events/PDFAnalysed.js';
-import { PDFAnalysed } from 'digital-letters-events';
+import { validatePDFAnalysed } from 'digital-letters-events';
 
 interface PrintSenderHandlerDependencies {
   printSender: PrintSender;
@@ -27,20 +26,13 @@ export const createHandler = ({
           const sqsEventBody = JSON.parse(body);
           const sqsEventDetail = sqsEventBody.detail;
 
-          const isEventValid = pdfAnalysedValidator(sqsEventDetail);
-          if (!isEventValid) {
-            logger.error({
-              err: pdfAnalysedValidator.errors,
-              description: 'Error parsing print sender queue entry',
-              messageReference:
-                sqsEventDetail?.data?.messageReference || 'not present',
-            });
-            batchItemFailures.push({ itemIdentifier: messageId });
-            return;
-          }
-          const pdfAnalysedEvent: PDFAnalysed = sqsEventDetail;
+          const messageReference =
+            sqsEventDetail?.data?.messageReference || 'not present';
+          const childLogger = logger.child({ messageReference });
 
-          const result = await printSender.send(pdfAnalysedEvent);
+          validatePDFAnalysed(sqsEventDetail, childLogger);
+
+          const result = await printSender.send(sqsEventDetail);
 
           if (result === 'failed') {
             batchItemFailures.push({ itemIdentifier: messageId });

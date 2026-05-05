@@ -12,8 +12,11 @@ properties:
     $ref: ../defs/print.schema.yaml#/properties/letterUri
   createdAt:
     $ref: ../defs/print.schema.yaml#/properties/createdAt
+  reasonCode:
+    $ref: ../defs/print.schema.yaml#/properties/reasonCode
 required:
   - messageReference
   - senderId
   - letterUri
   - createdAt
+  - reasonCode

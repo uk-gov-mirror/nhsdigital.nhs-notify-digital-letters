@@ -6,8 +6,9 @@ import { FileSafe } from 'digital-letters-events';
 export const fileSafeEvent: FileSafe = {
   id: '550e8400-e29b-41d4-a716-446655440001',
   specversion: '1.0',
-  source:
-    '/nhs/england/notify/production/primary/data-plane/digitalletters/print',
+  source: '/nhs/england/notify/production/primary/digitalletters/print',
+  plane: 'data',
+  dataschemaversion: '1.0.0',
   subject:
     'letter-origin/digital-letters/letter/f47ac10b-58cc-4372-a567-0e02b2c3d479',
   type: 'uk.nhs.notify.digital.letters.print.file.safe.v1',

@@ -4,8 +4,10 @@ import {
   PDM_POLL_DLQ_NAME,
   PDM_POLL_LAMBDA_LOG_GROUP_NAME,
 } from 'constants/backend-constants';
-import pdmResourceSubmittedValidator from 'digital-letters-events/PDMResourceSubmitted.js';
-import pdmResourceUnavailableValidator from 'digital-letters-events/PDMResourceUnavailable.js';
+import {
+  validatePDMResourceSubmitted,
+  validatePDMResourceUnavailable,
+} from 'digital-letters-events';
 import { getLogsFromCloudwatch } from 'helpers/cloudwatch-helpers';
 import eventPublisher from 'helpers/event-bus-helpers';
 import expectToPassEventually from 'helpers/expectations';
@@ -14,8 +16,9 @@ import { v4 as uuidv4 } from 'uuid';
 
 const baseEvent = {
   specversion: '1.0',
-  source:
-    '/nhs/england/notify/production/primary/data-plane/digitalletters/pdm',
+  plane: 'data',
+  dataschemaversion: '1.0.0',
+  source: '/nhs/england/notify/production/primary/digitalletters/pdm',
   subject:
     'customer/920fca11-596a-4eca-9c47-99f624614658/recipient/769acdd4-6a47-496f-999f-76a6fd2c3959',
   time: '2023-06-20T12:00:00Z',
@@ -65,7 +68,7 @@ test.describe('PDM Poll', () => {
             },
           },
         ],
-        pdmResourceSubmittedValidator,
+        validatePDMResourceSubmitted,
       );
 
       await expectToPassEventually(async () => {
@@ -102,7 +105,7 @@ test.describe('PDM Poll', () => {
             },
           },
         ],
-        pdmResourceSubmittedValidator,
+        validatePDMResourceSubmitted,
       );
 
       await expectToPassEventually(async () => {
@@ -141,7 +144,7 @@ test.describe('PDM Poll', () => {
             },
           },
         ],
-        pdmResourceUnavailableValidator,
+        validatePDMResourceUnavailable,
       );
 
       await expectToPassEventually(async () => {
@@ -179,7 +182,7 @@ test.describe('PDM Poll', () => {
             },
           },
         ],
-        pdmResourceUnavailableValidator,
+        validatePDMResourceUnavailable,
       );
 
       await expectToPassEventually(async () => {
@@ -216,7 +219,7 @@ test.describe('PDM Poll', () => {
             },
           },
         ],
-        pdmResourceUnavailableValidator,
+        validatePDMResourceUnavailable,
       );
 
       await expectToPassEventually(async () => {

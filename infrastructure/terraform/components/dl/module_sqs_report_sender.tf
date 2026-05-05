@@ -8,7 +8,7 @@ module "sqs_report_sender" {
   region                     = var.region
   name                       = "report-sender"
   sqs_kms_key_arn            = module.kms.key_arn
-  visibility_timeout_seconds = 60
+  visibility_timeout_seconds = var.sqs_visibility_timeout_seconds
   create_dlq                 = true
   max_receive_count          = var.sqs_max_receive_count
   sqs_policy_overload        = data.aws_iam_policy_document.sqs_report_sender.json

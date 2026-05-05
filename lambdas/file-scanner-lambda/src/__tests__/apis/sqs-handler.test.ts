@@ -42,8 +42,9 @@ const createValidItemDequeuedBody = (
     detail: {
       specversion: '1.0',
       id: `event-${messageReference}`,
-      source:
-        '/nhs/england/notify/development/primary/data-plane/digitalletters/queue',
+      plane: 'data',
+      dataschemaversion: '1.0.0',
+      source: '/nhs/england/notify/development/primary/digitalletters/queue',
       subject: `message/${messageReference}`,
       type: 'uk.nhs.notify.digital.letters.queue.item.dequeued.v1',
       time: '2026-01-19T12:00:00Z',
@@ -319,7 +320,7 @@ describe('SQS Handler', () => {
               specversion: '1.0',
               id: 'event-001',
               source:
-                '/nhs/england/notify/development/primary/data-plane/digitalletters/queue',
+                '/nhs/england/notify/development/primary/digitalletters/queue',
               type: 'uk.nhs.notify.wrong.event.type.v1',
               time: '2026-01-19T12:00:00Z',
               data: {
@@ -345,7 +346,7 @@ describe('SQS Handler', () => {
       );
       expect(mockLogger.warn).toHaveBeenCalledWith(
         expect.objectContaining({
-          description: 'Error parsing queue entry',
+          description: 'Error parsing SQS record',
         }),
       );
     });
@@ -386,7 +387,7 @@ describe('SQS Handler', () => {
               specversion: '1.0',
               id: 'event-001',
               source:
-                '/nhs/england/notify/development/primary/data-plane/digitalletters/queue',
+                '/nhs/england/notify/development/primary/digitalletters/queue',
               type: 'uk.nhs.notify.digital.letters.queue.item.dequeued.v1',
               time: '2026-01-19T12:00:00Z',
               data: {
@@ -405,7 +406,7 @@ describe('SQS Handler', () => {
       expect(mockFileScanner.scanFile).not.toHaveBeenCalled();
       expect(mockLogger.warn).toHaveBeenCalledWith(
         expect.objectContaining({
-          description: 'Error parsing queue entry',
+          description: 'Error parsing SQS record',
         }),
       );
       expect(mockLogger.warn).toHaveBeenCalledWith(

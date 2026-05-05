@@ -1,4 +1,4 @@
-import { PDFAnalysed } from 'digital-letters-events';
+import { InvalidEvent, PDFAnalysed } from 'digital-letters-events';
 import { EventPublisher, Logger } from 'utils';
 import { randomUUID } from 'node:crypto';
 import {
@@ -47,13 +47,22 @@ export class PrintSender {
           url: item.data.letterUri,
           clientId: item.data.senderId,
           campaignId: 'digitalLetters',
-          letterVariantId: 'notify-digital-letter-standard',
+          letterVariantId: 'notify-digital-letters-standard',
         },
       };
 
       await this.eventPublisher.sendEvents<LetterRequestPreparedEvent>(
         [letterPreparedEvent],
-        (event) => $LetterRequestPreparedEvent.safeParse(event).success,
+        (event, logger) => {
+          const parseResult = $LetterRequestPreparedEvent.safeParse(event);
+          if (!parseResult.success) {
+            logger.warn({
+              err: parseResult.error,
+              description: 'Error parsing LetterRequestPreparedEvent event',
+            });
+            throw new InvalidEvent('Invalid LetterRequestPreparedEvent');
+          }
+        },
       );
     } catch (error) {
       this.logger.error({

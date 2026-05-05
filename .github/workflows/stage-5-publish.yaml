@@ -40,22 +40,36 @@ jobs:
     name: "Publish packages"
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: write
+      packages: write
 
     steps:
       - name: "Checkout code"
-        uses: actions/checkout@v5
-
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+      - uses: ./.github/actions/node-install
+        with:
+          node-version: ${{ inputs.nodejs_version }}
+          GITHUB_TOKEN: ${{ github.token }}
       - name: "Get artifacts: jekyll docs"
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
         with:
           path: ./artifacts/jekyll-docs-${{ inputs.version }}
           name: jekyll-docs-${{ inputs.version }}
-
       - name: "Get artifacts: schema"
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
         with:
           path: ./artifacts/schemas-${{ inputs.version }}
           name: schemas-${{ inputs.version }}
+      - name: "Get artifacts: pact contracts"
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          path: ./pact-contracts/pacts
+          name: pact-contracts
+      - name: "Publish pact contracts package"
+        run: |
+          export BRANCH_NAME=${GITHUB_HEAD_REF:-$(echo $GITHUB_REF | sed 's#refs/heads/##')}
+          scripts/publish-pact-contracts.sh
 
 
       - name: Draft Release

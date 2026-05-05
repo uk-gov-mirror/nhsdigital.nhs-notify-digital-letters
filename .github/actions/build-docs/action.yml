@@ -14,7 +14,7 @@ runs:
   using: "composite"
   steps:
     - name: Checkout
-      uses: actions/checkout@v5
+      uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
     - uses: ./.github/actions/node-install
       with:
         node-version: ${{ inputs.node-version }}
@@ -24,7 +24,7 @@ runs:
       run: npm ci
       shell: bash
     - name: Setup Ruby
-      uses: ruby/setup-ruby@v1.267.0
+      uses: ruby/setup-ruby@d5126b9b3579e429dd52e51e68624dda2e05be25 # v1.267.0
       with:
         ruby-version: "3.4.7" # Not needed with a .ruby-version file
         bundler-cache: true # Enable automatic gem caching
@@ -32,7 +32,7 @@ runs:
         working-directory: "./docs"
     - name: Setup Pages
       id: pages
-      uses: actions/configure-pages@v5
+      uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
     - name: Build with Jekyll
       working-directory: ./docs
       # Outputs to the './_site' directory by default
@@ -45,7 +45,7 @@ runs:
         VERSION: ${{ inputs.version }}
     - name: Upload artifact
       # Automatically uploads an artifact from the './_site' directory by default
-      uses: actions/upload-pages-artifact@v3
+      uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
       with:
         path: "docs/_site/"
         name: jekyll-docs-${{ inputs.version }}
@@ -55,7 +55,7 @@ runs:
       shell: bash
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
       with:
         path: "artifact.tar"
         name: schemas-${{ inputs.version }}

@@ -10,7 +10,7 @@ module "sqs_report_generator" {
 
   sqs_kms_key_arn = module.kms.key_arn
 
-  visibility_timeout_seconds = 60
+  visibility_timeout_seconds = 360
 
   create_dlq = true
 

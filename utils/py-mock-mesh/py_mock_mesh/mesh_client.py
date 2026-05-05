@@ -79,12 +79,11 @@ class MockMeshClient:  # pylint: disable=too-many-arguments
 
     def send_message(self, recipient, data, **kwargs):
         """
-        Sends a message to a mailbox
+        Sends a message to a mailbox. Returns a generated mesh_message_id.
         """
 
-        local_id = kwargs['local_id']
-        message_id = f"{local_id}_{uuid.uuid1()}"
-        message_key = f"{self.outbox_prefix}{recipient}/{message_id}"
+        mesh_message_id = str(uuid.uuid4())
+        message_key = f"{self.outbox_prefix}{recipient}/{mesh_message_id}"
 
         output_buffer = io.StringIO()
         output_buffer.write(data.decode('utf-8'))
@@ -97,6 +96,7 @@ class MockMeshClient:  # pylint: disable=too-many-arguments
             Metadata=kwargs
         )
 
+        return mesh_message_id
     def close(self):
         """
         Empty implementation

@@ -159,6 +159,9 @@ describe('sqs-trigger-lambda', () => {
         expect.arrayContaining([
           expect.objectContaining({
             type: 'uk.nhs.notify.digital.letters.pdm.resource.submission.rejected.v1',
+            data: expect.objectContaining({
+              reasonCode: 'DL_PDMV_001',
+            }),
           }),
         ]),
         expect.anything(),
@@ -222,7 +225,7 @@ describe('sqs-trigger-lambda', () => {
       expect(mockEventPublisher.sendEvents).not.toHaveBeenCalled();
       expect(mockLogger.error).toHaveBeenCalledWith(
         expect.objectContaining({
-          description: 'Error parsing queue entry',
+          description: 'Error parsing MESHInboxMessageDownloaded event',
         }),
       );
     });

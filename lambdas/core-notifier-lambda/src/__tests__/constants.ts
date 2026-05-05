@@ -22,7 +22,7 @@ export const mockRequest1: SingleMessageRequest = {
       },
       personalisation: {
         digitalLetterURL:
-          'https://www.nhsapp.service.nhs.uk/digital-letters?letterid=12345',
+          'https://example.com/patient/digital-letters/letter?id=12345',
       },
     },
   },
@@ -60,8 +60,11 @@ export const mockResponse: SingleMessageResponse = {
 
 export const validPdmEvent: PDMResourceAvailable = {
   id: 'event-id-123',
-  source:
-    '/nhs/england/notify/development/dev-12345/data-plane/digitalletters/pdm',
+  plane: 'data',
+  dataschemaversion: '1.0.0',
+  source: '/nhs/england/notify/development/dev-12345/digitalletters/pdm',
+  dataschema:
+    'https://notify.nhs.uk/cloudevents/schemas/digital-letters/2025-10-draft/data/digital-letters-pdm-resource-available-data.schema.json',
   specversion: '1.0',
   type: 'uk.nhs.notify.digital.letters.pdm.resource.available.v1',
   time: '2025-12-15T10:00:00Z',

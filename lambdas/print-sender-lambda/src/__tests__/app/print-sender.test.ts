@@ -15,7 +15,11 @@ describe('PrintSender', () => {
     type: 'uk.nhs.notify.digital.letters.print.pdf.analysed.v1',
     dataschema:
       'https://notify.nhs.uk/cloudevents/schemas/digital-letters/2025-10-draft/data/digital-letters-print-pdf-analysed-data.schema.json',
-    source: '/data-plane/digital-letters/dev/main',
+    source:
+      '/nhs/england/notify/production/primary/data-plane/digitalletters/print',
+    plane: 'data',
+    dataschemaversion: '1.0.0',
+    datacontenttype: 'application/json',
     specversion: '1.0',
     traceparent: '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01',
     severitynumber: 2,
@@ -74,7 +78,7 @@ describe('PrintSender', () => {
               url: mockPDFAnalysed.data.letterUri,
               clientId: mockPDFAnalysed.data.senderId,
               campaignId: 'digitalLetters',
-              letterVariantId: 'notify-digital-letter-standard',
+              letterVariantId: 'notify-digital-letters-standard',
             }),
           }),
         ]),
@@ -119,10 +123,7 @@ describe('PrintSender', () => {
 
       mockEventPublisher.sendEvents.mockImplementation(
         async (events, validator) => {
-          const isValid = validator(events[0]);
-          if (!isValid) {
-            throw new Error('Event validation failed');
-          }
+          validator(events[0], mockLogger);
           return [];
         },
       );
@@ -160,12 +161,11 @@ describe('PrintSender', () => {
       const [[events, eventValidator]] =
         mockEventPublisher.sendEvents.mock.calls;
       const event = events[0] as LetterRequestPreparedEvent;
-      const validationResult = eventValidator(event);
+      expect(() => eventValidator(event, mockLogger)).not.toThrow();
 
       expect(event.source).toBe(
         '/data-plane/digital-letters/staging-account/staging',
       );
-      expect(validationResult).toBe(true);
     });
   });
 });

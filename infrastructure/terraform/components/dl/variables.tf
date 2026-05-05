@@ -128,6 +128,12 @@ variable "apim_base_url" {
   default     = "https://int.api.service.nhs.uk"
 }
 
+variable "nhs_app_base_url" {
+  type        = string
+  description = "The URL used to build the NHS App resource URL"
+  default     = "https://example.com"
+}
+
 variable "core_notify_url" {
   type        = string
   description = "The URL used to send requests to Notify"
@@ -204,7 +210,7 @@ variable "report_scheduler_schedule" {
 variable "pii_data_retention_policy_days" {
   type        = number
   description = "The number of days for data retention policy for PII"
-  default     = 534
+  default     = 90
 }
 
 variable "pii_data_retention_non_current_days" {
@@ -253,6 +259,18 @@ variable "sqs_max_receive_count" {
   type        = string
   description = "Maximum number of times a message can be received before being sent to the DLQ"
   default     = "3"
+}
+
+variable "sqs_visibility_timeout_seconds" {
+  type        = string
+  description = "The visibility timeout of the SQS queues. AWS recommends this timeout to be at least 6 times the function timeout (lambda_timeout_seconds), see https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-configure-lambda-function-trigger.html"
+  default     = "270"
+}
+
+variable "lambda_timeout_seconds" {
+  type        = string
+  description = "The timeout of the lambdas that are triggered by SQS. "
+  default     = "45"
 }
 
 variable "enable_event_cache" {

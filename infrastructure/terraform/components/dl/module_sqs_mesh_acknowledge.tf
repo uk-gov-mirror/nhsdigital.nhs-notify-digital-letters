@@ -8,7 +8,7 @@ module "sqs_mesh_acknowledge" {
   region                     = var.region
   name                       = "mesh-acknowledge"
   sqs_kms_key_arn            = module.kms.key_arn
-  visibility_timeout_seconds = 60
+  visibility_timeout_seconds = var.sqs_visibility_timeout_seconds
   create_dlq                 = true
   max_receive_count          = var.sqs_max_receive_count
   sqs_policy_overload        = data.aws_iam_policy_document.sqs_mesh_acknowledge.json
@@ -35,7 +35,11 @@ data "aws_iam_policy_document" "sqs_mesh_acknowledge" {
     condition {
       test     = "ArnLike"
       variable = "aws:SourceArn"
-      values   = [aws_cloudwatch_event_rule.mesh_inbox_message_downloaded.arn]
+
+      values = [
+        aws_cloudwatch_event_rule.mesh_inbox_message_downloaded.arn,
+        aws_cloudwatch_event_rule.mesh_inbox_message_invalid.arn,
+      ]
     }
   }
 }

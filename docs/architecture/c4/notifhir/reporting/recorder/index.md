@@ -5,10 +5,10 @@ parent:  Reporting
 nav_order: 1
 has_children: true
 is_not_draft: false
-last_modified_date: 2025-10-24
+last_modified_date: 2026-03-26
 owner: Tom D'Roza
 author: Tom D'Roza
-diagrams: [c4code-mesh-statusreporter-recorder, sequence-nhsapp-callback]
+diagrams: [c4code-mesh-statusreporter-recorder]
 events-raised: []
 events-consumed: [
     mesh-inbox-message-downloaded,

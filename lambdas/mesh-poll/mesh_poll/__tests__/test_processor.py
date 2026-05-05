@@ -13,7 +13,7 @@ def setup_mocks():
     Create all mock objects needed for processor testing
     """
     config = Mock()
-    config.maximum_runtime_milliseconds = "500"
+    config.lambda_timeout_buffer_milliseconds = "500"
     config.ssm_prefix = "/dl/test"
     config.environment = "development"
 

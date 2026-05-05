@@ -4,7 +4,7 @@ const { combine, errors, json, timestamp } = winston.format;
 
 export const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
-  format: combine(timestamp(), json(), errors({ stack: true, cause: true })),
+  format: combine(errors({ stack: true, cause: true }), timestamp(), json()),
   transports: [
     new winston.transports.Stream({
       stream: process.stdout,

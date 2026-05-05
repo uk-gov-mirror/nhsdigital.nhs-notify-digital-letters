@@ -68,6 +68,11 @@ describe('sqs-handler', () => {
           specversion: '1.0',
           id: 'test-id',
           source: '/test',
+          plane: 'data',
+          dataschemaversion: '1.0.0',
+          datacontenttype: 'application/json',
+          dataschema:
+            'https://notify.nhs.uk/cloudevents/schemas/digital-letters/2025-10-draft/data/digital-letters-print-file-safe-data.schema.json',
           type: 'uk.nhs.notify.digital.letters.print.file.safe.v1',
           time: '2024-01-01T00:00:00Z',
           data: {
@@ -107,6 +112,11 @@ describe('sqs-handler', () => {
         specversion: '1.0',
         id: 'test-id-1',
         source: '/test',
+        plane: 'data',
+        dataschema:
+          'https://notify.nhs.uk/cloudevents/schemas/digital-letters/2025-10-draft/data/digital-letters-print-file-safe-data.schema.json',
+        dataschemaversion: '1.0.0',
+        datacontenttype: 'application/json',
         type: 'uk.nhs.notify.digital.letters.print.file.safe.v1',
         time: '2024-01-01T00:00:00Z',
         data: {
@@ -125,6 +135,11 @@ describe('sqs-handler', () => {
         specversion: '1.0',
         id: 'test-id-2',
         source: '/test',
+        plane: 'data',
+        dataschema:
+          'https://notify.nhs.uk/cloudevents/schemas/digital-letters/2025-10-draft/data/digital-letters-print-file-quarantined-data.schema.json',
+        dataschemaversion: '1.0.0',
+        datacontenttype: 'application/json',
         type: 'uk.nhs.notify.digital.letters.print.file.quarantined.v1',
         time: '2024-01-01T00:00:00Z',
         data: {
@@ -132,6 +147,7 @@ describe('sqs-handler', () => {
           senderId: 'sender-id-2',
           letterUri: 'https://bucket/key2',
           createdAt: '2024-01-01T00:00:00Z',
+          reasonCode: 'DL_CLIV_003',
         },
         subject: 'test-subject',
         traceparent: 'test-traceparent',
@@ -189,6 +205,11 @@ describe('sqs-handler', () => {
           specversion: '1.0',
           id: 'test-id',
           source: '/test',
+          plane: 'data',
+          dataschemaversion: '1.0.0',
+          datacontenttype: 'application/json',
+          dataschema:
+            'https://notify.nhs.uk/cloudevents/schemas/digital-letters/2025-10-draft/data/digital-letters-print-file-safe-data.schema.json',
           type: 'uk.nhs.notify.digital.letters.print.file.safe.v1',
           time: '2024-01-01T00:00:00Z',
           data: {

@@ -491,7 +491,7 @@ describe('LetterAvailable', () => {
   it('should create instance with valid data', () => {
     const event = new LetterAvailableBuilder()
       .withType('uk.nhs.notify.digital.letters.letter.available.v1')
-      .withSource('/nhs/england/notify/development/primary/data-plane/digitalletters/letter')
+      .withSource('/nhs/england/notify/development/primary/digitalletters/letter')
       .withData(/* ... */)
       .build();
 
@@ -551,7 +551,7 @@ const client = new CloudEventClient({
 
 const event = new LetterAvailable({
   type: 'uk.nhs.notify.digital.letters.letter.available.v1',
-  source: '/nhs/england/notify/development/primary/data-plane/digitalletters/letter',
+  source: '/nhs/england/notify/development/primary/digitalletters/letter',
   data: { /* ... */ }
 });
 

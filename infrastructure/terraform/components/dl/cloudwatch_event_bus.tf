@@ -27,3 +27,36 @@ resource "aws_cloudwatch_log_delivery_source" "main_trace_logs" {
   log_type     = "TRACE_LOGS"
   resource_arn = aws_cloudwatch_event_bus.main.arn
 }
+
+data "aws_iam_policy_document" "main_event_bus_document" {
+  statement {
+    sid    = "AllowCrossDomainEventBridgeToPutEvent"
+    effect = "Allow"
+
+    principals {
+      type        = "AWS"
+      identifiers = ["arn:aws:iam::${var.shared_infra_account_id}:root"]
+    }
+
+    actions = [
+      "events:PutEvents",
+    ]
+
+    resources = [
+      aws_cloudwatch_event_bus.main.arn,
+    ]
+
+    condition {
+      test     = "ArnLike"
+      variable = "aws:SourceArn"
+      values = [
+        "arn:aws:events:${var.region}:${var.shared_infra_account_id}:rule/*-data-plane*"
+      ]
+    }
+  }
+}
+
+resource "aws_cloudwatch_event_bus_policy" "main_event_bus_policy" {
+  policy         = data.aws_iam_policy_document.main_event_bus_document.json
+  event_bus_name = aws_cloudwatch_event_bus.main.name
+}

@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@nhsdigital/nhs-notify-event-schemas-supplier-api": "1.0.11",
+    "@nhsdigital/nhs-notify-event-schemas-supplier-api": "1.0.17",
     "digital-letters-events": "^0.0.1",
     "utils": "^0.0.1",
     "zod": "^4.1.12"

@@ -5,6 +5,9 @@ import { NotifyMessageProcessor } from 'app/notify-message-processor';
 import { ISenderManagement, SenderManagement } from 'sender-management';
 import { createContainer } from 'container';
 import { loadConfig } from 'infra/config';
+import { CoreRequestMapper } from 'domain/core-request-mapper';
+import { MessageRequestRejectedMapper } from 'domain/message-request-rejected-mapper';
+import { MessageRequestSubmittedMapper } from 'domain/message-request-submitted-mapper';
 
 jest.mock('utils', () => ({
   ParameterStoreCache: jest.fn(),
@@ -24,6 +27,9 @@ jest.mock('app/notify-api-client');
 jest.mock('app/notify-message-processor');
 jest.mock('sender-management');
 jest.mock('infra/config');
+jest.mock('domain/core-request-mapper');
+jest.mock('domain/message-request-submitted-mapper');
+jest.mock('domain/message-request-rejected-mapper');
 
 describe('createContainer', () => {
   const mockParameterStore = mock<ParameterStoreCache>();
@@ -35,12 +41,17 @@ describe('createContainer', () => {
     apimAccessTokenSsmParameterName: '/test/apim/access-token',
     apimBaseUrl: 'https://api.test.nhs.uk',
     environment: 'test',
+    nhsAppBaseUrl: 'https://example.com',
   };
 
   const mockSenderManagement = mock<ISenderManagement>();
   const mockNotifyClient = mock<NotifyClient>();
   const mockNotifyMessageProcessor = mock<NotifyMessageProcessor>();
   const mockEventPublisher = mock<EventPublisher>();
+  const mockCoreRequestMapper = mock<CoreRequestMapper>();
+  const mockMessageRequestSubmittedMapper =
+    mock<MessageRequestSubmittedMapper>();
+  const mockMessageRequestRejectedMapper = mock<MessageRequestRejectedMapper>();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -57,6 +68,15 @@ describe('createContainer', () => {
       () => mockNotifyMessageProcessor,
     );
     (EventPublisher as jest.Mock).mockImplementation(() => mockEventPublisher);
+    (CoreRequestMapper as jest.Mock).mockImplementation(
+      () => mockCoreRequestMapper,
+    );
+    (MessageRequestSubmittedMapper as jest.Mock).mockImplementation(
+      () => mockMessageRequestSubmittedMapper,
+    );
+    (MessageRequestRejectedMapper as jest.Mock).mockImplementation(
+      () => mockMessageRequestRejectedMapper,
+    );
   });
 
   it('creates and returns a container with all dependencies', async () => {
@@ -67,6 +87,9 @@ describe('createContainer', () => {
       logger,
       senderManagement: mockSenderManagement,
       eventPublisher: mockEventPublisher,
+      coreRequestMapper: mockCoreRequestMapper,
+      messageRequestSubmittedMapper: mockMessageRequestSubmittedMapper,
+      messageRequestRejectedMapper: mockMessageRequestRejectedMapper,
     });
   });
 

@@ -6,11 +6,11 @@ import type {
 import { randomUUID } from 'node:crypto';
 import type { CreateTtl, CreateTtlOutcome } from 'app/create-ttl';
 import { EventPublisher, Logger } from 'utils';
-import itemEnqueuedValidator from 'digital-letters-events/ItemEnqueued.js';
-import messageDownloadedValidator from 'digital-letters-events/MESHInboxMessageDownloaded.js';
 import {
   ItemEnqueued,
   MESHInboxMessageDownloaded,
+  validateItemEnqueued,
+  validateMESHInboxMessageDownloaded,
 } from 'digital-letters-events';
 
 interface ProcessingResult {
@@ -37,27 +37,16 @@ export const createHandler = ({
         try {
           const sqsEventBody = JSON.parse(body);
           const sqsEventDetail = sqsEventBody.detail;
+          validateMESHInboxMessageDownloaded(sqsEventDetail, logger);
 
-          const isEventValid = messageDownloadedValidator(sqsEventDetail);
-          if (!isEventValid) {
-            logger.error({
-              err: messageDownloadedValidator.errors,
-              description: 'Error parsing ttl queue entry',
-            });
-            batchItemFailures.push({ itemIdentifier: messageId });
-            return { result: 'failed' };
-          }
-          const messageDownloadedEvent: MESHInboxMessageDownloaded =
-            sqsEventDetail;
-
-          const result = await createTtl.send(messageDownloadedEvent);
+          const result = await createTtl.send(sqsEventDetail);
 
           if (result === 'failed') {
             batchItemFailures.push({ itemIdentifier: messageId });
             return { result: 'failed' };
           }
 
-          return { result, item: messageDownloadedEvent };
+          return { result, item: sqsEventDetail };
         } catch (error) {
           logger.error({
             err: error,
@@ -113,7 +102,7 @@ export const createHandler = ({
               messageUri: event.data.messageUri,
             },
           })),
-          itemEnqueuedValidator,
+          validateItemEnqueued,
         );
         if (failedEvents.length > 0) {
           logger.warn({

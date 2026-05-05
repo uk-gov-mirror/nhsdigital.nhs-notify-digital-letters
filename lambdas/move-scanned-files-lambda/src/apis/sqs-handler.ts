@@ -6,9 +6,12 @@ import type {
   SQSRecord,
 } from 'aws-lambda';
 import { EventPublisher, Logger } from 'utils';
-import { FileQuarantined, FileSafe } from 'digital-letters-events';
-import fileSafeValidator from 'digital-letters-events/FileSafe.js';
-import fileQuarantinedValidator from 'digital-letters-events/FileQuarantined.js';
+import {
+  FileQuarantined,
+  FileSafe,
+  validateFileQuarantined,
+  validateFileSafe,
+} from 'digital-letters-events';
 import { parseSqsRecord } from 'app/parse-sqs-message';
 import { MoveFileHandler } from 'app/move-file-handler';
 
@@ -69,14 +72,11 @@ export const createHandler = ({
     await Promise.all(
       [
         fileSafeEvents.length > 0 &&
-          eventPublisher.sendEvents<FileSafe>(
-            fileSafeEvents,
-            fileSafeValidator,
-          ),
+          eventPublisher.sendEvents<FileSafe>(fileSafeEvents, validateFileSafe),
         fileQuarantinedEvents.length > 0 &&
           eventPublisher.sendEvents<FileQuarantined>(
             fileQuarantinedEvents,
-            fileQuarantinedValidator,
+            validateFileQuarantined,
           ),
       ].filter(Boolean),
     );

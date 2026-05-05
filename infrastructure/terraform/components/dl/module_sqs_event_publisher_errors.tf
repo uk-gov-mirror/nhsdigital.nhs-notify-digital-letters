@@ -10,5 +10,5 @@ module "sqs_event_publisher_errors" {
 
   sqs_kms_key_arn = module.kms.key_arn
 
-  visibility_timeout_seconds = 60
+  visibility_timeout_seconds = var.sqs_visibility_timeout_seconds
 }

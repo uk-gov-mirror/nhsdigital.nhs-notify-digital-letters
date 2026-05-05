@@ -24,8 +24,8 @@ module "move_scanned_files" {
   function_include_common = true
   handler_function_name   = "handler"
   runtime                 = "nodejs22.x"
-  memory                  = 128
-  timeout                 = 60
+  memory                  = 256
+  timeout                 = var.lambda_timeout_seconds
   log_level               = var.log_level
 
   force_lambda_code_deploy = var.force_lambda_code_deploy

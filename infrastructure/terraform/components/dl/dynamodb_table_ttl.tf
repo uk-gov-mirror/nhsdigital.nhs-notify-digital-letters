@@ -50,5 +50,10 @@ resource "aws_dynamodb_table" "ttl" {
   stream_enabled   = true
   stream_view_type = "OLD_IMAGE"
 
-  tags = local.default_tags
+  tags = merge(
+    local.default_tags,
+    {
+      NHSE-Enable-Dynamo-Backup-Acct = "True"
+    }
+  )
 }

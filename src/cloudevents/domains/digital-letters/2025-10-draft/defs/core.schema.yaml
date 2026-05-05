@@ -15,9 +15,12 @@ properties:
     type: string
     description: "A code representing the reason for failure"
     examples:
-      - "CM_NOT_ALLOWED"
-      - "CM_NO_SUCH_ROUTING_PLAN"
-      - "CM_DUPLICATE_REQUEST"
+      - "CFR_SUPE_0001"
+  failureReason:
+    type: string
+    description: "A human readable desription of the reason for failure"
+    examples:
+      - "Failed reason: Not registered with NHS App"
   time:
     title: "Event Time"
     description: "Timestamp when the event occurred (RFC 3339)."

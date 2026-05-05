@@ -43,6 +43,42 @@ const scenarios = [
     'Read',
     senderId,
   ),
+  new ReportScenario(
+    'component-test-pdm-resource-submission-rejected',
+    CommunicationType.Digital,
+    [EventStatus.DigitalPDMResourceSubmissionRejected],
+    'Failed',
+    senderId,
+    'DL_PDMV_001',
+    'Letter rejected by PDM',
+  ),
+  new ReportScenario(
+    'component-test-pdm-resource-retries-exceeded',
+    CommunicationType.Digital,
+    [EventStatus.DigitalPDMResourceRetriesExceeded],
+    'Failed',
+    senderId,
+    'DL_PDMV_002',
+    'Timeout waiting for letter storage',
+  ),
+  new ReportScenario(
+    'component-test-message-request-rejected',
+    CommunicationType.Digital,
+    [EventStatus.DigitalMessageRequestRejected],
+    'Failed',
+    senderId,
+    'DL_INTE_001',
+    'Request validation failed',
+  ),
+  new ReportScenario(
+    'component-test-digital-failed-priority',
+    CommunicationType.Digital,
+    [EventStatus.Unread, EventStatus.DigitalPDMResourceSubmissionRejected],
+    'Failed',
+    senderId,
+    'DL_PDMV_001',
+    'Letter rejected by PDM',
+  ),
   // Scenarios for communication type Print where there is a single event per message reference.
   new ReportScenario(
     'component-test-rejected',
@@ -50,6 +86,8 @@ const scenarios = [
     [EventStatus.Rejected],
     'Rejected',
     senderId,
+    'API_CODE_001',
+    'The letter was rejected.',
   ),
   new ReportScenario(
     'component-test-failed',
@@ -57,6 +95,8 @@ const scenarios = [
     [EventStatus.Failed],
     'Failed',
     senderId,
+    'API_CODE_002',
+    'Letter processing failed',
   ),
   new ReportScenario(
     'component-test-returned',
@@ -64,6 +104,8 @@ const scenarios = [
     [EventStatus.Returned],
     'Returned',
     senderId,
+    'API_CODE_003',
+    'The letter was returned',
   ),
   new ReportScenario(
     'component-test-dispatched',
@@ -72,6 +114,26 @@ const scenarios = [
     'Dispatched',
     senderId,
   ),
+  // Scenario for new Print failure event: FileQuarantined
+  new ReportScenario(
+    'component-test-file-quarantined',
+    CommunicationType.Print,
+    [EventStatus.PrintFileQuarantined],
+    'Failed',
+    senderId,
+    'DL_CLIV_003',
+    'Attachment contains a virus',
+  ),
+  // Scenario for new Print failure event: InvalidAttachmentReceived
+  new ReportScenario(
+    'component-test-invalid-attachment-received',
+    CommunicationType.Print,
+    [EventStatus.PrintInvalidAttachmentReceived],
+    'Failed',
+    senderId,
+    'DL_CLIV_002',
+    'Invalid attachment received',
+  ),
   // multiple events for the same message reference, should take the one with highest priority status (returned > failed > dispatched > rejected)
   new ReportScenario(
     'component-test-rejected-pending',
@@ -79,6 +141,8 @@ const scenarios = [
     [EventStatus.Rejected, EventStatus.Pending],
     'Rejected',
     senderId,
+    'API_CODE_001',
+    'The letter was rejected.',
   ), // pending is ignored.
   new ReportScenario(
     'component-test-rejected-dispatched',
@@ -93,6 +157,8 @@ const scenarios = [
     [EventStatus.Rejected, EventStatus.Dispatched, EventStatus.Failed],
     'Failed',
     senderId,
+    'API_CODE_002',
+    'Letter processing failed',
   ),
   new ReportScenario(
     'component-test-rejected-dispatched-failed-returned',
@@ -105,6 +171,8 @@ const scenarios = [
     ],
     'Returned',
     senderId,
+    'API_CODE_003',
+    'The letter was returned',
   ),
 ];
 
@@ -138,8 +206,9 @@ test.describe('Digital Letters - Report Generator', () => {
     console.log(`Using senderId: ${senderId}`);
 
     for (const scenario of scenarios) publishEventForScenario(scenario);
-    // At this stage we published all the events used for test data.
+    // Publish an event that should not appear in the report
     await publishEventNotInReports(senderId);
+    // At this stage we published all the events used for test data.
     // Asserts step 1.2
     await prerequisiteAssertFirehoseEventsInS3(senderId);
     // Asserts step 2.1

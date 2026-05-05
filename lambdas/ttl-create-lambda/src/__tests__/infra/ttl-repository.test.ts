@@ -63,7 +63,7 @@ describe('TtlRepository', () => {
     expect(putCommand.input).toStrictEqual({
       TableName: tableName,
       Item: {
-        PK: messageDownloadedEvent.data.messageUri,
+        PK: `${messageDownloadedEvent.data.senderId}_${messageDownloadedEvent.data.messageReference}`,
         SK: 'TTL',
         dateOfExpiry: expectedDateOfExpiry,
         event: messageDownloadedEvent,

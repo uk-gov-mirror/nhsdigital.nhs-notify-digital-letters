@@ -25,7 +25,7 @@ module "pdm_mock" {
   function_include_common = true
   handler_function_name   = "handler"
   runtime                 = "nodejs22.x"
-  memory                  = 128
+  memory                  = 256
   timeout                 = 30
   log_level               = var.log_level
 

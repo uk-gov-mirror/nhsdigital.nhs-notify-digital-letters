@@ -348,6 +348,35 @@ describe('cleanAndRefreshKeystores', () => {
     });
   });
 
+  it('Does not update youngestKeyDate if first key is already newer than second key', async () => {
+    const {
+      mockGenerateNewKey,
+      mockUploadPublicKeystoreToS3,
+      mockValidatePrivateKey,
+    } = setupMocks(['2024-07-15', '2024-06-01']);
+
+    const now = new Date('2024-09-01');
+
+    // simulate multiple keys where the first key is newer — youngestKeyDate should NOT be updated
+    mockValidatePrivateKey
+      .mockResolvedValueOnce({
+        valid: true,
+        keyJwk: { kid: 'key1' } as JWK.Key,
+        keyDate: new Date('2024-07-15'), // newer key first
+      })
+      .mockResolvedValueOnce({
+        valid: true,
+        keyJwk: { kid: 'key2' } as JWK.Key,
+        keyDate: new Date('2024-06-01'), // older key second — should not update youngestKeyDate
+      });
+
+    await cleanAndRefreshKeystores({ now });
+
+    expect(mockValidatePrivateKey).toHaveBeenCalledTimes(2);
+    expect(mockGenerateNewKey).toHaveBeenCalled();
+    expect(mockUploadPublicKeystoreToS3).toHaveBeenCalled();
+  });
+
   it('Runs successfully when updating youngestKeyDate if second key is newer', async () => {
     const {
       mockGenerateNewKey,

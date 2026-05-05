@@ -244,6 +244,7 @@ describe('SQS Handler', () => {
               senderId: pdmResourceUnavailableEvent.data.senderId,
               resourceId: pdmResourceUnavailableEvent.data.resourceId,
               retryCount: 10,
+              reasonCode: 'DL_PDMV_002',
             },
           },
         ],
@@ -311,13 +312,13 @@ describe('SQS Handler', () => {
 
       const result = await handler(event);
 
-      expect(logger.warn).toHaveBeenCalledWith({
+      expect(logger.error).toHaveBeenCalledWith({
         err: expect.arrayContaining([
           expect.objectContaining({
             instancePath: '/source',
           }),
         ]),
-        description: 'Error parsing queue entry',
+        description: 'Error parsing PDMResourceSubmitted event',
       });
 
       expect(logger.info).toHaveBeenCalledWith(
@@ -338,13 +339,13 @@ describe('SQS Handler', () => {
 
       const result = await handler(event);
 
-      expect(logger.warn).toHaveBeenCalledWith({
+      expect(logger.error).toHaveBeenCalledWith({
         err: expect.arrayContaining([
           expect.objectContaining({
             instancePath: '/source',
           }),
         ]),
-        description: 'Error parsing queue entry',
+        description: 'Error parsing PDMResourceUnavailable event',
       });
 
       expect(logger.info).toHaveBeenCalledWith(

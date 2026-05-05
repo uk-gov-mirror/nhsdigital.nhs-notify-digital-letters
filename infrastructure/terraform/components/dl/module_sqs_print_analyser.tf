@@ -8,8 +8,7 @@ module "sqs_print_analyser" {
   region                     = var.region
   name                       = "print-analyser"
   sqs_kms_key_arn            = module.kms.key_arn
-  visibility_timeout_seconds = 60
-  delay_seconds              = 5
+  visibility_timeout_seconds = var.sqs_visibility_timeout_seconds
   create_dlq                 = true
   max_receive_count          = 1
   sqs_policy_overload        = data.aws_iam_policy_document.sqs_print_analyser.json

@@ -11,6 +11,9 @@ import { NotifyMessageProcessor } from 'app/notify-message-processor';
 import type { SqsHandlerDependencies } from 'apis/sqs-handler';
 import { loadConfig } from 'infra/config';
 import { SenderManagement } from 'sender-management';
+import { CoreRequestMapper } from 'domain/core-request-mapper';
+import { MessageRequestSubmittedMapper } from 'domain/message-request-submitted-mapper';
+import { MessageRequestRejectedMapper } from 'domain/message-request-rejected-mapper';
 
 export async function createContainer(): Promise<SqsHandlerDependencies> {
   const parameterStore = new ParameterStoreCache();
@@ -48,10 +51,23 @@ export async function createContainer(): Promise<SqsHandlerDependencies> {
     eventBridgeClient,
   });
 
+  const coreRequestMapper = new CoreRequestMapper(config.nhsAppBaseUrl);
+
+  const messageRequestSubmittedMapper = new MessageRequestSubmittedMapper(
+    config.nhsAppBaseUrl,
+  );
+
+  const messageRequestRejectedMapper = new MessageRequestRejectedMapper(
+    config.nhsAppBaseUrl,
+  );
+
   return {
     logger,
     notifyMessageProcessor,
     senderManagement,
     eventPublisher,
+    coreRequestMapper,
+    messageRequestSubmittedMapper,
+    messageRequestRejectedMapper,
   };
 }
