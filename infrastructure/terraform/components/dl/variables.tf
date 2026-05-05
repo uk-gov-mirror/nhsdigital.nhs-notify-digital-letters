@@ -210,7 +210,7 @@ variable "report_scheduler_schedule" {
 variable "pii_data_retention_policy_days" {
   type        = number
   description = "The number of days for data retention policy for PII"
-  default     = 534
+  default     = 90
 }
 
 variable "pii_data_retention_non_current_days" {

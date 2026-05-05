@@ -101,6 +101,7 @@
       { "name": "ttl-handle-expiry-lambda", "rootPath": "lambdas/ttl-handle-expiry-lambda" },
       { "name": "ttl-poll-lambda", "rootPath": "lambdas/ttl-poll-lambda" },
       { "name": "utils", "rootPath": "utils/utils" },
+      { "name": "event-generator", "rootPath": "scripts/nft-event-generator" },
     ],
     "testing.defaultGutterClickAction": "runWithCoverage",
   },
