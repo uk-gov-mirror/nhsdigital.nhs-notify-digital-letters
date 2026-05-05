@@ -180,7 +180,7 @@ jobs:
             --terraformAction "apply" \
             --overrideProjectName "nhs" \
             --overrideRoleName "nhs-main-acct-digital-letters-github-deploy" \
-            --internalRef "feature/enable-component-test-sharding" \
+            --internalRef "feature/CCM-17605_Enable_component_test_sharding" \
             --overrides "branch_name=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
   acceptance-stage: # Recommended maximum execution time is 10 minutes
     name: "Acceptance stage"
@@ -190,7 +190,7 @@ jobs:
     with:
       target_environment: "pr${{ needs.metadata.outputs.pr_number }}"
       target_account_group: nhs-notify-digital-letters-dev
-      internal_ref: "feature/enable-component-test-sharding"
+      internal_ref: "feature/CCM-17605_Enable_component_test_sharding"
     secrets:
       APP_PEM_FILE: ${{ secrets.APP_PEM_FILE }}
       APP_CLIENT_ID: ${{ secrets.APP_CLIENT_ID }}
