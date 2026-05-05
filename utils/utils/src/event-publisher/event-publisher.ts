@@ -139,7 +139,7 @@ export class EventPublisher {
   ) {
     if (successfulCount > 0) {
       this.metricHandler.addMetrics([
-        `${entries[0].DetailType}_success`,
+        `${entries[0].DetailType}_published`,
         'Count',
         successfulCount,
       ]);
@@ -147,7 +147,7 @@ export class EventPublisher {
 
     if (failedEntryCount > 0) {
       this.metricHandler.addMetrics([
-        `${entries[0].DetailType}_failure`,
+        `${entries[0].DetailType}_not_published`,
         'Count',
         failedEntryCount,
       ]);

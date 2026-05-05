@@ -218,9 +218,9 @@ class EventPublisher:
                 success_count = len(batch) - len(batch_failures)
                 failure_count = len(batch_failures)
                 if success_count > 0:
-                    self.event_metric.record(success_count, name=f"{event_type}_success")
+                    self.event_metric.record(success_count, name=f"{event_type}_published")
                 if failure_count > 0:
-                    self.event_metric.record(failure_count, name=f"{event_type}_failure")
+                    self.event_metric.record(failure_count, name=f"{event_type}_not_published")
 
             if batch_failures:
                 for event in batch_failures:

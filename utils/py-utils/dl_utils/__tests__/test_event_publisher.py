@@ -544,7 +544,7 @@ class TestEventMetricRecording:
         publisher.send_events([valid_cloud_event], validator=mock_validator)
 
         event_type = valid_cloud_event['type']
-        mock_event_metric.record.assert_called_once_with(1, name=f"{event_type}_success")
+        mock_event_metric.record.assert_called_once_with(1, name=f"{event_type}_published")
 
     def test_records_failure_metric_when_eventbridge_rejects_event(
             self, test_config, mock_events_client, mock_sqs_client,
@@ -560,7 +560,7 @@ class TestEventMetricRecording:
         publisher.send_events([valid_cloud_event], validator=mock_validator)
 
         event_type = valid_cloud_event['type']
-        mock_event_metric.record.assert_called_once_with(1, name=f"{event_type}_failure")
+        mock_event_metric.record.assert_called_once_with(1, name=f"{event_type}_not_published")
 
     def test_records_both_success_and_failure_metrics_for_mixed_batch(
             self, test_config, mock_events_client, mock_sqs_client,
@@ -579,8 +579,8 @@ class TestEventMetricRecording:
         publisher.send_events([valid_cloud_event, valid_cloud_event2], validator=mock_validator)
 
         event_type = valid_cloud_event['type']
-        mock_event_metric.record.assert_any_call(1, name=f"{event_type}_success")
-        mock_event_metric.record.assert_any_call(1, name=f"{event_type}_failure")
+        mock_event_metric.record.assert_any_call(1, name=f"{event_type}_published")
+        mock_event_metric.record.assert_any_call(1, name=f"{event_type}_not_published")
 
     def test_does_not_record_metric_when_event_metric_is_none(
             self, mock_logger, mock_events_client, mock_sqs_client,
